@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines java">
+<title>Java Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">Java Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <h2 id="api-implementation">API Implementation</h2>
+
+<p>This section describes guidelines for implementing Azure SDK client libraries. Please note that some of these guidelines are automatically enforced by code generation tools.</p>
+
+<p><a href="#java-namespaces-implementation" name="java-namespaces-implementation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  allow implementation code (that is, code that doesn’t form part of the public API) to be mistaken as public API. There are two valid arrangements for implementation code, which in order of preference are the following:</p>
+
+<ol>
+  <li>Implementation classes can be made package-private and placed within the same package as the consuming class.</li>
+  <li>Implementation classes can be placed within a subpackage named <code class="language-plaintext highlighter-rouge">implementation</code>.</li>
+</ol>
+
+<p>CheckStyle checks ensure that classes within an <code class="language-plaintext highlighter-rouge">implementation</code> package aren’t exposed through public API, but it is better that the API not be public in the first place, so preferring to have package-private is the better approach where practicable.</p>
+
+<h3 id="service-client">Service Client</h3>
+
+<h4 id="async-service-client">Async Service Client</h4>
+
+<p><a href="#java-async-blocking" name="java-async-blocking" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include blocking calls inside async client library code. Use <a href="https://github.com/reactor/BlockHound">BlockHound</a> to detect blocking calls in async APIs.</p>
+
+<h4 id="annotations">Annotations</h4>
+
+<p>Include the following annotations on the service client class.  For example, this code sample shows a sample class demonstrating the use of these two annotations:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ServiceClient</span><span class="o">(</span><span class="n">builder</span> <span class="o">=</span> <span class="nc">ConfigurationAsyncClientBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">isAsync</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">service</span> <span class="o">=</span> <span class="nc">ConfigurationService</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ConfigurationAsyncClient</span> <span class="o">{</span>
+
+    <span class="nd">@ServiceMethod</span><span class="o">(</span><span class="n">returns</span> <span class="o">=</span> <span class="nc">ReturnType</span><span class="o">.</span><span class="na">COLLECTION</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">Mono</span><span class="o">&lt;</span><span class="nc">Response</span><span class="o">&lt;</span><span class="nc">ConfigurationSetting</span><span class="o">&gt;&gt;</span> <span class="nf">addSetting</span><span class="o">(</span><span class="nc">String</span> <span class="n">key</span><span class="o">,</span> <span class="nc">String</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Annotation</th>
+      <th style="text-align: left">Location</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">@ServiceClient</code></td>
+      <td style="text-align: left">Service Client</td>
+      <td style="text-align: left">Specifies the builder responsible for instantiating the service client, whether the API is asynchronous, and a reference back to the service interface (the interface annotated with <code class="language-plaintext highlighter-rouge">@ServiceInterface</code>).</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">@ServiceMethod</code></td>
+      <td style="text-align: left">Service Method</td>
+      <td style="text-align: left">Placed on all methods that do network operations, regardless of whether it is a client class or not.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="service-client-builder">Service Client Builder</h4>
+
+<h5 id="annotations-1">Annotations</h5>
+
+<p>The <code class="language-plaintext highlighter-rouge">@ServiceClientBuilder</code> annotation should be placed on any class that is responsible for instantiating service clients (that is, instantiating classes annotated with <code class="language-plaintext highlighter-rouge">@ServiceClient</code>). For example:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ServiceClientBuilder</span><span class="o">(</span><span class="n">serviceClients</span> <span class="o">=</span> <span class="o">{</span><span class="nc">ConfigurationClient</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nc">ConfigurationAsyncClient</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ConfigurationClientBuilder</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
+</code></pre></div></div>
+
+<p>This builder states that it can build instances of <code class="language-plaintext highlighter-rouge">ConfigurationClient</code> and <code class="language-plaintext highlighter-rouge">ConfigurationAsyncClient</code>.</p>
+
+<h3 id="supporting-types">Supporting Types</h3>
+
+<h4 id="model-types">Model Types</h4>
+
+<h5 id="annotations-2">Annotations</h5>
+
+<p>There are two annotations of note that should be applied on model classes, when applicable:</p>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">@Fluent</code> annotation is applied to all model classes that are expected to provide a fluent API to end users.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">@Immutable</code> annotation is applied to all immutable classes.</li>
+</ul>
+
+<h2 id="sdk-feature-implementation">SDK Feature Implementation</h2>
+
+<h3 id="logging">Logging</h3>
+
+<p>Client libraries must make use of the robust logging mechanisms in azure core, so that the consumers can adequately diagnose issues with method calls and quickly determine whether the issue is in the consumer code, client library code, or service.</p>
+
+<p><a href="#java-logging-clientlogger" name="java-logging-clientlogger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">ClientLogger</code> API provided within Azure Core as the sole logging API throughout all client libraries. Internally, <code class="language-plaintext highlighter-rouge">ClientLogger</code> wraps <a href="http://www.slf4j.org/">SLF4J</a>, so all external configuration that is offered through SLF4J is valid.  We encourage you to expose the SLF4J configuration to end users. For more information, see the <a href="http://www.slf4j.org/manual.html">SLF4J user manual</a>.</p>
+
+<p><a href="#java-logging-new-clientlogger" name="java-logging-new-clientlogger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a new instance of a <code class="language-plaintext highlighter-rouge">ClientLogger</code> per instance of all relevant classes, except in situations where performance is critical, the instances are short-lived (and therefore the cost of unique loggers is excessive), or in static-only classes (where there is no instantiation of the class allowed). In these cases, it is acceptable to have a shared (or static) logger instance. For example, the code below will create a <code class="language-plaintext highlighter-rouge">ClientLogger</code> instance for the <code class="language-plaintext highlighter-rouge">ConfigurationAsyncClient</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">ConfigurationAsyncClient</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ClientLogger</span> <span class="n">logger</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ClientLogger</span><span class="o">(</span><span class="nc">ConfigurationAsyncClient</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="c1">// example async call to a service that uses the Project Reactor APIs to log request, success, and error</span>
+    <span class="c1">// information out to the service logger instance</span>
+    <span class="kd">public</span> <span class="nc">Mono</span><span class="o">&lt;</span><span class="nc">Response</span><span class="o">&lt;</span><span class="nc">ConfigurationSetting</span><span class="o">&gt;&gt;</span> <span class="nf">setSetting</span><span class="o">(</span><span class="nc">ConfigurationSetting</span> <span class="n">setting</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="na">setKey</span><span class="o">(</span><span class="n">serviceEndpoint</span><span class="o">,</span> <span class="n">setting</span><span class="o">.</span><span class="na">key</span><span class="o">(),</span> <span class="n">setting</span><span class="o">.</span><span class="na">label</span><span class="o">(),</span> <span class="n">setting</span><span class="o">,</span> <span class="n">getETagValue</span><span class="o">(</span><span class="n">setting</span><span class="o">.</span><span class="na">etag</span><span class="o">()),</span> <span class="kc">null</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">doOnRequest</span><span class="o">(</span><span class="n">ignoredValue</span> <span class="o">-&gt;</span> <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"Setting ConfigurationSetting - {}"</span><span class="o">,</span> <span class="n">setting</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">doOnSuccess</span><span class="o">(</span><span class="n">response</span> <span class="o">-&gt;</span> <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"Set ConfigurationSetting - {}"</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">value</span><span class="o">()))</span>
+            <span class="o">.</span><span class="na">doOnError</span><span class="o">(</span><span class="n">error</span> <span class="o">-&gt;</span> <span class="n">logger</span><span class="o">.</span><span class="na">warning</span><span class="o">(</span><span class="s">"Failed to set ConfigurationSetting - {}"</span><span class="o">,</span> <span class="n">setting</span><span class="o">,</span> <span class="n">error</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Note that static loggers are shared among all client library instances running in a JVM instance. Static loggers should be used carefully and in short-lived cases only.</p>
+
+<p><a href="#java-logging-levels" name="java-logging-levels" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use one of the following log levels when emitting logs: <code class="language-plaintext highlighter-rouge">Verbose</code> (details), <code class="language-plaintext highlighter-rouge">Informational</code> (things happened), <code class="language-plaintext highlighter-rouge">Warning</code> (might be a problem or not), and <code class="language-plaintext highlighter-rouge">Error</code>.</p>
+
+<p><a href="#java-logging-errors" name="java-logging-errors" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Error</code> logging level for failures that the application is unlikely to recover from (out of memory, etc.).</p>
+
+<p><a href="#java-logging-warn" name="java-logging-warn" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Warning</code> logging level when a function fails to perform its intended task. This generally means that the function will raise an exception.  Do not include occurrences of self-healing events (for example, when a request will be automatically retried).</p>
+
+<p><a href="#java-logging-slowlinks" name="java-logging-slowlinks" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  log the request and response (see below) at the <code class="language-plaintext highlighter-rouge">Warning</code> logging level when a request/response cycle (to the start of the response body) exceeds a service-defined threshold.  The threshold should be chosen to minimize false-positives and identify service issues.</p>
+
+<p><a href="#java-logging-info" name="java-logging-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Informational</code> logging level when a function operates normally.</p>
+
+<p><a href="#java-logging-verbose" name="java-logging-verbose" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Verbose</code> logging level for detailed troubleshooting scenarios. This is primarily intended for developers or system administrators to diagnose specific failures.</p>
+
+<p><a href="#java-logging-no-sensitive-info" name="java-logging-no-sensitive-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  only log headers and query parameters that are in a service-provided “allow-list” of approved headers and query parameters.  All other headers and query parameters must have their values redacted.</p>
+
+<p><a href="#java-logging-requests" name="java-logging-requests" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log request line and headers as an <code class="language-plaintext highlighter-rouge">Informational</code> message. The log should include the following information:</p>
+
+<ul>
+  <li>The HTTP method.</li>
+  <li>The URL.</li>
+  <li>The query parameters (redacted if not in the allow-list).</li>
+  <li>The request headers (redacted if not in the allow-list).</li>
+  <li>An SDK provided request ID for correlation purposes.</li>
+  <li>The number of times this request has been attempted.</li>
+</ul>
+
+<p>This happens within azure-core by default, but users can configure this through the builder <code class="language-plaintext highlighter-rouge">httpLogOptions</code> configuration setting.</p>
+
+<p><a href="#java-logging-responses" name="java-logging-responses" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log response line and headers as an <code class="language-plaintext highlighter-rouge">Informational</code> message.  The format of the log should be the following:</p>
+
+<ul>
+  <li>The SDK provided request ID (see above).</li>
+  <li>The status code.</li>
+  <li>Any message provided with the status code.</li>
+  <li>The response headers (redacted if not in the allow-list).</li>
+  <li>The time period between the first attempt of the request and the first byte of the body.</li>
+</ul>
+
+<p><a href="#java-logging-cancellations" name="java-logging-cancellations" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log an <code class="language-plaintext highlighter-rouge">Informational</code> message if a service call is cancelled.  The log should include:</p>
+
+<ul>
+  <li>The SDK provided request ID (see above).</li>
+  <li>The reason for the cancellation (if available).</li>
+</ul>
+
+<p><a href="#java-logging-exceptions" name="java-logging-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log exceptions thrown as a <code class="language-plaintext highlighter-rouge">Warning</code> level message. If the log level set to <code class="language-plaintext highlighter-rouge">Verbose</code>, append stack trace information to the message.</p>
+
+<p><a href="#java-logging-log-and-throw" name="java-logging-log-and-throw" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  throw all exceptions created within the client library code through one of the logger APIs - <code class="language-plaintext highlighter-rouge">ClientLogger.logThrowableAsError()</code>, <code class="language-plaintext highlighter-rouge">ClientLogger.logThrowableAsWarning()</code>, <code class="language-plaintext highlighter-rouge">ClientLogger.logExceptionAsError()</code> or <code class="language-plaintext highlighter-rouge">ClientLogger.logExceptionAsWarning()</code>.</p>
+
+<p>For example:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// NO!!!!</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">priority</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">priority</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">"'priority' cannot be a negative value. Please specify a zero or positive long value."</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="c1">// Good</span>
+
+<span class="c1">// Log any Throwable as error and throw the exception</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">file</span><span class="o">.</span><span class="na">exists</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="n">logger</span><span class="o">.</span><span class="na">logThrowableAsError</span><span class="o">(</span><span class="k">new</span> <span class="nc">IOException</span><span class="o">(</span><span class="s">"File does not exist "</span> <span class="o">+</span> <span class="n">file</span><span class="o">.</span><span class="na">getName</span><span class="o">()));</span>
+<span class="o">}</span>
+
+<span class="c1">// Log any Throwable as warning and throw the exception</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">file</span><span class="o">.</span><span class="na">exists</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="n">logger</span><span class="o">.</span><span class="na">logThrowableAsWarning</span><span class="o">(</span><span class="k">new</span> <span class="nc">IOException</span><span class="o">(</span><span class="s">"File does not exist "</span> <span class="o">+</span> <span class="n">file</span><span class="o">.</span><span class="na">getName</span><span class="o">()));</span>
+<span class="o">}</span>
+
+<span class="c1">// Log a RuntimeException as error and throw the exception</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">priority</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">priority</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="n">logger</span><span class="o">.</span><span class="na">logExceptionAsError</span><span class="o">(</span><span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span><span class="s">"'priority' cannot be a negative value. Please specify a zero or positive long value."</span><span class="o">));</span>
+<span class="o">}</span>
+
+<span class="c1">// Log a RuntimeException as warning and throw the exception</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">numberOfAttempts</span> <span class="o">&lt;</span> <span class="n">retryPolicy</span><span class="o">.</span><span class="na">getMaxRetryCount</span><span class="o">())</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="n">logger</span><span class="o">.</span><span class="na">logExceptionAsWarning</span><span class="o">(</span><span class="k">new</span> <span class="nc">RetryableException</span><span class="o">(</span><span class="s">"A transient error occurred. Another attempt will be made after "</span> <span class="o">+</span> <span class="n">retryPolicy</span><span class="o">.</span><span class="na">getDelay</span><span class="o">()));</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="distributed-tracing">Distributed tracing</h3>
+
+<p>Distributed tracing mechanisms allow the consumer to trace their code from frontend to backend.  Distributed tracing libraries creates spans - units of unique work.  Each span is in a parent-child relationship.  As you go deeper into the hierarchy of code, you create more spans.  These spans can then be exported to a suitable receiver as needed.  To keep track of the spans, a <em>distributed tracing context</em> (called a context in the remainder of this section) is passed into each successive layer.  For more information on this topic, visit the <a href="https://opentelemetry.io">OpenTelemetry</a> topic on tracing.</p>
+
+<p>The Azure core library provides a service provider interface (SPI) for adding pipeline policies at runtime. The pipeline policy is used to enable tracing on consumer deployments. Pluggable pipeline policies must be supported in all client libraries to enable distributed tracing. Additional metadata can be specified on a per-service-method basis to provide a richer tracing experience for consumers.</p>
+
+<p><a href="#java-tracing-pluggable" name="java-tracing-pluggable" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support pluggable pipeline policies as part of the HTTP pipeline instantiation. This enables developers to include a tracing plugin and have its pipeline policy automatically injected into all client libraries that they are using.</p>
+
+<p>Review the code sample below, in which a service client builder creates an <code class="language-plaintext highlighter-rouge">HttpPipeline</code> from its set of policies.  At the same time, the builder allows plugins to add ‘before retry’ and ‘after retry’ policies with the lines <code class="language-plaintext highlighter-rouge">HttpPolicyProviders.addBeforeRetryPolicies(policies)</code> and <code class="language-plaintext highlighter-rouge">HttpPolicyProviders.addAfterRetryPolicies(policies)</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">ConfigurationAsyncClient</span> <span class="nf">build</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">...</span>
+
+    <span class="c1">// Closest to API goes first, closest to wire goes last.</span>
+    <span class="kd">final</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">HttpPipelinePolicy</span><span class="o">&gt;</span> <span class="n">policies</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">UserAgentPolicy</span><span class="o">(</span><span class="nc">AzureConfiguration</span><span class="o">.</span><span class="na">NAME</span><span class="o">,</span> <span class="nc">AzureConfiguration</span><span class="o">.</span><span class="na">VERSION</span><span class="o">,</span> <span class="n">buildConfiguration</span><span class="o">));</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">RequestIdPolicy</span><span class="o">());</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">AddHeadersPolicy</span><span class="o">(</span><span class="n">headers</span><span class="o">));</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">AddDatePolicy</span><span class="o">());</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">ConfigurationCredentialsPolicy</span><span class="o">(</span><span class="n">buildCredentials</span><span class="o">));</span>
+    <span class="nc">HttpPolicyProviders</span><span class="o">.</span><span class="na">addBeforeRetryPolicies</span><span class="o">(</span><span class="n">policies</span><span class="o">);</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">retryPolicy</span><span class="o">);</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">addAll</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">policies</span><span class="o">);</span>
+    <span class="nc">HttpPolicyProviders</span><span class="o">.</span><span class="na">addAfterRetryPolicies</span><span class="o">(</span><span class="n">policies</span><span class="o">);</span>
+    <span class="n">policies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">HttpLoggingPolicy</span><span class="o">(</span><span class="n">httpLogDetailLevel</span><span class="o">));</span>
+
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><a href="#java-tracing-tracerproxy" name="java-tracing-tracerproxy" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Azure core <code class="language-plaintext highlighter-rouge">TracerProxy</code> API to set additional metadata that should be supplied along with the tracing span. In particular, use the <code class="language-plaintext highlighter-rouge">setAttribute(String key, String value, Context context)</code> method to set a new key/value pair on the tracing context.</p>
+
+<p><a href="#java-tracing-tracing-context" name="java-tracing-tracing-context" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  pass all <code class="language-plaintext highlighter-rouge">Context</code> objects received as service method arguments through to the generated service interface methods in all cases.</p>
+
+<h2 id="testing">Testing</h2>
+
+<p><a href="#java-testing-params" name="java-testing-params" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  parameterize all applicable unit tests to make use of all available HTTP clients and service versions. Parameterized runs of all tests must occur as part of live tests. Shorter runs, consisting of just Netty and the latest service version, can be run whenever PR validation occurs.</p>
+
+<blockquote>
+  <p>TODO refer to cases where this is done in Java today</p>
+</blockquote>
+
+<!-- Project Links -->
+
+<!-- Example Links -->
+
+<!-- Intra-document references -->
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

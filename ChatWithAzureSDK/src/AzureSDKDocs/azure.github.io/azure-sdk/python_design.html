@@ -1,0 +1,2104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines python">
+<title>Python Guidelines: API Design | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li class="active"><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">Python Guidelines: API Design</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <h2 id="introduction">Introduction</h2>
+
+<h3 id="design-principles">Design principles</h3>
+
+<p>The Azure SDK should be designed to enhance the productivity of developers connecting to Azure services. Other qualities (such as completeness, extensibility, and performance) are important but secondary. Productivity is achieved by adhering to the principles described below:</p>
+
+<h4 id="idiomatic">Idiomatic</h4>
+
+<ul>
+  <li>The SDK should follow the design guidelines and conventions for the target language. It should feel natural to a developer in the target language.</li>
+  <li>We embrace the ecosystem with its strengths and its flaws.</li>
+  <li>We work with the ecosystem to improve it for all developers.</li>
+</ul>
+
+<h4 id="consistent">Consistent</h4>
+
+<ul>
+  <li>Client libraries should be consistent within the language, consistent with the service and consistent between all target languages. In cases of conflict, consistency within the language is the highest priority and consistency between all target languages is the lowest priority.</li>
+  <li>Service-agnostic concepts such as logging, HTTP communication, and error handling should be consistent. The developer should not have to relearn service-agnostic concepts as they move between client libraries.</li>
+  <li>Consistency of terminology between the client library and the service is a good thing that aids in diagnosability.</li>
+  <li>All differences between the service and client library must have a good (articulated) reason for existing, rooted in idiomatic usage rather than whim.</li>
+  <li>The Azure SDK for each target language feels like a single product developed by a single team.</li>
+  <li>There should be feature parity across target languages. This is more important than feature parity with the service.</li>
+</ul>
+
+<h4 id="approachable">Approachable</h4>
+
+<ul>
+  <li>We are experts in the supported technologies so our customers, the developers, don’t have to be.</li>
+  <li>Developers should find great documentation (hero tutorial, how to articles, samples, and API documentation) that makes it easy to be successful with the Azure service.</li>
+  <li>Getting off the ground should be easy through the use of predictable defaults that implement best practices. Think about progressive concept disclosure.</li>
+  <li>The SDK should be easily acquired through the most normal mechanisms in the target language and ecosystem.</li>
+  <li>Developers can be overwhelmed when learning new service concepts. The core use cases should be discoverable.</li>
+</ul>
+
+<h4 id="diagnosable">Diagnosable</h4>
+
+<ul>
+  <li>The developer should be able to understand what is going on.</li>
+  <li>It should be discoverable when and under what circumstances a network call is made.</li>
+  <li>Defaults are discoverable and their intent is clear.</li>
+  <li>Logging, tracing, and exception handling are fundamental and should be thoughtful.</li>
+  <li>Error messages should be concise, correlated with the service, actionable, and human readable. Ideally, the error message should lead the consumer to a useful action that they can take.</li>
+  <li>Integrating with the preferred debugger for the target language should be easy.</li>
+</ul>
+
+<h4 id="dependable">Dependable</h4>
+
+<ul>
+  <li>Breaking changes are more harmful to a user’s experience than most new features and improvements are beneficial.</li>
+  <li>Incompatibilities should never be introduced deliberately without thorough review and very strong justification.</li>
+  <li>Do not rely on dependencies that can force our hand on compatibility.</li>
+</ul>
+
+<h3 id="general-guidelines">General guidelines</h3>
+
+<p>The API surface of your client library must have the most thought as it is the primary interaction that the consumer has with your service.</p>
+
+<p><a href="#python-feature-support" name="python-feature-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support 100% of the features provided by the Azure service the client library represents. Gaps in functionality cause confusion and frustration among developers.</p>
+
+<h3 id="non-http-based-services">Non-HTTP based services</h3>
+
+<p>These guidelines were written primarily with a HTTP based request/response in mind, but many general guidelines apply to other types of services as well. This includes, but is not limited to, packaging and naming, tools and project structures.</p>
+
+<p>Please contact the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture board</a> for more guidance on non HTTP/REST based services.</p>
+
+<h3 id="supported-python-versions">Supported python versions</h3>
+
+<p><a href="#python-general-version-support" name="python-general-version-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support Python 3.7+.</p>
+
+<h2 id="azure-sdk-api-design">Azure SDK API Design</h2>
+
+<p>Your API surface will consist of one or more <em>service clients</em> that the consumer will instantiate to connect to your service, plus a set of supporting types.</p>
+
+<h3 id="service-client">Service client</h3>
+
+<p>The service client is the primary entry point for users of the library. A service client exposes one or more methods that allow them to interact with the service.</p>
+
+<p><a href="#python-client-namespace" name="python-client-namespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose the service clients the user is more likely to interact with from the root namespace of your package. Specialized service clients may be placed in sub-namespaces.</p>
+
+<p><a href="#python-client-naming" name="python-client-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name service client types with a <strong>Client</strong> suffix.</p>
+
+<p><a href="#python-client-sync-async-separate-clients" name="python-client-sync-async-separate-clients" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide separate sync and async clients. See the <a href="#async-support">Async Support</a> section for more information.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+</span><span class="k">class</span> <span class="nc">CosmosClient</span><span class="p">:</span> <span class="p">...</span>
+
+<span class="c1"># No
+</span><span class="k">class</span> <span class="nc">CosmosProxy</span><span class="p">:</span> <span class="p">...</span>
+
+<span class="c1"># No
+</span><span class="k">class</span> <span class="nc">CosmosUrl</span><span class="p">:</span> <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#python-client-immutable" name="python-client-immutable" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make the service client immutable. See the <a href="#client-immutability">Client Immutability</a> section for more information.</p>
+
+<h4 id="constructors-and-factory-methods">Constructors and factory methods</h4>
+
+<p>Only the minimal information needed to connect and interact with the service should be required in order to construct a client instance. All additional information should be optional and passed in as optional keyword-only arguments.</p>
+
+<h5 id="client-configuration">Client configuration</h5>
+
+<p><a href="#python-client-constructor-form" name="python-client-constructor-form" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a constructor that takes positional binding parameters (for example, the name of, or a URL pointing to the service instance), a positional <code class="language-plaintext highlighter-rouge">credential</code> parameter, a <code class="language-plaintext highlighter-rouge">transport</code> keyword-only parameter, and keyword-only arguments for passing settings through to individual HTTP pipeline policies. See the <a href="#authentication">Authentication</a> section for more information on the <code class="language-plaintext highlighter-rouge">credential</code> parameter.</p>
+
+<p><a href="#python-client-options-naming" name="python-client-options-naming" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use an “options bag” object to group optional parameters. Instead, pass as individual keyword-only arguments.</p>
+
+<p><a href="#python-client-constructor-policy-arguments" name="python-client-constructor-policy-arguments" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept optional default request options as keyword arguments and pass them along to its pipeline policies. See <a href="#common-service-operation-parameters">Common service operation parameters</a> for more information.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Change default number of retries to 18 and overall timeout to 2s.
+</span><span class="n">client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(</span><span class="s">'https://contoso.com/xmpl'</span><span class="p">,</span>
+                       <span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+                       <span class="n">max_retries</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+                       <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-client-constructor-transport-argument" name="python-client-constructor-transport-argument" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow users to pass in a <code class="language-plaintext highlighter-rouge">transport</code> keyword-only argument that allows the caller to specify a specific transport instance. The default value should be the <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.1.1/azure.core.pipeline.transport.html?highlight=transport#azure.core.pipeline.transport.RequestsTransport"><code class="language-plaintext highlighter-rouge">RequestsTransport</code></a> for synchronous clients and the <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.1.1/azure.core.pipeline.transport.html?highlight=transport#azure.core.pipeline.transport.AioHttpTransport"><code class="language-plaintext highlighter-rouge">AioHttpTransport</code></a> for async clients.</p>
+
+<p><a href="#python-client-connection-string" name="python-client-connection-string" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a separate factory classmethod <code class="language-plaintext highlighter-rouge">from_connection_string</code> to create a client from a connection string (if the client supports connection strings). The <code class="language-plaintext highlighter-rouge">from_connection_string</code> factory method should take the same set of arguments (excluding information provided in the connection string) as the constructor. The constructor (<code class="language-plaintext highlighter-rouge">__init__</code> method) <strong>must not</strong> take a connection string, even if it means that using the <code class="language-plaintext highlighter-rouge">from_connection_string</code> is the only supported method to create an instance of the client.</p>
+
+<p>The method <strong>should</strong> parse the connection string and pass the values along with any additional keyword-only arguments except <code class="language-plaintext highlighter-rouge">credential</code> to the constructor.  Only provide a <code class="language-plaintext highlighter-rouge">from_connection_string</code> factory method if the Azure portal exposes a connection string for your service.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ExampleClientWithConnectionString</span><span class="p">:</span>
+
+    <span class="o">@</span><span class="nb">classmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_connection_string</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">connection_string</span><span class="p">):</span> <span class="p">...</span>
+
+    <span class="o">@</span><span class="nb">classmethod</span>
+    <span class="k">def</span> <span class="nf">from_connection_string</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">connection_string</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">endpoint</span><span class="p">,</span> <span class="n">credential</span> <span class="o">=</span> <span class="n">cls</span><span class="p">.</span><span class="n">_parse_connection_string</span><span class="p">(</span><span class="n">connection_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">credential</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""Example client using some of the most common API patterns
+"""</span>
+
+<span class="kn">import</span> <span class="nn">models</span>
+<span class="kn">import</span> <span class="nn">azure.core.pipeline.transport</span> <span class="k">as</span> <span class="n">transports</span>
+
+<span class="k">class</span> <span class="nc">Thing</span><span class="p">:</span>
+    <span class="s">"""A simple model type representing a Thing.
+
+    :ivar name: The name of the thing. 
+    :vartype name: str
+    :ivar size: The size of the thing. 
+    :vartype size: int
+    """</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">"""Create a new Thing
+
+        :param name: The name of the thing
+        :type name: str
+        :param size: The size of the thing
+        :type size: int
+        """</span>
+
+        <span class="c1"># Please note that we are using attributes rather than properties.
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+    <span class="o">@</span><span class="nb">classmethod</span>
+    <span class="k">def</span> <span class="nf">from_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="s">"azure.core.rest.HttpResponse"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s">"Thing"</span><span class="p">:</span>
+        <span class="s">"""Factory method to, given a response, construct a ~Thing
+        """</span>
+        <span class="k">return</span> <span class="n">Thing</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="p">.</span><span class="n">context</span><span class="p">[</span><span class="s">'deserialized_data'</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># For simple model types, we can just dump our __dict__ and
+</span>        <span class="c1"># truncate the output at 1024 characters.
+</span>        <span class="k">return</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">__dict__</span><span class="p">)[:</span><span class="mi">1024</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">credential</span><span class="p">:</span> <span class="s">"azure.core.credentials.TokenCredential"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">"""Create a new example client instance
+
+        :param endpoint: Endpoint to connect to.
+        :type endpoint str:
+        :param credential: Credentials to use when connecting to the service.
+        :type credential: ~azure.core.credentials.TokenCredential
+        :keyword api_version: API version to use when talking to the service. Default is '2020-12-31'
+        :paramtype api_version: str
+        :keyword transport: HttpTransport to use. Default is ~transports.RequestsHttpTransport.
+        :paramtype transport: ~azure.core.pipeline.transport.HttpTransport
+        """</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">_api_version</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">.</span><span class="n">pop</span><span class="p">(</span><span class="s">'api_version'</span><span class="p">,</span> <span class="s">'2020-12-31'</span><span class="p">)</span>
+        <span class="n">transport</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">.</span><span class="n">pop</span><span class="p">(</span><span class="s">'transport'</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">transports</span><span class="p">.</span><span class="n">RequestsTransport</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># continue to build up your client...
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">_pipeline</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">...,</span> <span class="c1"># List of policies for this specific client
+</span>            <span class="n">transport</span>
+        <span class="p">]</span>
+
+    <span class="o">@</span><span class="nb">classmethod</span>
+    <span class="k">def</span> <span class="nf">from_connection_string</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">connection_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s">"Thing"</span><span class="p">:</span>
+        <span class="s">"""Optional factory method if the service supports connection strings
+        
+        :param connection_string: Connection string containing endpoint and credentials
+        :type connection_string: str
+        :returns: The newly created client.
+        :rtype: ~ExampleClient
+        """</span>
+        <span class="n">endpoint</span><span class="p">,</span> <span class="n">credential</span> <span class="o">=</span> <span class="n">_parse</span><span class="p">(</span><span class="n">connection_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">credential</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">get_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s">"Thing"</span><span class="p">:</span>
+        <span class="s">"""Get the Thing with name `name`.
+
+        :param name: The name of the ~Thing to get
+        :type name: str
+        :rtype: ~Thing
+        """</span>
+        <span class="n">model_factory</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">.</span><span class="n">pop</span><span class="p">(</span><span class="s">'cls'</span><span class="p">,</span> <span class="n">Thing</span><span class="p">.</span><span class="n">from_response</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_build_get_thing_request</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Pass along all policy parameters when making the request
+</span>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_pipeline</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">model_factory</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">list_things</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s">"azure.core.paging.ItemPaged[Thing]"</span><span class="p">:</span>
+        <span class="s">"""List all things.
+        
+        :rtype: ~azure.core.ItemPaged[~Thing]
+        """</span>
+        <span class="p">...</span>
+        <span class="k">return</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">paging</span><span class="p">.</span><span class="n">ItemPaged</span><span class="p">(...)</span>
+
+    <span class="k">def</span> <span class="nf">begin_restart_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s">"azure.core.polling.LROPoller[bool]"</span><span class="p">:</span>
+        <span class="s">"""Restart the thing
+
+        :param name: The name of the thing to restart
+        :type name: str
+        """</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">.</span><span class="n">pop</span><span class="p">(</span><span class="s">'cls'</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_build_begin_restart_thing</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Pass along all policy parameters when making the request
+</span>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_pipeline</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># TODO: show how to construct the poller instance
+</span>        <span class="k">return</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">polling</span><span class="p">.</span><span class="n">LROPoller</span><span class="p">(...)</span>
+
+
+
+
+
+
+
+</code></pre></div></div>
+
+<p><a href="#python-client-constructor-from-url" name="python-client-constructor-from-url" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use a separate factory classmethod <code class="language-plaintext highlighter-rouge">from_&lt;resource type&gt;_url</code> (e.g. <code class="language-plaintext highlighter-rouge">from_blob_url</code>) to create a client from a URL (if the service relies on passing URLs to resources around - e.g. Azure Blob Storage). The <code class="language-plaintext highlighter-rouge">from_url</code> factory method should take the same set of optional keyword arguments as the constructor.</p>
+
+<h5 id="specifying-the-service-version">Specifying the Service Version</h5>
+
+<p><a href="#python-client-constructor-api-version-argument-1" name="python-client-constructor-api-version-argument-1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept an optional <code class="language-plaintext highlighter-rouge">api_version</code> keyword-only argument of type string. If specified, the provided api version MUST be used when interacting with the service. If the parameter is not provided, the default value MUST be the latest non-preview API version understood by the client library (if there the service has a non-preview version) or the latest preview API version understood by the client library (if the service does not have any non-preview API versions yet). This parameter MUST be available even if there is only one API version understood by the service in order to allow library developers to lock down the API version they expect to interact with the service with.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
+
+<span class="c1"># By default, use the latest supported API version
+</span><span class="n">latest_known_version_client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(</span><span class="s">'https://contoso.com/xmpl'</span><span class="p">,</span>
+                                            <span class="n">DefaultAzureCredential</span><span class="p">())</span>
+
+<span class="c1"># ...but allow the caller to specify a specific API version as welll
+</span><span class="n">specific_api_version_client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(</span><span class="s">'https://contoso.com/xmpl'</span><span class="p">,</span>
+                                            <span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+                                            <span class="n">api_version</span><span class="o">=</span><span class="s">'1971-11-01'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-client-constructor-api-version-argument-2" name="python-client-constructor-api-version-argument-2" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document the service API version that is used by default.</p>
+
+<p><a href="#python-client-constructor-api-version-argument-3" name="python-client-constructor-api-version-argument-3" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document in which API version a feature (function or parameter) was introduced in if not all service API versions support it.</p>
+
+<p><a href="#python-client-constructor-api-version-argument-4" name="python-client-constructor-api-version-argument-4" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  validate the input <code class="language-plaintext highlighter-rouge">api_version</code> value against a list of supported API versions.</p>
+
+<p><a href="#python-client-constructor-api-version-argument-5" name="python-client-constructor-api-version-argument-5" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  include all service API versions that are supported by the client library in a <code class="language-plaintext highlighter-rouge">ServiceVersion</code> enumerated value.</p>
+
+<h5 id="additional-constructor-parameters">Additional constructor parameters</h5>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">credential</code></td>
+      <td>Credentials to use when making service requests (See <a href="#authentication">Authentication</a>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">application_id</code></td>
+      <td>Name of the client application making the request. Used for telemetry</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">api_version</code></td>
+      <td>API version to use when making service requests (See <a href="#specifying-the-service-version">Service Version</a>)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">transport</code></td>
+      <td>Override the default HTTP transport (See <a href="#client-configuration">Client Configuration</a>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5 id="client-immutability">Client immutability</h5>
+
+<p><a href="#python-client-immutable-design" name="python-client-immutable-design" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  design the client to be immutable. This does not mean that you need to use read-only properties (attributes are still acceptable), but rather that the there should not be any scenarios that require callers to change properties/attributes of the client.</p>
+
+<h4 id="service-methods">Service methods</h4>
+
+<h5 id="naming">Naming</h5>
+
+<p><a href="#python-client-service-verbs" name="python-client-service-verbs" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer the usage one of the preferred verbs for method names. You should have a good (articulated) reason to have an alternate verb for one of these operations.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Verb</th>
+      <th>Parameters</th>
+      <th>Returns</th>
+      <th>Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">create_\&lt;noun&gt;</code></td>
+      <td>key, item, <code class="language-plaintext highlighter-rouge">[allow_overwrite=False]</code></td>
+      <td>Created item</td>
+      <td>Create new item. Fails if item already exists.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">upsert_\&lt;noun&gt;</code></td>
+      <td>key, item</td>
+      <td>item</td>
+      <td>Create new item, or update existing item. Verb is primarily used in database-like services</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">set_\&lt;noun&gt;</code></td>
+      <td>key, item</td>
+      <td>item</td>
+      <td>Create new item, or update existing item. Verb is primarily used for dictionary-like properties of a service</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">update_\&lt;noun&gt;</code></td>
+      <td>key, partial item</td>
+      <td>item</td>
+      <td>Fails if item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">replace_\&lt;noun&gt;</code></td>
+      <td>key, item</td>
+      <td>item</td>
+      <td>Completely replaces an existing item. Fails if the item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">append_\&lt;noun&gt;</code></td>
+      <td>item</td>
+      <td>item</td>
+      <td>Add item to a collection. Item will be added last.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">add_\&lt;noun&gt;</code></td>
+      <td>index, item</td>
+      <td>item</td>
+      <td>Add item to a collection. Item will be added at the given index.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">get_\&lt;noun&gt;</code></td>
+      <td>key</td>
+      <td>item</td>
+      <td>Raises an exception if item doesn’t exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">list_\&lt;noun&gt;</code></td>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">azure.core.ItemPaged[Item]</code></td>
+      <td>Return an iterable of <code class="language-plaintext highlighter-rouge">Item</code>s. Returns an iterable with no items if no items exist (doesn’t return <code class="language-plaintext highlighter-rouge">None</code> or throw)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">\&lt;noun&gt;\_exists</code></td>
+      <td>key</td>
+      <td><code class="language-plaintext highlighter-rouge">bool</code></td>
+      <td>Return <code class="language-plaintext highlighter-rouge">True</code> if the item exists. Must raise an exception if the method failed to determine if the item exists (for example, the service returned an HTTP 503 response)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">delete_\&lt;noun&gt;</code></td>
+      <td>key</td>
+      <td><code class="language-plaintext highlighter-rouge">None</code></td>
+      <td>Delete an existing item. Must succeed even if item didn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">remove_\&lt;noun&gt;</code></td>
+      <td>key</td>
+      <td>removed item or <code class="language-plaintext highlighter-rouge">None</code></td>
+      <td>Remove a reference to an item from a collection. This method doesn’t delete the actual item, only the reference.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#python-client-standardize-verbs" name="python-client-standardize-verbs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  standardize verb prefixes outside the list of preferred verbs for a given service across language SDKs. If a verb is called <code class="language-plaintext highlighter-rouge">download</code> in one language, we should avoid naming it <code class="language-plaintext highlighter-rouge">fetch</code> in another.</p>
+
+<p><a href="#python-lro-prefix" name="python-lro-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix methods with <code class="language-plaintext highlighter-rouge">begin_</code> for <a href="#methods-invoking-long-running-operations">long running operations</a>.</p>
+
+<p><a href="#python-paged-prefix" name="python-paged-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix methods with <code class="language-plaintext highlighter-rouge">list_</code> for methods that enumerate (lists) resources</p>
+
+<h5 id="return-types">Return types</h5>
+
+<p>Requests to the service fall into two basic groups - methods that make a single logical request, or a deterministic sequence of requests. An example of a single logical request is a request that may be retried inside the operation. An example of a deterministic sequence of requests is a paged operation.</p>
+
+<p>The logical entity is a protocol neutral representation of a response. For HTTP, the logical entity may combine data from headers, body, and the status line. For example, you may wish to expose an <code class="language-plaintext highlighter-rouge">ETag</code> header as an <code class="language-plaintext highlighter-rouge">etag</code> attribute on the logical entity. For more information see <a href="#model-types">Model Types</a>.</p>
+
+<p><a href="#python-response-logical-entity" name="python-response-logical-entity" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  optimize for returning the logical entity for a given request. The logical entity MUST represent the information needed in the 99%+ case.</p>
+
+<p><a href="#python-response-exception-on-failure" name="python-response-exception-on-failure" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  raise an exception if the method call failed to accomplish the user specified task. This includes both situations where the service actively responded with a failure as well as when no response was received. See <a href="#exceptions">Exceptions</a> for more information.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="n">ComputeClient</span><span class="p">(...)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># Please note that there is no status code etc. as part of the response.
+</span>    <span class="c1"># If the call fails, you will get an exception that will include the status code
+</span>    <span class="c1"># (if the request was made)
+</span>    <span class="n">virtual_machine</span>  <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">get_virtual_machine</span><span class="p">(</span><span class="s">'example'</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'Virtual machine instance looks like this: </span><span class="si">{</span><span class="n">virtual_machine</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">exceptions</span><span class="p">.</span><span class="n">ServiceRequestError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'Failed to make the request - feel free to retry. But the specifics are here: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">exceptions</span><span class="p">.</span><span class="n">ServiceResponseError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'The request was made, but the service responded with an error. Status code: </span><span class="si">{</span><span class="n">e</span><span class="p">.</span><span class="n">status_code</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Do not return <code class="language-plaintext highlighter-rouge">None</code> or a <code class="language-plaintext highlighter-rouge">boolean</code> to indicate errors:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">errors</span><span class="p">.</span><span class="n">ResourceExistsException</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Failed - we need to fix this!'</span><span class="p">)</span>
+
+<span class="c1"># No
+</span><span class="n">resource</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">create_resource</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">resource</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Failed - we need to fix this!'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-errors-normal-responses" name="python-errors-normal-responses" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  throw an exception for “normal responses”.</p>
+
+<p>Consider an <code class="language-plaintext highlighter-rouge">exists</code> method. The method <strong>must</strong> distinguish between the service returned a client error 404/NotFound and a failure to even make a request:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="n">exists</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">resource_exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"The resource doesn't exist..."</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">errors</span><span class="p">.</span><span class="n">ServiceRequestError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"We don't know if the resource exists - so it was appropriate to throw an exception!"</span><span class="p">)</span>
+
+<span class="c1"># No
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="n">client</span><span class="p">.</span><span class="n">resource_exists</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">errors</span><span class="p">.</span><span class="n">ResourceNotFoundException</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"The resource doesn't exist... but that shouldn't be an exceptional case for an 'exists' method"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h5 id="cancellation">Cancellation</h5>
+
+<p><a href="#python-client-cancellation-sync-methods" name="python-client-cancellation-sync-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an optional keyword argument <code class="language-plaintext highlighter-rouge">timeout</code> to allow callers to specify how long they are willing to wait for the method to complete. The <code class="language-plaintext highlighter-rouge">timeout</code> is in seconds, and should be honored to the best extent possible.</p>
+
+<p><a href="#python-client-cancellation-async-methods" name="python-client-cancellation-async-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the standard <a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.Task.cancel">asyncio.Task.cancel</a> method to cancel async methods.</p>
+
+<h4 id="service-method-parameters">Service Method Parameters</h4>
+
+<p><a href="#python-client-optional-arguments-keyword-only" name="python-client-optional-arguments-keyword-only" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide optional operation-specific arguments as keyword only. See <a href="python_implementation.html#python-codestyle-long-args">positional and keyword-only arguments</a> for more information.</p>
+
+<p><a href="#python-client-service-per-call-args" name="python-client-service-per-call-args" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide keyword-only arguments that override per-request policy options. The name of the parameters MUST mirror the name of the arguments provided in the client constructor or factory methods.
+For a full list of supported optional arguments used for pipeline policy and transport configuration (both at the client constructor and per service operation), see the <a href="https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/core/azure-core/CLIENT_LIBRARY_DEVELOPER.md">Azure Core developer documentation</a>.</p>
+
+<p><a href="#python-client-service-args-conflict" name="python-client-service-args-conflict" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  qualify a service parameter name if it conflicts with any of the documented pipeline policy or transport configuration options used with all service operations and client constructors.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Set the default number of retries to 18 and timeout to 2s for this client instance.
+</span><span class="n">client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(</span><span class="s">'https://contoso.com/xmpl'</span><span class="p">,</span> <span class="n">DefaultAzureCredential</span><span class="p">(),</span> <span class="n">max_retries</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Override the client default timeout for this specific call to 32s (but max_retries is kept to 18)
+</span><span class="n">client</span><span class="p">.</span><span class="n">do_stuff</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h5 id="parameter-validation">Parameter validation</h5>
+
+<p>The service client will have several methods that send requests to the service. <strong>Service parameters</strong> are directly passed across the wire to an Azure service. <strong>Client parameters</strong> aren’t passed directly to the service, but used within the client library to fulfill the request. Parameters that are used to construct a URI, or a file to be uploaded are examples of client parameters.</p>
+
+<p><a href="#python-params-client-validation" name="python-params-client-validation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate client parameters. Validation is especially important for parameters used to build up the URL since a malformed URL means that the client library will end up calling an incorrect endpoint.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># No:
+</span><span class="k">def</span> <span class="nf">get_thing</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s">'https://&lt;host&gt;/things/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s">'</span>
+    <span class="k">return</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">).</span><span class="n">json</span><span class="p">()</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">thing</span> <span class="o">=</span> <span class="n">get_thing</span><span class="p">(</span><span class="s">''</span><span class="p">)</span> <span class="c1"># Ooops - we will end up calling '/things/' which usually lists 'things'. We wanted a specific 'thing'.
+</span><span class="k">except</span> <span class="nb">ValueError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'We called with some invalid parameters. We should fix that.'</span><span class="p">)</span>
+
+<span class="c1"># Yes:
+</span><span class="k">def</span> <span class="nf">get_thing</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">'name must be a non-empty string'</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s">'https://&lt;host&gt;/things/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s">'</span>
+    <span class="k">return</span> <span class="n">requests</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">).</span><span class="n">json</span><span class="p">()</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">thing</span> <span class="o">=</span> <span class="n">get_thing</span><span class="p">(</span><span class="s">''</span><span class="p">)</span>
+<span class="k">except</span> <span class="nb">ValueError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'We called with some invalid parameters. We should fix that.'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-params-service-validation" name="python-params-service-validation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  validate service parameters. Don’t do null checks, empty string checks, or other common validating conditions on service parameters. Let the service validate all request parameters.</p>
+
+<p><a href="#python-params-devex" name="python-params-devex" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  verify that the developer experience when the service parameters are invalid to ensure appropriate error messages are generated by the service. Work with the service team if the developer experience is compromised because of service-side error messages.</p>
+
+<h5 id="common-service-operation-parameters">Common service operation parameters</h5>
+
+<p><a href="#python-client-service-args" name="python-client-service-args" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the common arguments for service operations:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Applies to</th>
+      <th>Notes</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">timeout</code></td>
+      <td>Timeout in seconds</td>
+      <td>All service methods</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">headers</code></td>
+      <td>Custom headers to include in the service request</td>
+      <td>All requests</td>
+      <td>Headers are added to all requests made (directly or indirectly) by the method.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">client_request_id</code></td>
+      <td>Caller specified identification of the request.</td>
+      <td>Service operations for services that allow the client to send a client-generated correlation ID.</td>
+      <td>Examples of this include <code class="language-plaintext highlighter-rouge">x-ms-client-request-id</code> headers.</td>
+      <td>The client library <strong>must</strong> use this value if provided, or generate a unique value for each request when not specified.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">response_hook</code></td>
+      <td><code class="language-plaintext highlighter-rouge">callable</code> that is called with (response, headers) for each operation.</td>
+      <td>All service methods</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#python-client-splat-args" name="python-client-splat-args" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept a Mapping (<code class="language-plaintext highlighter-rouge">dict</code>-like) object in the same shape as a serialized model object for parameters.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="k">class</span> <span class="nc">Thing</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+<span class="k">def</span> <span class="nf">do_something</span><span class="p">(</span><span class="n">thing</span><span class="p">:</span> <span class="s">"Thing"</span><span class="p">):</span>
+    <span class="p">...</span>
+
+<span class="n">do_something</span><span class="p">(</span><span class="n">Thing</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'a'</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">17</span><span class="p">))</span> <span class="c1"># Works
+</span><span class="n">do_something</span><span class="p">({</span><span class="s">'name'</span><span class="p">:</span> <span class="s">'a'</span><span class="p">,</span> <span class="s">'size'</span><span class="p">,</span> <span class="s">'17'</span><span class="p">})</span> <span class="c1"># Does the same thing...
+</span></code></pre></div></div>
+
+<p><a href="#python-client-flatten-args" name="python-client-flatten-args" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use “flattened” named arguments for <code class="language-plaintext highlighter-rouge">update_</code> methods. <strong>May</strong> additionally take the whole model instance as a named parameter. If the caller passes both a model instance and individual key=value parameters, the explicit key=value parameters override whatever was specified in the model instance.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Thing</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">({</span>
+            <span class="s">"name"</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s">"size"</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">size</span><span class="p">,</span> <span class="s">"description"</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">description</span>
+        <span class="p">})[:</span><span class="mi">1024</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">Client</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">update_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">thing</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span> <span class="p">...</span>
+
+<span class="n">thing</span> <span class="o">=</span> <span class="n">Thing</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'hello'</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4711</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">'This is a description...'</span><span class="p">)</span>
+
+<span class="n">client</span><span class="p">.</span><span class="n">update_thing</span><span class="p">(</span><span class="n">thing</span><span class="o">=</span><span class="n">thing</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4712</span><span class="p">)</span> <span class="c1"># Will send a request to the service to update the model's size to 4712
+</span><span class="n">thing</span><span class="p">.</span><span class="n">description</span> <span class="o">=</span> <span class="s">'Updated'</span>
+<span class="n">thing</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="c1"># Will send a request to the service to update the model's size to 4713 and description to 'Updated'
+</span><span class="n">client</span><span class="p">.</span><span class="n">update_thing</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'hello'</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4713</span><span class="p">,</span> <span class="n">thing</span><span class="o">=</span><span class="n">thing</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="methods-returning-collections-paging">Methods returning collections (paging)</h4>
+
+<p>Services may require multiple requests to retrieve the complete set of items in large collections. This is generally done by the service returning a partial result, and in the response providing a token or link that the client can use to retrieve the next batch of responses in addition to the set of items.</p>
+
+<p>In Azure SDK for Python cilent libraries, this is exposed to users through the <a href="#python-core-protocol-paged">ItemPaged protocol</a>. The <code class="language-plaintext highlighter-rouge">ItemPaged</code> protocol optimizes for retrieving the full set of items rather than forcing users to deal with the underlying paging.</p>
+
+<p><a href="#python-response-paged-protocol" name="python-response-paged-protocol" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return a value that implements the <a href="#python-core-protocol-paged">ItemPaged protocol</a> for operations that return collections. The <a href="#python-core-protocol-paged">ItemPaged protocol</a> allows the user to iterate through all items in a returned collection, and also provides a method that gives access to individual pages.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(...)</span>
+
+<span class="c1"># List all things - paging happens transparently in the
+# background.
+</span><span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">client</span><span class="p">.</span><span class="n">list_things</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+
+<span class="c1"># The protocol also allows you to list things by page...
+</span><span class="k">for</span> <span class="n">page_no</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">client</span><span class="p">.</span><span class="n">list_things</span><span class="p">().</span><span class="n">by_page</span><span class="p">()):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">page_no</span><span class="p">,</span> <span class="n">page</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-response-paged-results" name="python-response-paged-results" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  expose a <code class="language-plaintext highlighter-rouge">results_per_page</code> keyword-only parameter where supported by the service (e.g. an OData <code class="language-plaintext highlighter-rouge">$top</code> query parameter).</p>
+
+<p><a href="#python-response-paged-continuation" name="python-response-paged-continuation" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  expose a continuation parameter in the <code class="language-plaintext highlighter-rouge">list_</code> client method - this is supported in the <code class="language-plaintext highlighter-rouge">by_page()</code> function.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client</span> <span class="o">=</span> <span class="n">ExampleClient</span><span class="p">(...)</span>
+
+<span class="c1"># No - don't pass in the continuation token directly to the method...
+</span><span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">client</span><span class="p">.</span><span class="n">list_things</span><span class="p">(</span><span class="n">continuation_token</span><span class="o">=</span><span class="s">'...'</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
+
+<span class="c1"># Yes - provide a continuation_token to in the `by_page` method...
+</span><span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">client</span><span class="p">.</span><span class="n">list_things</span><span class="p">().</span><span class="n">by_page</span><span class="p">(</span><span class="n">continuation_token</span><span class="o">=</span><span class="s">'...'</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-paged-non-server-paged-list" name="python-paged-non-server-paged-list" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return a value that implements the <a href="#python-core-protocol-paged">ItemPaged protocol</a> even if the service API currently do not support server driven paging. This allows server driven paging to be added to the service API without introducing breaking changes in the client library.</p>
+
+<h4 id="methods-invoking-long-running-operations">Methods invoking long running operations</h4>
+
+<p>Service operations that take a long time (currently defined in the <a href="https://github.com/microsoft/api-guidelines/blob/vNext/Guidelines.md#141-principles">Microsoft REST API Guidelines</a> as not completing in 0.5s in P99) to complete are modeled by services as long running operations.</p>
+
+<p>Python client libraries abstracts the long running operation using the <a href="#python-core-protocol-lro-poller">Long running operation Poller protocol</a>.
+In cases where a service API is not explicitly implemented as a long-running operation, but the common usage pattern requires a customer to sleep or poll a status - it’s likely that these API’s should still be represented in the SDK using the Poller protocol.</p>
+
+<p><a href="#python-lro-poller" name="python-lro-poller" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return an object that implements the <a href="#python-core-protocol-lro-poller">Poller protocol</a> for long running operations.</p>
+
+<p><a href="#python-lro-poller-begin-naming" name="python-lro-poller-begin-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a <code class="language-plaintext highlighter-rouge">begin_</code> prefix for all long running operations.</p>
+
+<h4 id="conditional-request-methods">Conditional request methods</h4>
+
+<p><a href="#python-method-conditional-request" name="python-method-conditional-request" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add a keyword-only <code class="language-plaintext highlighter-rouge">match_condition</code> parameter for service methods that support conditional requests. The parameter should support the <code class="language-plaintext highlighter-rouge">azure.core.MatchConditions</code> type defined in <code class="language-plaintext highlighter-rouge">azure-core</code> as input.</p>
+
+<p><a href="#python-method-conditional-request-etag" name="python-method-conditional-request-etag" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add a keyword-only <code class="language-plaintext highlighter-rouge">etag</code> parameter for service methods that support conditional requests. For service methods that take a model instance that has an <code class="language-plaintext highlighter-rouge">etag</code> property, the explicit <code class="language-plaintext highlighter-rouge">etag</code> value passed in overrides the value in the model instance.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Thing</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">etag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">etag</span> <span class="o">=</span> <span class="n">etag</span>
+
+<span class="n">thing</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">get_thing</span><span class="p">(</span><span class="s">'theName'</span><span class="p">)</span>
+
+<span class="c1"># Uses the etag from the retrieved thing instance....
+</span><span class="n">client</span><span class="p">.</span><span class="n">update_thing</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">'updatedName'</span><span class="p">,</span> <span class="n">match_condition</span><span class="o">=</span><span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">MatchConditions</span><span class="p">.</span><span class="n">IfNotModified</span><span class="p">)</span>
+
+<span class="c1"># Uses the explicitly provided etag.
+</span><span class="n">client</span><span class="p">.</span><span class="n">update_thing</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">'updatedName2'</span><span class="p">,</span> <span class="n">match_condition</span><span class="o">=</span><span class="n">azure</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">MatchConditions</span><span class="p">.</span><span class="n">IfNotModified</span><span class="p">,</span> <span class="n">etag</span><span class="o">=</span><span class="s">'"igotthisetagfromsomewhereelse"'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="hierarchical-clients">Hierarchical clients</h4>
+
+<p>Many services have resources with nested child (or sub) resources. For example, Azure Storage provides an account that contains zero or more containers, which in turn contains zero or more blobs.</p>
+
+<p><a href="#python-client-hierarchy" name="python-client-hierarchy" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a client type corresponding to each level in the hierarchy except for leaf resource types. You <strong>may</strong> omit creating a client type for leaf node resources.</p>
+
+<p><a href="#python-client-hier-creation" name="python-client-hier-creation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make it possible to directly create clients for each level in the hierarchy.  The constructor can be called directly or via the parent.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ChildClient</span><span class="p">:</span>
+    <span class="c1"># Yes:
+</span>    <span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">credentials</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">...</span>
+
+<span class="k">class</span> <span class="nc">ChildClient</span><span class="p">:</span>
+    <span class="c1"># Yes:
+</span>    <span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">credentials</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#python-client-hier-vend" name="python-client-hier-vend" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a <code class="language-plaintext highlighter-rouge">get_&lt;child&gt;_client(self, name, **kwargs)</code> method to retrieve a client for the named child. The method must not make a network call to verify the existence of the child.</p>
+
+<p><a href="#python-client-hier-create" name="python-client-hier-create" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide method <code class="language-plaintext highlighter-rouge">create_&lt;child&gt;(...)</code> that creates a child resource. The method <strong>should</strong> return a client for the newly created child resource.</p>
+
+<p><a href="#python-client-hier-delete" name="python-client-hier-delete" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  provide method <code class="language-plaintext highlighter-rouge">delete_&lt;child&gt;(...)</code> that deletes a child resource.</p>
+
+<h3 id="supporting-types">Supporting types</h3>
+
+<h4 id="model-types">Model types</h4>
+
+<p>Client libraries represent entities transferred to and from Azure services as model types. Certain types are used for round-trips to the service. They can be sent to the service (as an addition or update operation) and retrieved from the service (as a get operation). These should be named according to the type. For example, a <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code> in App Configuration, or a <code class="language-plaintext highlighter-rouge">VirtualMachine</code> on for Azure Resource Manager.</p>
+
+<p>Data within the model type can generally be split into two parts - data used to support one of the champion scenarios for the service, and less important data. Given a type <code class="language-plaintext highlighter-rouge">Foo</code>, the less important details can be gathered in a type called <code class="language-plaintext highlighter-rouge">FooDetails</code> and attached to <code class="language-plaintext highlighter-rouge">Foo</code> as the <code class="language-plaintext highlighter-rouge">details</code> attribute.</p>
+
+<p><a href="#python-models-input-dict" name="python-models-input-dict" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support dicts as alternative inputs to model types.</p>
+
+<p><a href="#python-models-input-constructor" name="python-models-input-constructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  craft a constructor for models that are intended to be instantiated by a user (i.e. non-result types) with minimal required information and optional information as keyword-only arguments.</p>
+
+<p><a href="#python-models-generated" name="python-models-generated" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  expose models from the generated layer by adding to the root <code class="language-plaintext highlighter-rouge">__init__.py</code> (and <code class="language-plaintext highlighter-rouge">__all__</code>) if they otherwise meet the guidelines.</p>
+
+<p><a href="#python-models-async" name="python-models-async" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  duplicate models between the root and <code class="language-plaintext highlighter-rouge">aio</code> namespace.</p>
+
+<p>In order to facilitate round-trip of responses (common in get resource -&gt; conditionally modify resource -&gt; set resource workflows), output model types should use the input model type (e.g. <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code>) whenever possible. The <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code> type should include both server generated (read-only) attributes even though they will be ignored when used as input to the set resource method.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;model&gt;Item</code> for each item in an enumeration if the enumeration returns a partial schema for the model. For example, GetBlobs() return an enumeration of BlobItem, which contains the blob name and metadata, but not the content of the blob.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code> for the result of an operation. The <code class="language-plaintext highlighter-rouge">&lt;operation&gt;</code> is tied to a specific service operation. If the same result can be used for multiple operations, use a suitable noun-verb phrase instead. For example, use <code class="language-plaintext highlighter-rouge">UploadBlobResult</code> for the result from <code class="language-plaintext highlighter-rouge">UploadBlob</code>, but <code class="language-plaintext highlighter-rouge">ContainerChangeResult</code> for results from the various methods that change a blob container.</li>
+</ul>
+
+<p><a href="#python-models-dict-result" name="python-models-dict-result" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a simple Mapping (e.g. <code class="language-plaintext highlighter-rouge">dict</code>) rather than creating a <code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code> class if the <code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code> class is not used as an input parameter for other APIs.</p>
+
+<p>The following table enumerates the various models you might create:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Example</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><model></model></td>
+      <td>Secret</td>
+      <td>The full data for a resource</td>
+    </tr>
+    <tr>
+      <td><model>Details</model></td>
+      <td>SecretDetails</td>
+      <td>Less important details about a resource. Attached to <model>.details</model></td>
+    </tr>
+    <tr>
+      <td><model>Item</model></td>
+      <td>SecretItem</td>
+      <td>A partial set of data returned for enumeration</td>
+    </tr>
+    <tr>
+      <td><operation>Result</operation></td>
+      <td>AddSecretResult</td>
+      <td>A partial or different set of data for a single operation</td>
+    </tr>
+    <tr>
+      <td><model><verb>Result</verb></model></td>
+      <td>SecretChangeResult</td>
+      <td>A partial or different set of data for multiple operations on a model</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># An example of a model type.
+</span><span class="k">class</span> <span class="nc">ConfigurationSetting</span><span class="p">:</span>
+    <span class="s">"""Model type representing a configuration setting
+
+    :ivar name: The name of the setting
+    :vartype name: str
+    :ivar value: The value of the setting
+    :vartype value: object
+    """</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">__dict__</span><span class="p">)[:</span><span class="mi">1024</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h4 id="enumerations">Enumerations</h4>
+
+<p><a href="#python-models-enum-string" name="python-models-enum-string" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use extensible enumerations.</p>
+
+<p><a href="#python-models-enum-name-uppercase" name="python-models-enum-name-uppercase" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use UPPERCASE names for enum names.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1"># Yes
+</span><span class="k">class</span> <span class="nc">MyGoodEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">ONE</span> <span class="o">=</span> <span class="s">'one'</span>
+    <span class="n">TWO</span> <span class="o">=</span> <span class="s">'two'</span>
+
+<span class="c1"># No
+</span><span class="k">class</span> <span class="nc">MyBadEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">One</span> <span class="o">=</span> <span class="s">'one'</span> <span class="c1"># No - using PascalCased name.
+</span>    <span class="n">two</span> <span class="o">=</span> <span class="s">'two'</span> <span class="c1"># No - using all lower case name.
+</span></code></pre></div></div>
+
+<h3 id="exceptions">Exceptions</h3>
+
+<p><a href="#python-errors-azure-exceptions" name="python-errors-azure-exceptions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer raising <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.9.0/index.html#azure-core-library-exceptions">existing exception types from the <code class="language-plaintext highlighter-rouge">azure-core</code></a> package over creating new exception types.</p>
+
+<p><a href="#python-errors-use-standard-exceptions" name="python-errors-use-standard-exceptions" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  create new exception types when a <a href="https://docs.python.org/3/library/exceptions.html">built-in exception type</a> will suffice.</p>
+
+<p><a href="#python-errors-new-exceptions" name="python-errors-new-exceptions" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  create a new exception type unless the developer can handle the error programmatically.  Specialized exception types related to service operation failures should be based on existing exception types from the <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.9.0/index.html#azure-core-library-exceptions"><code class="language-plaintext highlighter-rouge">azure-core</code></a> package.</p>
+
+<p>For higher-level methods that use multiple HTTP requests, either the last exception or an aggregate exception of all failures should be produced.</p>
+
+<p><a href="#python-errors-rich-info" name="python-errors-rich-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include any service-specific error information in the exception.  Service-specific error information must be available in service-specific properties or fields.</p>
+
+<p><a href="#python-errors-documentation" name="python-errors-documentation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document the errors that are produced by each method. Don’t document commonly thrown errors that wouldn’t normally be documented in Python (e.g. <code class="language-plaintext highlighter-rouge">ValueError</code>, <code class="language-plaintext highlighter-rouge">TypeError</code>, <code class="language-plaintext highlighter-rouge">RuntimeError</code> etc.)</p>
+
+<h3 id="authentication">Authentication</h3>
+
+<p><a href="#python-auth-credential-azure-core" name="python-auth-credential-azure-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the credentials classes in <code class="language-plaintext highlighter-rouge">azure-core</code> whenever possible.</p>
+
+<p><a href="#python-auth-policy-azure-core" name="python-auth-policy-azure-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use authentication policy implementations in <code class="language-plaintext highlighter-rouge">azure-core</code> whenever possible.</p>
+
+<p><a href="#python-auth-service-credentials" name="python-auth-service-credentials" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  add additional credential types if required by the service. Contact the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture board</a> for guidance if you believe you have need to do so.</p>
+
+<p><a href="#python-auth-service-support" name="python-auth-service-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support all authentication methods that the service supports.</p>
+
+<h3 id="namespaces">Namespaces</h3>
+
+<p>In the guidelines below, the term “namespace” is used to denote a python package or module (i.e. something that you would <code class="language-plaintext highlighter-rouge">import</code> in your code). The term “distribution package” is used to describe the artifact you publish to and install from your package manager (i.e. something that you would <code class="language-plaintext highlighter-rouge">pip install</code>).</p>
+
+<p><a href="#python-namespaces-prefix" name="python-namespaces-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement your library as a sub-package of the <code class="language-plaintext highlighter-rouge">azure</code> root namespace.</p>
+
+<blockquote>
+  <p>Note: You MUST NOT use <code class="language-plaintext highlighter-rouge">microsoft</code> as your root namespace. If you need to include <code class="language-plaintext highlighter-rouge">microsoft</code> in the namespace (e.g. because of policy requirements for extensions to other projects such as <code class="language-plaintext highlighter-rouge">opentelemetry</code>), you should concatenate it with the package specific namespace with an underscore (e.g. <code class="language-plaintext highlighter-rouge">microsoft_myservice</code>). You may still use <code class="language-plaintext highlighter-rouge">microsoft-myservice</code> as the distribution package name in this scenario.</p>
+</blockquote>
+
+<p><a href="#python-namespaces-naming" name="python-namespaces-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  pick a package name that allows the consumer to tie the namespace to the service being used. As a default, use the compressed service name at the end of the namespace. The namespace does NOT change when the branding of the product changes. Avoid the use of marketing names that may change.</p>
+
+<p>A compressed service name is the service name without spaces. It may further be shortened if the shortened version is well known in the community. For example, “Azure Media Analytics” would have a compressed service name of <code class="language-plaintext highlighter-rouge">mediaanalytics</code>, and “Azure Service Bus” would become <code class="language-plaintext highlighter-rouge">servicebus</code>.  Separate words using an underscore if necessary. For example, <code class="language-plaintext highlighter-rouge">mediaanalytics</code> could be separated into <code class="language-plaintext highlighter-rouge">media_analytics</code></p>
+
+<p><a href="#python-namespaces-grouping" name="python-namespaces-grouping" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  include a group name segment in your namespace (for example, <code class="language-plaintext highlighter-rouge">azure.&lt;group&gt;.&lt;servicename&gt;</code>) if your service or family of services have common behavior (for example, shared authentication types).</p>
+
+<p><a href="#python-namespaces-grouping-dont-introduce-new-packages" name="python-namespaces-grouping-dont-introduce-new-packages" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  avoid introducing new distribution packages that only differ in name. For existing packages, this means that you should not change the name of the package just to introduce a group name.</p>
+
+<p>If you want to use a group name segment, use one of the following groups:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Namespace Group</th>
+      <th style="text-align: left">Functional Area</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">ai</code></td>
+      <td style="text-align: left">Artificial intelligence, including machine learning</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">analytics</code></td>
+      <td style="text-align: left">Gathering data for metrics or usage</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">containers</code></td>
+      <td style="text-align: left">Services related to containers</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">communication</code></td>
+      <td style="text-align: left">Communication services</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">data</code></td>
+      <td style="text-align: left">Dealing with structured data stores like databases</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">diagnostics</code></td>
+      <td style="text-align: left">Gathering data for diagnosing issues</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">digitaltwins</code></td>
+      <td style="text-align: left">Digital Twins, digital representations of physical spaces and IoT devices</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">identity</code></td>
+      <td style="text-align: left">Authentication and authorization</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">iot</code></td>
+      <td style="text-align: left">Internet of things</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">management</code></td>
+      <td style="text-align: left">Control Plane (Azure Resource Manager)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">media</code></td>
+      <td style="text-align: left">Audio and video technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">messaging</code></td>
+      <td style="text-align: left">Messaging services, like push notifications or pub-sub</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">mixedreality</code></td>
+      <td style="text-align: left">Mixed reality technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">monitor</code></td>
+      <td style="text-align: left">Services that are offered by Azure Monitor</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">quantum</code></td>
+      <td style="text-align: left">Quantum computing technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">search</code></td>
+      <td style="text-align: left">Search technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">security</code></td>
+      <td style="text-align: left">Security and cryptography</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">storage</code></td>
+      <td style="text-align: left">Storage of unstructured data</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#python-namespaces-mgmt" name="python-namespaces-mgmt" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place management (Azure Resource Manager) APIs in the <code class="language-plaintext highlighter-rouge">mgmt</code> group. Use the grouping <code class="language-plaintext highlighter-rouge">azure.mgmt.&lt;servicename&gt;</code> for the namespace. Since more services require control plane APIs than data plane APIs, other namespaces may be used explicitly for control plane only.</p>
+
+<p><a href="#python-namespaces-register" name="python-namespaces-register" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  register the chosen namespace with the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a>.  Open an <a href="https://github.com/azure/azure-sdk/issues">issue</a> to request the namespace.  See <a href="registered_namespaces.html">the registered namespace list</a> for a list of the currently registered namespaces.</p>
+
+<p><a href="#python-namespaces-async" name="python-namespaces-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use an <code class="language-plaintext highlighter-rouge">.aio</code> suffix added to the namespace of the sync client for async clients.</p>
+
+<p>Example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="kn">from</span> <span class="nn">azure.exampleservice.aio</span> <span class="kn">import</span> <span class="n">ExampleServiceClient</span>
+
+<span class="c1"># No: Wrong namespace, wrong client name...
+</span><span class="kn">from</span> <span class="nn">azure.exampleservice</span> <span class="kn">import</span> <span class="n">AsyncExampleServiceClient</span>
+</code></pre></div></div>
+
+<h4 id="example-namespaces">Example Namespaces</h4>
+
+<p>Here are some examples of namespaces that meet these guidelines:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">azure.storage.blob</code></li>
+  <li><code class="language-plaintext highlighter-rouge">azure.keyvault.certificates</code></li>
+  <li><code class="language-plaintext highlighter-rouge">azure.ai.textanalytics</code></li>
+  <li><code class="language-plaintext highlighter-rouge">azure.mgmt.servicebus</code></li>
+</ul>
+
+<h3 id="async-support">Async support</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">asyncio</code> library has been available since Python 3.4, and the <code class="language-plaintext highlighter-rouge">async</code>/<code class="language-plaintext highlighter-rouge">await</code> keywords were introduced in Python 3.5. Despite such availability, most Python developers aren’t familiar with or comfortable using libraries that only provide asynchronous methods.</p>
+
+<p><a href="#python-client-sync-async" name="python-client-sync-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide both sync and async versions of your APIs</p>
+
+<p><a href="#python-client-async-keywords" name="python-client-async-keywords" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">async</code>/<code class="language-plaintext highlighter-rouge">await</code> keywords (requires Python 3.5+). Do not use the <a href="https://docs.python.org/3.4/library/asyncio-task.html">yield from coroutine or asyncio.coroutine</a> syntax.</p>
+
+<p><a href="#python-client-separate-sync-async" name="python-client-separate-sync-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide two separate client classes for synchronous and asynchronous operations.  Do not combine async and sync operations in the same class.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+# In module azure.example
+</span><span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">some_service_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+
+<span class="c1"># In module azure.example.aio
+</span><span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">:</span>
+    <span class="c1"># Same method name as sync, different client
+</span>    <span class="k">async</span> <span class="k">def</span> <span class="nf">some_service_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+
+<span class="c1"># No
+# In module azure.example
+</span><span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">some_service_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+
+<span class="k">class</span> <span class="nc">AsyncExampleClient</span><span class="p">:</span> <span class="c1"># No async/async pre/postfix.
+</span>    <span class="k">async</span> <span class="k">def</span> <span class="nf">some_service_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+
+<span class="c1"># No
+# In module azure.example
+</span><span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">:</span> <span class="c1"># Don't mix'n match with different method names
+</span>    <span class="k">def</span> <span class="nf">some_service_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">some_service_operation_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="p">...</span>
+
+</code></pre></div></div>
+
+<p><a href="#python-client-same-name-sync-async" name="python-client-same-name-sync-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the same client name for sync and async packages</p>
+
+<p>Example:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Sync/async</th>
+      <th>Namespace</th>
+      <th>Distribution package name</th>
+      <th>Client name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sync</td>
+      <td><code class="language-plaintext highlighter-rouge">azure.sampleservice</code></td>
+      <td><code class="language-plaintext highlighter-rouge">azure-sampleservice</code></td>
+      <td><code class="language-plaintext highlighter-rouge">azure.sampleservice.SampleServiceClient</code></td>
+    </tr>
+    <tr>
+      <td>Async</td>
+      <td><code class="language-plaintext highlighter-rouge">azure.sampleservice.aio</code></td>
+      <td><code class="language-plaintext highlighter-rouge">azure-sampleservice-aio</code></td>
+      <td><code class="language-plaintext highlighter-rouge">azure.sampleservice.aio.SampleServiceClient</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#python-client-namespace-sync" name="python-client-namespace-sync" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the same namespace for the synchronous client as the synchronous version of the package with <code class="language-plaintext highlighter-rouge">.aio</code> appended.</p>
+
+<p>Example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">azure.storage.blob</span> <span class="kn">import</span> <span class="n">BlobServiceClient</span> <span class="c1"># Sync client
+</span>
+<span class="kn">from</span> <span class="nn">azure.storage.blob.aio</span> <span class="kn">import</span> <span class="n">BlobServiceClient</span> <span class="c1"># Async client
+</span></code></pre></div></div>
+
+<p><a href="#python-client-separate-async-pkg" name="python-client-separate-async-pkg" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  ship a separate package for async support if the async version requires additional dependencies.</p>
+
+<p><a href="#python-client-same-pkg-name-sync-async" name="python-client-same-pkg-name-sync-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the same name for the asynchronous version of the package as the synchronous version of the package with <code class="language-plaintext highlighter-rouge">-aio</code> appended.</p>
+
+<p><a href="#python-client-async-http-stack" name="python-client-async-http-stack" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://aiohttp.readthedocs.io/en/stable/"><code class="language-plaintext highlighter-rouge">aiohttp</code></a> as the default HTTP stack for async operations. Use <code class="language-plaintext highlighter-rouge">azure.core.pipeline.transport.AioHttpTransport</code> as the default <code class="language-plaintext highlighter-rouge">transport</code> type for the async client.</p>
+
+<h2 id="azure-sdk-distribution-packages">Azure SDK distribution packages</h2>
+
+<h3 id="packaging">Packaging</h3>
+
+<p><a href="#python-packaging-name" name="python-packaging-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name your package after the namespace of your main client class. For example, if your main client class is in the <code class="language-plaintext highlighter-rouge">azure.data.tables</code> namespace, your package name should be azure-data-tables.</p>
+
+<p><a href="#python-packaging-name-allowed-chars" name="python-packaging-name-allowed-chars" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use all lowercase in your package name with a dash (-) as a separator.</p>
+
+<p><a href="#python-packaging-name-disallowed-chars" name="python-packaging-name-disallowed-chars" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use underscore (_) or period (.) in your package name. If your namespace includes underscores, replace them with dash (-) in the distribution package name.</p>
+
+<p><a href="#python-packaging-follow-repo-rules" name="python-packaging-follow-repo-rules" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the specific package guidance from the <a href="https://github.com/Azure/azure-sdk-for-python/wiki/Azure-packaging">azure-sdk-packaging wiki</a></p>
+
+<p><a href="#python-packaging-follow-python-rules" name="python-packaging-follow-python-rules" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the <a href="https://docs.python.org/3/reference/import.html#namespace-packages">namespace package recommendations for Python 3.x</a> for packages that only need to target 3.x.</p>
+
+<p><a href="#python-general-supply-sdist" name="python-general-supply-sdist" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide both source distributions (<code class="language-plaintext highlighter-rouge">sdist</code>) and wheels.</p>
+
+<p><a href="#python-general-pypi" name="python-general-pypi" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  publish both source distributions (<code class="language-plaintext highlighter-rouge">sdist</code>) and wheels to PyPI.</p>
+
+<p><a href="#python-general-wheel-behavior" name="python-general-wheel-behavior" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  test correct behavior for both CPython and PyPy for <a href="https://packaging.python.org/guides/distributing-packages-using-setuptools/#id75">pure</a> and <a href="https://packaging.python.org/guides/distributing-packages-using-setuptools/#universal-wheels">universal</a> Python wheels.</p>
+
+<p><a href="#python-packaging-nspkg" name="python-packaging-nspkg" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  depend on <code class="language-plaintext highlighter-rouge">azure-nspkg</code> for Python 2.x.</p>
+
+<p><a href="#python-packaging-group-nspkg" name="python-packaging-group-nspkg" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  depend on <code class="language-plaintext highlighter-rouge">azure-&lt;group&gt;-nspkg</code> for Python 2.x if you are using namespace grouping.</p>
+
+<p><a href="#python-packaging-init" name="python-packaging-init" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include <code class="language-plaintext highlighter-rouge">__init__.py</code> for the namespace(s) in sdists</p>
+
+<h4 id="service-specific-common-library-code">Service-specific common library code</h4>
+
+<p>There are occasions when common code needs to be shared between several client libraries.  For example, a set of cooperating client libraries may wish to share a set of exceptions or models.</p>
+
+<p><a href="#python-commonlib-approval" name="python-commonlib-approval" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  gain <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a> approval prior to implementing a common library.</p>
+
+<p><a href="#python-commonlib-minimize-code" name="python-commonlib-minimize-code" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  minimize the code within a common library.  Code within the common library is available to the consumer of the client library and shared by multiple client libraries within the same namespace.</p>
+
+<p>A common library will only be approved if:</p>
+
+<ul>
+  <li>The consumer of the non-shared library will consume the objects within the common library directly, AND</li>
+  <li>The information will be shared between multiple client libraries</li>
+</ul>
+
+<p>Let’s take two examples:</p>
+
+<ol>
+  <li>
+    <p>Implementing two Cognitive Services client libraries, we find that they both rely on the same business logic. This is a candidate for choosing a common library.</p>
+  </li>
+  <li>
+    <p>Two Cognitive Services client libraries have models (data classes) that are the same in shape, but has no or minimal logic associated with them. This is not a good candidate for a shared library. Instead, implement two separate classes.</p>
+  </li>
+</ol>
+
+<h3 id="package-versioning">Package Versioning</h3>
+
+<p><a href="#python-versioning-semver" name="python-versioning-semver" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://semver.org">semantic versioning</a> for your package.</p>
+
+<p><a href="#python-versioning-beta" name="python-versioning-beta" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">bN</code> pre-release segment for <a href="https://www.python.org/dev/peps/pep-0440/#pre-releases">beta releases</a>.</p>
+
+<p>Don’t use pre-release segments other than the ones defined in <a href="https://www.python.org/dev/peps/pep-0440">PEP440</a> (<code class="language-plaintext highlighter-rouge">aN</code>, <code class="language-plaintext highlighter-rouge">bN</code>, <code class="language-plaintext highlighter-rouge">rcN</code>). Build tools, publication tools, and index servers may not sort the versions correctly.</p>
+
+<p><a href="#python-versioning-changes" name="python-versioning-changes" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  change the version number if <em>anything</em> changes in the library.</p>
+
+<p><a href="#python-versioning-patch" name="python-versioning-patch" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the patch version if only bug fixes are added to the package.</p>
+
+<p><a href="#python-verioning-minor" name="python-verioning-minor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the minor version if any new functionality is added to the package.</p>
+
+<p><a href="#python-versioning-apiversion" name="python-versioning-apiversion" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment (at least) the minor version if the default REST API version is changed, even if there’s no public API change to the library.</p>
+
+<p><a href="#python-versioning-api-major" name="python-versioning-api-major" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  increment the major version for a new REST API version unless it requires breaking API changes in the python library itself.</p>
+
+<p><a href="#python-versioning-major" name="python-versioning-major" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the major version if there are breaking changes in the package. Breaking changes require prior approval from the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a>.</p>
+
+<p><a href="#python-versioning-major-cross-languages" name="python-versioning-major-cross-languages" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  select a version number greater than the highest version number of any other released Track 1 package for the service in any other scope or language.</p>
+
+<p>The bar to make a breaking change is extremely high for stable client libraries.  We may create a new package with a different name to avoid diamond dependency issues.</p>
+
+<h3 id="dependencies">Dependencies</h3>
+
+<p><a href="#python-dependencies-approved-list" name="python-dependencies-approved-list" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  only pick external dependencies from the following list of well known packages for shared functionality:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">six</code></td>
+      <td>Python version compatibility</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">enum34</code></td>
+      <td>Backport of <code class="language-plaintext highlighter-rouge">enum</code> for Python 2.x</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">requests</code></td>
+      <td>Synchronous HTTP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">aiohttp</code></td>
+      <td>Asynchronous HTTP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">aiodns</code></td>
+      <td>Asynchronous DNS resolution</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">cryptography</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">certifi</code></td>
+      <td>Mozilla CA bundle</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#python-dependencies-external" name="python-dependencies-external" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use external dependencies outside the list of well known dependencies. To get a new dependency added, contact the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a>.</p>
+
+<p><a href="#python-dependencies-vendor" name="python-dependencies-vendor" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  vendor dependencies unless approved by the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a>.</p>
+
+<p>When you vendor a dependency in Python, you include the source from another package as if it was part of your package.</p>
+
+<p><a href="#python-dependencies-pin-version" name="python-dependencies-pin-version" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  pin a specific version of a dependency unless that is the only way to work around a bug in said dependencies versioning scheme.</p>
+
+<p>Only applications are expected to pin exact dependencies. Libraries are not. A library should use a <a href="https://www.python.org/dev/peps/pep-0440/#compatible-release">compatible release</a> identifier for the dependency.</p>
+
+<h3 id="binary-extensions-native-code">Binary extensions (native code)</h3>
+
+<p><a href="#python-native-approval" name="python-native-approval" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  seek approval by the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a> before implementing a binary extension.</p>
+
+<p><a href="#python-native-plat-support" name="python-native-plat-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support Windows, Linux (manylinux - see <a href="https://www.python.org/dev/peps/pep-0513/">PEP513</a>, <a href="https://www.python.org/dev/peps/pep-0571/">PEP571</a>), and MacOS.  Support the earliest possible manylinux to maximize your reach.</p>
+
+<p><a href="#python-native-arch-support" name="python-native-arch-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support both x86 and x64 architectures.</p>
+
+<h3 id="docstrings">Docstrings</h3>
+
+<p><a href="#python-docstrings-pydocs" name="python-docstrings-pydocs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the <a href="http://aka.ms/pydocs">documentation guidelines</a> unless explicitly overridden in this document.</p>
+
+<p><a href="#python-docstrings-all" name="python-docstrings-all" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide docstrings for all public modules, types, constants and functions.</p>
+
+<p><a href="#python-docstrings-kwargs" name="python-docstrings-kwargs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document any <code class="language-plaintext highlighter-rouge">**kwargs</code> directly consumed by a method. You may refer to the signature of a called method if the <code class="language-plaintext highlighter-rouge">**kwargs</code> are passed through.</p>
+
+<p>Example:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span> <span class="p">...</span>
+
+<span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="s">"Calls `request` with the method "</span><span class="n">GET</span><span class="s">" and forwards all other arguments."</span>
+    <span class="k">return</span> <span class="n">request</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-docstrings-exceptions" name="python-docstrings-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document exceptions that may be raised explicitly in the method and any exceptions raised by the called method.</p>
+
+<h4 id="code-snippets">Code snippets</h4>
+
+<p><a href="#python-snippets-include" name="python-snippets-include" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include example code snippets alongside your library’s code within the repository. The snippets should clearly and succinctly demonstrate the operations most developers need to perform with your library. Include snippets for every common operation, and especially for those that are complex or might otherwise be difficult for new users of your library. At a bare minimum, include snippets for the champion scenarios you’ve identified for the library.</p>
+
+<p><a href="#python-snippets-build" name="python-snippets-build" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  build and test your example code snippets using the repository’s continuous integration (CI) to ensure they remain functional.</p>
+
+<p><a href="#python-snippets-docstrings" name="python-snippets-docstrings" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include the example code snippets in your library’s docstrings so they appear in its API reference. If the language and its tools support it, ingest these snippets directly into the API reference from within the docstrings. Each sample should be a valid <code class="language-plaintext highlighter-rouge">pytest</code>.</p>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">literalinclude</code> directive in Python docstrings to instruct Sphinx to [ingest the snippets automatically][1].</p>
+
+<p><a href="#python-snippets-combinations" name="python-snippets-combinations" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  combine more than one operation in a code snippet unless it’s required for demonstrating the type or member, or it’s <em>in addition to</em> existing snippets that demonstrate atomic operations. For example, a Cosmos DB code snippet should not include both account and container creation operations–create two different snippets, one for account creation, and one for container creation.</p>
+
+<h2 id="repository-guidelines">Repository Guidelines</h2>
+
+<h3 id="documentation-style">Documentation style</h3>
+
+<p>There are several documentation deliverables that must be included in or as a companion to your client library. Beyond complete and helpful API documentation within the code itself (docstrings), you need a great README and other supporting documentation.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">README.md</code> - Resides in the root of your library’s directory within the SDK repository; includes package installation and client library usage information. ([example][https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/appconfiguration/azure-appconfiguration/README.md])</li>
+  <li><code class="language-plaintext highlighter-rouge">API reference</code> - Generated from the docstrings in your code; published on docs.microsoft.com.</li>
+  <li><code class="language-plaintext highlighter-rouge">Code snippets</code> - Short code examples that demonstrate single (atomic) operations for the champion scenarios you’ve identified for your library; included in your README, docstrings, and Quickstart.</li>
+  <li><code class="language-plaintext highlighter-rouge">Quickstart</code> - Article on docs.microsoft.com that is similar to but expands on the README content; typically written by your service’s content developer.</li>
+  <li><code class="language-plaintext highlighter-rouge">Conceptual</code> - Long-form documentation like Quickstarts, Tutorials, How-to guides, and other content on docs.microsoft.com; typically written by your service’s content developer.</li>
+</ul>
+
+<p><a href="#python-docs-content-dev" name="python-docs-content-dev" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include your service’s content developer in the adparch review for your library. To find the content developer you should work with, check with your team’s Program Manager.</p>
+
+<p><a href="#python-docs-contributor-guide" name="python-docs-contributor-guide" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the <a href="https://review.docs.microsoft.com/help/contribute-ref/contribute-ref-how-to-document-sdk">Azure SDK Contributors Guide</a>. (MICROSOFT INTERNAL)</p>
+
+<p><a href="#python-docs-style-guide" name="python-docs-style-guide" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  adhere to the specifications set forth in the Microsoft style guides when you write public-facing documentation. This applies to both long-form documentation like a README and the docstrings in your code. (MICROSOFT INTERNAL)</p>
+
+<ul>
+  <li><a href="https://styleguides.azurewebsites.net/StyleGuide/Read?id=2700">Microsoft Writing Style Guide</a>.</li>
+  <li><a href="https://styleguides.azurewebsites.net/Styleguide/Read?id=2696">Microsoft Cloud Style Guide</a>.</li>
+</ul>
+
+<p><a href="#python-docs-into-silence" name="python-docs-into-silence" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  attempt to document your library into silence. Preempt developers’ usage questions and minimize GitHub issues by clearly explaining your API in the docstrings. Include information on service limits and errors they might hit, and how to avoid and recover from those errors.</p>
+
+<p>As you write your code, <em>doc it so you never hear about it again.</em> The less questions you have to answer about your client library, the more time you have to build new features for your service.</p>
+
+<h3 id="samples">Samples</h3>
+
+<p>Code samples are small applications that demonstrate a certain feature that is relevant to the client library. Samples allow developers to quickly understand the full usage requirements of your client library. Code samples shouldn’t be any more complex than they needed to demonstrate the feature. Don’t write full applications. Samples should have a high signal to noise ratio between useful code and boilerplate code for non-related reasons.</p>
+
+<p><a href="#python-samples-include-them" name="python-samples-include-them" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include code samples alongside your library’s code within the repository. The samples should clearly and succinctly demonstrate the code most developers need to write with your library. Include samples for all common operations. Pay attention to operations that are complex or might be difficult for new users of your library. Include samples for the champion scenarios you’ve identified for the library.</p>
+
+<p><a href="#python-samples-location" name="python-samples-location" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place code samples within the /samples directory within the client library root directory. The samples will be packaged into the resulting distribution package.</p>
+
+<p><a href="#python-samples-runnable" name="python-samples-runnable" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that each sample file is runnable.</p>
+
+<p><a href="#python-samples-coding-style" name="python-samples-coding-style" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  avoid using features newer than the Python 3 baseline support. The current supported Python version is 3.7.</p>
+
+<p><a href="#python-samples-grafting" name="python-samples-grafting" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that code samples can be easily grafted from the documentation into a users own application. For example, don’t rely on variable declarations in other samples.</p>
+
+<p><a href="#python-samples-readability" name="python-samples-readability" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  write code samples for ease of reading and comprehension over code compactness and efficiency.</p>
+
+<p><a href="#python-samples-platform-support" name="python-samples-platform-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that samples can run in Windows, macOS, and Linux development environments.</p>
+
+<p><a href="#python-snippets-no-combinations" name="python-snippets-no-combinations" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  combine multiple scenarios in a code sample unless it’s required for demonstrating the type or member. For example, a Cosmos DB code sample doesn’t include both account and container creation operations. Create a sample for account creation, and another sample for container creation.</p>
+
+<p>Combined scenarios require knowledge of additional operations that might be outside their current focus. The developer must first understand the code surrounding the scenario they’re working on, and can’t copy and paste the code sample into their project.</p>
+
+<!-- Intra-document links -->
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

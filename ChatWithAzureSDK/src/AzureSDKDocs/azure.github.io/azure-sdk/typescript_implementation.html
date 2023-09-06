@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines typescript">
+<title>TypeScript Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">TypeScript Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <p>Once you’ve worked through an acceptable API design, you can start implementing the service clients.</p>
+
+<p><a href="#ts-should-use-template" name="ts-should-use-template" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the <a href="https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/template/template">TypeScript client library template</a>.</p>
+
+<p>TODO: Please add a discussion of how to use the Http Pipeline to implement a service method, if relevant, and on creating and adding custom policies to the pipeline.</p>
+
+<h2 id="ts-configuration">Configuration</h2>
+
+<p>When configuring your client library, particular care must be taken to ensure that the consumer of your client library can properly configure the connectivity to your Azure service both globally (along with other client libraries the consumer is using) and specifically with your client library.</p>
+
+<p><a href="#ts-configuration-use-core-lib" name="ts-configuration-use-core-lib" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">@azure/core-configuration</code> package.  The <code class="language-plaintext highlighter-rouge">@azure/core-configuration</code> package implements the general guidelines for configuration; specifically:</p>
+
+<ul>
+  <li>Retrieve any relevant settings from the environment.</li>
+  <li>Retrieve any relevant global settings from the consumers code.</li>
+</ul>
+
+<h3 id="client-configuration">Client configuration</h3>
+
+<p><a href="#ts-configuration-use-global-config" name="ts-configuration-use-global-config" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use relevant global configuration settings either by default or when explicitly requested to by the user, for example by passing in a configuration object to a client constructor.</p>
+
+<p><a href="#ts-configuration-allow-different-configs" name="ts-configuration-allow-different-configs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow different clients of the same type to use different configurations.</p>
+
+<p><a href="#ts-configuration-allow-optout" name="ts-configuration-allow-optout" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow consumers of your service clients to opt out of all global configuration settings at once.</p>
+
+<p><a href="#ts-configuration-allow-overrides" name="ts-configuration-allow-overrides" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow all global configuration settings to be overridden by client-provided options. The names of these options should align with any user-facing global configuration keys.</p>
+
+<p><a href="#ts-configuration-no-config-changes-after-construction" name="ts-configuration-no-config-changes-after-construction" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  change behavior based on configuration changes that occur after the client is constructed. Hierarchies of clients inherit parent client configuration unless explicitly changed or overridden. Exceptions to this requirement are as follows:</p>
+
+<ol>
+  <li>Log level, which must take effect immediately across the Azure SDK.</li>
+  <li>Tracing on/off, which must take effect immediately across the Azure SDK.</li>
+</ol>
+
+<h3 id="service-specific-environment-variables">Service-specific environment variables</h3>
+
+<p><a href="#ts-configuration-env-prefix" name="ts-configuration-env-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix Azure-specific environment variables with <code class="language-plaintext highlighter-rouge">AZURE_</code>.</p>
+
+<p><a href="#ts-configuration-service-envs" name="ts-configuration-service-envs" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use client library-specific environment variables for portal-configured settings which are provided as parameters to your client library. This generally includes credentials and connection details. For example, Service Bus could support the following environment variables:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_CONNECTION_STRING</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_NAMESPACE</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_ISSUER</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_ACCESS_KEY</code></li>
+</ul>
+
+<p>Storage could support:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_ACCOUNT</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_ACCESS_KEY</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_DNS_SUFFIX</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_CONNECTION_STRING</code></li>
+</ul>
+
+<p><a href="#ts-configuration-approval-for-envs" name="ts-configuration-approval-for-envs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  get approval from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> for every new environment variable.</p>
+
+<p><a href="#ts-configuration-env-syntax" name="ts-configuration-env-syntax" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use this syntax for environment variables specific to a particular Azure service:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_&lt;ServiceName&gt;_&lt;ConfigurationKey&gt;</code></li>
+</ul>
+
+<p>where <em>ServiceName</em> is the canonical shortname without spaces, and <em>ConfigurationKey</em> refers to an unnested configuration key for that client library.</p>
+
+<p><a href="#ts-configuration-posix-envs" name="ts-configuration-posix-envs" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use non-alpha-numeric characters in your environment variable names with the exception of underscore. This ensures broad interoperability.</p>
+
+<h2 id="general-parameter-validation">Parameter validation</h2>
+
+<p>The service client will have several methods that perform requests on the service.  <em>Service parameters</em> are directly passed across the wire to an Azure service.  <em>Client parameters</em> are not passed directly to the service, but used within the client library to fulfill the request.  Examples of client parameters include values that are used to construct a URI, or a file that needs to be uploaded to storage.</p>
+
+<p><a href="#general-parameter-validation-client" name="general-parameter-validation-client" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate client parameters.</p>
+
+<p><a href="#general-parameter-validation-service" name="general-parameter-validation-service" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  validate service parameters.  This includes null checks, empty strings, and other common validating conditions. Let the service validate any request parameters.</p>
+
+<p><a href="#general-parameter-validation-errors" name="general-parameter-validation-errors" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate the developer experience when the service parameters are invalid to ensure appropriate error messages are generated by the service.  If the developer experience is compromised due to service-side error messages, work with the service team to correct prior to release.</p>
+
+<h2 id="general-network-requests">Network requests</h2>
+
+<p>Each supported language has an Azure Core library that contains common mechanisms for cross cutting concerns such as configuration and doing HTTP requests.</p>
+
+<p><a href="#general-implementing-httppipeline" name="general-implementing-httppipeline" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the HTTP pipeline component within <code class="language-plaintext highlighter-rouge">@azure/core-http</code> package for communicating to service REST endpoints.</p>
+
+<p>The HTTP pipeline consists of a HTTP transport that is wrapped by multiple policies. Each policy is a control point during which the pipeline can modify either the request and/or response. We prescribe a default set of policies to standardize how client libraries interact with Azure services.  The order in the list is the most sensible order for implementation.</p>
+
+<p><a href="#general-implementing-policies" name="general-implementing-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement the following policies in the HTTP pipeline:</p>
+
+<ul>
+  <li>Telemetry</li>
+  <li>Unique Request ID</li>
+  <li>Retry</li>
+  <li>Authentication</li>
+  <li>Response downloader</li>
+  <li>Distributed tracing</li>
+  <li>
+    <h2 id="logging">Logging</h2>
+  </li>
+  <li>TODO: If these policies are already implemented in Azure Core, does the library developer need to do this?  If not, please remove this guidance.</li>
+</ul>
+
+<p><a href="#general-implementing-use-core-policies" name="general-implementing-use-core-policies" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the policy implementations in Azure Core whenever possible.  Do not try to “write your own” policy unless it is doing something unique to your service.  If you need another option to an existing policy, engage with the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> to add the option.</p>
+
+<h2 id="general-implementing-auth">Authentication</h2>
+
+<p>When implementing authentication, don’t open up the consumer to security holes like PII (personally identifiable information) leakage or credential leakage.  Credentials are generally issued with a time limit, and must be refreshed periodically to ensure that the service connection continues to function as expected.  Ensure your client library follows all current security recommendations and consider an independent security review of the client library to ensure you’re not introducing potential security problems for the consumer.</p>
+
+<p><a href="#general-implementing-no-persistence-auth" name="general-implementing-no-persistence-auth" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  persist, cache, or reuse security credentials.  Security credentials should be considered short lived to cover both security concerns and credential refresh situations.</p>
+
+<p>If your service implements a non-standard credential system (that is, a credential system that is not supported by Azure Core), then you need to produce an authentication policy for the HTTP pipeline that can authenticate requests given the alternative credential types provided by the client library.</p>
+
+<p><a href="#general-implementing-auth-policy" name="general-implementing-auth-policy" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a suitable authentication policy that authenticates the HTTP request in the HTTP pipeline when using non-standard credentials.  This includes custom connection strings, if supported.</p>
+
+<p>TODO: Would a code sample be helpful here?</p>
+
+<h2 id="general-native-code">Native code</h2>
+
+<p>Some languages support the development of platform-specific native code plugins.  These cause compatibility issues and require additional scrutiny.  Certain languages compile to a machine-native format (for example, C or C++), whereas most modern languages opt to compile to an intermediary format to aid in cross-platform support.</p>
+
+<p><a href="#general-implementing-nonativecode" name="general-implementing-nonativecode" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  write platform-specific / native code unless the language compiles to a machine-native format.</p>
+
+<h2 id="general-error-handling">Error handling</h2>
+
+<p>Error handling is an important aspect of implementing a client library.  It is the primary method by which problems are communicated to the consumer.  There are two methods by which errors are reported to the consumer.  Either the method throws an exception, or the method returns an error code (or value) as its return value, which the consumer must then check.  In this section we refer to “producing an error” to mean returning an error value or throwing an exception, and “an error” to be the error value or exception object.</p>
+
+<p><a href="#general-errors-prefer-exceptions" name="general-errors-prefer-exceptions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer the use of exceptions over returning an error value when producing an error.</p>
+
+<p><a href="#general-errors-when-http-fails" name="general-errors-when-http-fails" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  produce an error when any HTTP request fails with an HTTP status code that is not defined by the service/Swagger as a successful status code. These errors should also be logged as errors.</p>
+
+<p><a href="#general-errors-include-response" name="general-errors-include-response" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that the error produced contains the HTTP response (including status code and headers) and originating request (including URL, query parameters, and headers).</p>
+
+<p>In the case of a higher-level method that produces multiple HTTP requests, either the last exception or an aggregate exception of all failures should be produced.</p>
+
+<p><a href="#general-errors-rich-information" name="general-errors-rich-information" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that if the service returns rich error information (via the response headers or body), the rich information must be available via the error produced in service-specific properties/fields.</p>
+
+<p><a href="#general-errors-no-new-errors" name="general-errors-no-new-errors" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  create a new error type unless the developer can perform an alternate action to remediate the error.  Specialized error types should be based on existing error types present in the Azure Core package.</p>
+
+<p><a href="#general-errors-use-system-errors" name="general-errors-use-system-errors" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  create a new error type when a language-specific error type will suffice.  Use system-provided error types for validation.</p>
+
+<p><a href="#ts-error-handling" name="ts-error-handling" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use ECMAScript built-in error types for validation failures when appropriate. Specifically,</p>
+
+<ul>
+  <li>Use <code class="language-plaintext highlighter-rouge">TypeError</code> for errors relating to passing in an incorrect type, such as an Object when a string is expected.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">RangeError</code> for errors relating to values that are outside an allowable range, such as passing 0 for a number that must be greater than 0.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">Error</code> for all other validation failures.</li>
+</ul>
+
+<p><a href="#ts-error-handling-coercion" name="ts-error-handling-coercion" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  coerce incorrect types into an appropriate type, if possible. JavaScript users expect some amount of fuzziness with parameters as the standard library will coerce types if possible. TypeScript users should get pedantic types as they’ve opted in to types and expect errors.</p>
+
+<p><a href="#ts-errors-documentation" name="ts-errors-documentation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document the errors that are produced by each method (with the exception of commonly thrown errors that are generally not documented in the target language).</p>
+
+<p><a href="#ts-error-use-name" name="ts-error-use-name" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  check the name property inside catch clauses rather than using <code class="language-plaintext highlighter-rouge">instanceof</code>.</p>
+
+<h2 id="general-logging">Logging</h2>
+
+<p>Client libraries must support robust logging mechanisms so that the consumer can adequately diagnose issues with the method calls and quickly determine whether the issue is in the consumer code, client library code, or service.</p>
+
+<p><a href="#ts-logging-use-debug-module" name="ts-logging-use-debug-module" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">debug</code> module to log to stderr or the browser console.</p>
+
+<p><a href="#general-logging-console" name="general-logging-console" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make it easy for a consumer to enable logging output to the console. The specific steps required to enable logging to the console must be documented.</p>
+
+<p><a href="#ts-logging-prefix-channel-names" name="ts-logging-prefix-channel-names" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix channel names with <code class="language-plaintext highlighter-rouge">azure:&lt;service-name&gt;</code>.</p>
+
+<p><a href="#ts-logging-channels" name="ts-logging-channels" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create log channels for the following log levels with the following channel name suffixes:</p>
+
+<ul>
+  <li>Error: <code class="language-plaintext highlighter-rouge">:error</code></li>
+  <li>Warning: <code class="language-plaintext highlighter-rouge">:warning</code></li>
+  <li>Info: <code class="language-plaintext highlighter-rouge">:info</code></li>
+  <li>Verbose: <code class="language-plaintext highlighter-rouge">:verbose</code></li>
+</ul>
+
+<p><a href="#ts-logging-additional-channels" name="ts-logging-additional-channels" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  have additional log channels, for example, to log from separate components. However, these channels MUST still provide the three log levels from above for each subchannel.</p>
+
+<p><a href="#ts-logging-top-level-exports" name="ts-logging-top-level-exports" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose all log channels as top-level exports of your package, allowing the consumer to configure how the logging happens and integrate with 3rd-party loggers.</p>
+
+<p><a href="#general-logging-levels-error" name="general-logging-levels-error" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Error channel for failures that the application is unlikely to recover from (out of memory, etc.).</p>
+
+<p><a href="#general-logging-levels-warning" name="general-logging-levels-warning" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Warning channel when a function fails to perform its intended task. This generally means that the function will raise an exception.  Do not include occurrences of self-healing events (for example, when a request will be automatically retried).</p>
+
+<p><a href="#general-logging-levels-informational" name="general-logging-levels-informational" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Info channel when a function operates normally.</p>
+
+<p><a href="#general-logging-levels-verbose" name="general-logging-levels-verbose" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Verbose channel for detailed troubleshooting scenarios. This is primarily intended for developers or system administrators to diagnose specific failures.</p>
+
+<p><a href="#general-logging-no-sensitive-info" name="general-logging-no-sensitive-info" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  send sensitive information in channels other than Verbose. For example, remove account keys when logging headers.</p>
+
+<p><a href="#general-logging-requests-in-info" name="general-logging-requests-in-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log request line, response line, and headers on the Info channel.</p>
+
+<p><a href="#general-logging-info-if-cancelled" name="general-logging-info-if-cancelled" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log to the Info channel if a service call is cancelled.</p>
+
+<p><a href="#general-logging-error-if-exceptions" name="general-logging-error-if-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log exceptions thrown to the Warning channel. Additionally, send stack trace information to the Verbose channel.</p>
+
+<h2 id="general-distributed-tracing">Distributed tracing</h2>
+
+<p>Distributed tracing mechanisms allow the consumer to trace their code from frontend to backend. The distributed tracing library creates spans - units of unique work.  Each span is in a parent-child relationship.  As you go deeper into the hierarchy of code, you create more spans.  These spans can then be exported to a suitable receiver as needed.  To keep track of the spans, a <em>distributed tracing context</em> (called a context in the remainder of this section) is passed into each successive layer.  For more information on this topic, visit the [OpenTelemetry] topic on tracing.</p>
+
+<div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>DRAFT:</b> DRAFT GUIDELINES</div>
+
+<p><a href="#general-tracing-support-opentelemetry" name="general-tracing-support-opentelemetry" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support [OpenTelemetry] for distributed tracing.</p>
+
+<p><a href="#general-tracing-parent-span" name="general-tracing-parent-span" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  take an option named <code class="language-plaintext highlighter-rouge">parentSpanId</code> for all asynchronous operations.</p>
+
+<p><a href="#general-tracing-pass-context" name="general-tracing-pass-context" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  pass the context to the backend service through the appropriate headers (<code class="language-plaintext highlighter-rouge">traceparent</code>, <code class="language-plaintext highlighter-rouge">tracestate</code>, etc.) to support [Azure Monitor].  This is generally done with the HTTP pipeline.</p>
+
+<p><a href="#general-tracing-create-span-on-entry" name="general-tracing-create-span-on-entry" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a new span for each method that user code calls.  New spans must be children of the context that was passed in.  If no context was passed in, a new root span must be created.</p>
+
+<p><a href="#general-tracing-create-span-on-rest" name="general-tracing-create-span-on-rest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a new span (which must be a child of the per-method span) for each REST call that the client library makes.  This is generally done with the HTTP pipeline.</p>
+
+<p>Some of these requirements will be handled by the HTTP pipeline.  However, as a client library writer, you must handle the incoming context appropriately.  JavaScript doesn’t have primitives similar to a local context.  As such, we must manually plumb parent span IDs into the library.</p>
+
+<p>TODO: Please add a discussion of how to set the user-agent string for implementation of the SDK Telemetry feature.</p>
+
+<h2 id="ts-dependencies">Dependencies</h2>
+
+<p>Dependencies bring in many considerations that are often easily avoided by avoiding the dependency:</p>
+
+<p><strong>Versioning</strong>: Many programming languages don’t allow a consumer to load multiple versions of the same package. For example, if we have a client library that requires v3 of package <code class="language-plaintext highlighter-rouge">Foo</code> and the consumer wants to use v5 of package <code class="language-plaintext highlighter-rouge">Foo</code>, then the consumer can’t build their application. Client libraries shouldn’t have dependencies by default.</p>
+
+<p><strong>Size</strong>: Consumer applications need to deploy as fast as possible into the cloud. Remove additional code (like dependencies) to improve deployment performance.</p>
+
+<p><strong>Licensing</strong>: You must be conscious of the licensing restrictions of a dependency and often provide proper attribution and notices when using them.</p>
+
+<p><strong>Compatibility</strong>: You don’t control the dependency. It may choose to evolve in a direction that is incompatible with your original use.</p>
+
+<p><strong>Security</strong>: If a vulnerability is discovered in a dependency, it may be difficult or time consuming to get the vulnerability corrected.</p>
+
+<p><a href="#ts-dependencies-azure-core" name="ts-dependencies-azure-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  depend on the Azure Core library for functionality that is common across all client libraries.  This library includes APIs for HTTP connectivity, global configuration, and credential handling.</p>
+
+<p><a href="#ts-dependencies-no-other-packages" name="ts-dependencies-no-other-packages" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  depend any other packages within the client library distribution package. Dependencies are thoroughly vetted through architecture review.  Build dependencies, by contrast, are acceptable and commonly used.</p>
+
+<p><a href="#ts-dependencies-consider-vendoring" name="ts-dependencies-consider-vendoring" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  consider copying or linking required code into the client library to avoid taking a dependency on another package. Don’t violate the license agreements. Consider the maintenance that will be required when duplicating code. <a href="https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;t=9m28s">“A little copying is better than a little dependency”</a> (YouTube).</p>
+
+<p><a href="#general-no-concrete-logging" name="general-no-concrete-logging" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  depend on concrete logging, dependency injection, or configuration technologies (except as implemented in the Azure Core library).</p>
+
+<p><a href="#ts-dependencies-no-tiny-libraries" name="ts-dependencies-no-tiny-libraries" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  take dependencies on tiny libraries as the cost of many small libraries adds up over time. Larger dependencies are subject to approval.</p>
+
+<p><a href="#ts-dependencies-no-polyfills" name="ts-dependencies-no-polyfills" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  depend directly on polyfills or other libraries that modify global scope. If developers using older runtimes need to polyfill some capability, the package install and usage instructions (in the <code class="language-plaintext highlighter-rouge">README</code>) should indicate this dependency.</p>
+
+<p>The following table lists the well-known and already-blessed dependencies outside of Azure Core that may be used in production (non-test) code.
+<a name="ts-known-deps"></a></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">axios</code></td>
+      <td>HTTP client abstraction with browser and node support</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">debug</code></td>
+      <td>Logging library</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">events</code></td>
+      <td>Node EventEmitter polyfill</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">stream-browserify</code></td>
+      <td>Node Stream polyfill for browsers</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">process</code></td>
+      <td>Node Process polyfill (though you should prefer to use small stubs)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">rhea</code></td>
+      <td>Library for talking over AMQP</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">rhea-promise</code></td>
+      <td>Promisified version of <code class="language-plaintext highlighter-rouge">rhea</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">tough-cookie</code></td>
+      <td>Support cookies, even in Node</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">url</code></td>
+      <td>Node Url polyfill</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">util</code></td>
+      <td>Node Util polyfill</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">uuid</code></td>
+      <td>Generate GUIDs</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="service-specific-common-library-code">Service-specific common library code</h2>
+
+<p>There are occasions when common code needs to be shared between several client libraries.  For example, a set of cooperating client libraries may wish to share a set of exceptions or models.</p>
+
+<p><a href="#general-implementing-common-library-usage" name="general-implementing-common-library-usage" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  gain <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> approval prior to implementing a common library.</p>
+
+<p><a href="#general-implementing-minimal-common-content" name="general-implementing-minimal-common-content" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  minimize the code within a common library.  Code within the common library is available to the consumer of the client library and shared by multiple client libraries within the same namespace.</p>
+
+<p><a href="#general-implementing-common-namespace" name="general-implementing-common-namespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  store the common library in the same namespace as the associated client libraries.</p>
+
+<p>A common library will only be approved if:</p>
+
+<ul>
+  <li>The consumer of the non-shared library will consume the objects within the common library directly, AND</li>
+  <li>The information will be shared between multiple client libraries.</li>
+</ul>
+
+<p>Let’s take two examples:</p>
+
+<ol>
+  <li>
+    <p>Implementing two Cognitive Services client libraries, we find a model is required that is produced by one Cognitive Services client library and consumed by another Coginitive Services client library, or the same model is produced by two client libraries.  The consumer is required to do the passing of the model in their code, or may need to compare the model produced by one client library vs. that produced by another client library.  This is a good candidate for choosing a common library.</p>
+  </li>
+  <li>
+    <p>Two Cognitive Services client libraries throw an <code class="language-plaintext highlighter-rouge">ObjectNotFound</code> exception to indicate that an object was not detected in an image.  The user might trap the exception, but otherwise will not operate on the exception.  There is no linkage between the <code class="language-plaintext highlighter-rouge">ObjectNotFound</code> exception in each client library.  This is not a good candidate for creation of a common library (although you may wish to place this exception in a common library if one exists for the namespace already).  Instead, produce two different exceptions - one in each client library.</p>
+  </li>
+</ol>
+
+<h2 id="testing-typescript-libraries">Testing TypeScript libraries</h2>
+
+<p><a href="#ts-use-mocha-karma" name="ts-use-mocha-karma" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <a href="https://mochajs.org/">Mocha</a> and <a href="http://karma-runner.github.io/4.0/index.html">Karma</a> as these tools support build pipelines and work in browsers and node.</p>
+
+<h2 id="ts-versioning">Versioning</h2>
+
+<p>Consistent versioning allows consumers to determine what to expect from a new version of the library.  However, versioning rules tend to be very idiomatic to the language.  The engineering system release guidelines require the use of <em>MAJOR</em>.<em>MINOR</em>.<em>PATCH</em> format for the version.</p>
+
+<p><a href="#general-versioning-bump" name="general-versioning-bump" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  change the version number of the client library when <strong>ANYTHING</strong> changes in the client library.</p>
+
+<p><a href="#general-versioning-patch" name="general-versioning-patch" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the patch version when fixing a bug.</p>
+
+<p><a href="#general-versioning-no-features-in-patch" name="general-versioning-no-features-in-patch" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include new features in a patch release.</p>
+
+<p><a href="#general-versioning-adding-features" name="general-versioning-adding-features" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the major or minor version when adding support for a service API version, or add a backwards-compatible feature.</p>
+
+<p><a href="#general-versioning-no-breaking-changes" name="general-versioning-no-breaking-changes" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  make breaking changes.  If a breaking change is absolutely required, then you <strong>MUST</strong> engage with the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> prior to making the change.  If a breaking change is approved, increment the major version.</p>
+
+<p><a href="#general-versioning-major-bump" name="general-versioning-major-bump" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  increment the major version when making large feature changes.</p>
+
+<p><a href="#general-versioning-serviceapi-support" name="general-versioning-serviceapi-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide the ability to call a specific supported version of the service API.</p>
+
+<p>A particular (major.minor) version of a library can choose what service APIs it supports.  We recommend the support window be no less than two service versions (if available) and no less than what is specified in the <a href="https://support.microsoft.com/help/14085">Fixed Lifecycle Policy for Microsoft business, developer, and desktop systems</a>.</p>
+
+<p><a href="#ts-versioning-semver" name="ts-versioning-semver" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  version with <a href="https://semver.org/">semver</a>. Deprecated features and flags must offer an alternate stable or beta path for developers.</p>
+
+<p><a href="#ts-versioning-no-ga-prerelease" name="ts-versioning-no-ga-prerelease" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  have a pre-release version or any additional build metadata for stable packages.</p>
+
+<p><a href="#ts-versioning-beta" name="ts-versioning-beta" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  give beta packages a pre-release version of the format <code class="language-plaintext highlighter-rouge">1.0.0-beta.X</code> where X is an integer. Pre-release package versions shouldn’t have additional build metadata.</p>
+
+<p><a href="#ts-versioning-no-version-0" name="ts-versioning-no-version-0" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use a major version of 0, even for beta packages.</p>
+
+<p><a href="#general-versioning-bump" name="general-versioning-bump" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  select a version number greater than the highest version number of any other released Track 1 package for the service in any other npm scope or language.</p>
+
+<p>Semantic versioning is more of a lofty ideal than a practical specification for some libraries. Also, <a href="https://xkcd.com/1172/">one person’s bug might be another person’s key feature</a>. Package authors are required to follow semver in a way that is useful for their consumers.</p>
+
+<p>For more details, review the <a href="/azure-sdk/policies_releases.html">Releases policy</a>.</p>
+
+<h2 id="ts-npm-package">Packaging</h2>
+
+<p><a href="#ts-npm-package-ownership" name="ts-npm-package-ownership" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have npm package ownership set to either the Azure or Microsoft organizations.</p>
+
+<h3 id="ts-package-file-layout">Package Layout</h3>
+
+<p>Use the following canonical file structure for your npm package:
+<a name="ts-figure-package-layout"></a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>azure-library
+├─ README.md
+├─ LICENSE
+├─ dist
+│  ├─ index.js
+│  ├─ index.js.map
+│  └─ ... *.js
+│
+├─ dist-esm
+│  └─ lib
+│    ├─ index.js
+│    ├─ index.js.map
+│    └─ ... *.js
+│
+├─ types
+│  └─ service.d.ts
+│
+└─ package.json
+</code></pre></div></div>
+
+<p><a href="#ts-file-layout-conventions" name="ts-file-layout-conventions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow these conventions where applicable.</p>
+
+<p><a href="#ts-no-tsconfig" name="ts-no-tsconfig" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include a <code class="language-plaintext highlighter-rouge">tsconfig.json</code> file in your package. While generally useful to include, our <code class="language-plaintext highlighter-rouge">tsconfig.json</code> files are heavily tied to our monorepo structure and so won’t work properly when read from inside an individual package.</p>
+
+<p><a href="#ts-can-have-other-files" name="ts-can-have-other-files" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  include other files.</p>
+
+<p><a href="#ts-no-npmignore" name="ts-no-npmignore" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use <code class="language-plaintext highlighter-rouge">.npmignore</code> files to control which files are included in the package. All files must be added to the package explicitly using the <code class="language-plaintext highlighter-rouge">package.json</code> files key.</p>
+
+<h3 id="ts-package-json">The <code class="language-plaintext highlighter-rouge">package.json</code> file</h3>
+
+<p>The following sections describe the package.json file that must be included with every npm package. A compliant <code class="language-plaintext highlighter-rouge">package.json</code> file looks like the following:
+<a name="ts-figure-package-json"></a></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="dl">"</span><span class="s2">name</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">@azure/package</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">description</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">A pithy but accurate description</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">keywords</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="dl">"</span><span class="s2">azure</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">cloud</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">...</span><span class="dl">"</span>
+  <span class="p">],</span>
+  <span class="dl">"</span><span class="s2">version</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">1.0.0</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">author</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Microsoft Corporation</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">main</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./dist/index.js</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">module</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./dist-esm/index.js</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">browser</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">./dist-esm/src/index.js</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./dist-esm/src/index.browser.js</span><span class="dl">"</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">types</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./dist-esm/index.d.ts</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">engine</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">node</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">&gt;=6.0.0</span><span class="dl">"</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">scripts</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">build</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">...</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">test</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">...</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">prepack</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">npm install &amp;&amp; npm run build</span><span class="dl">"</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">files</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="dl">"</span><span class="s2">dist</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">dist-esm</span><span class="dl">"</span>
+  <span class="p">],</span>
+  <span class="dl">"</span><span class="s2">devDependencies</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">},,</span>
+  <span class="dl">"</span><span class="s2">dependencies</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">repository</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">github:Azure/azure-sdk</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">homepage</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/servicebus/service-bus</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">bugs</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">url</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">https://github.com/Azure/azure-sdk-for-js/issues</span><span class="dl">"</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">license</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">MIT</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">sideEffects</span><span class="dl">"</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#ts-package-json-name" name="ts-package-json-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">name</code> to <code class="language-plaintext highlighter-rouge">@azure/&lt;name&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;name&gt;</code> is the name of the service. Package names are kebab-case: all lowercase with words joined by dashes.</p>
+
+<p><a href="#ts-package-json-homepage" name="ts-package-json-homepage" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">homepage</code> to a URL pointing to your library’s readme inside the git repo. Since the repository link goes to the monorepo, this link exists to serve as an easier way to reach the actual package’s source.</p>
+
+<p><a href="#ts-package-json-bugs" name="ts-package-json-bugs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">bugs</code> to an object with a <code class="language-plaintext highlighter-rouge">url</code> key pointing to your library’s issue tracker: https://github.com/Azure/azure-sdk-for-js/issues.</p>
+
+<p><a href="#ts-package-json-repo" name="ts-package-json-repo" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">repository</code> to the JS SDK monorepo - <code class="language-plaintext highlighter-rouge">github:Azure/azure-sdk-for-js</code>. Use of the <code class="language-plaintext highlighter-rouge">github:user/repo</code> short-hand is recommended.</p>
+
+<p><a href="#ts-package-json-description" name="ts-package-json-description" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">description</code> to a useful but terse description of your library. The description is used and shown when searching for packages on <a href="https://npmjs.org">npmjs.org</a>.</p>
+
+<p><a href="#ts-package-json-keywords" name="ts-package-json-keywords" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">keywords</code> to an array that includes at least the entries “Azure” and “cloud”. It must also contain at least the name of your service. It should contain other entries relevant to your SDK.</p>
+
+<p><a href="#ts-package-json-author" name="ts-package-json-author" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">author</code> to <code class="language-plaintext highlighter-rouge">"Microsoft Corporation"</code>.</p>
+
+<p><a href="#ts-package-json-sideeffects" name="ts-package-json-sideeffects" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">sideEffects</code> to <code class="language-plaintext highlighter-rouge">false</code>. Side effecting libraries must be explicitly approved during design review. The <code class="language-plaintext highlighter-rouge">sideEffects</code> field is used by <a href="https://webpack.js.org">Webpack</a> and potentially other tools as an indicator of how aggressively the package can be optimized.</p>
+
+<p>Side effects are modifications to the runtime environment of the program. For example, including a polyfill library is a <code class="language-plaintext highlighter-rouge">sideEffect</code>. It mutates the global environment. Side effects make it harder for tools to optimize your build and should be avoided.</p>
+
+<p><a href="#ts-package-json-main-is-cjs" name="ts-package-json-main-is-cjs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">main</code> to point to either a CommonJS or a UMD module. Main is the entry point of your application for Node users.</p>
+
+<p><a href="#ts-package-json-main-is-not-es6" name="ts-package-json-main-is-not-es6" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  set <code class="language-plaintext highlighter-rouge">main</code> to include any ES6+ syntax.</p>
+
+<p><a href="#ts-package-json-module" name="ts-package-json-module" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">module</code> to the ES6 module entrypoint of your application.</p>
+
+<p>Tools such as <a href="https://webpack.js.org">Webpack</a> use this key to discover the static module graph of your application for optimization purposes.</p>
+
+<p><a href="#ts-package-json-browser" name="ts-package-json-browser" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a file map in the <code class="language-plaintext highlighter-rouge">browser</code> object if your library supports the browser and needs browser-specific module substitutions.</p>
+
+<p>For example, the following JSON snippet demonstrates the minimum requirements, assuming you have a separate entrypoint for browsers.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"main"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./dist/index.js"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"browser"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"./dist/index.js"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./dist/index.browser.js"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><a href="#ts-package-json-engine-is-present" name="ts-package-json-engine-is-present" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">engine</code> to the versions of Node your library supports. See [#ts-supported-node-versions] for Node support requirements.</p>
+
+<p><a href="#ts-package-json-required-scripts" name="ts-package-json-required-scripts" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">scripts</code> to an object with the following scripts:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">"build"</code>: generates the main export of the application.</li>
+  <li><code class="language-plaintext highlighter-rouge">"test"</code>: runs your package’s functional test suite for inner-loop development. Additional test tasks (for example, continuous integration tests) are allowed but <code class="language-plaintext highlighter-rouge">test</code> must be how developers test your package during development.</li>
+</ul>
+
+<p><a href="#ts-package-json-required-scripts-for-development" name="ts-package-json-required-scripts-for-development" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  depend on shell scripts to build or test the package.  Shell scripts need to be platform-specific.  Include a <code class="language-plaintext highlighter-rouge">script</code> for any task required during development of your package.</p>
+
+<p><a href="#ts-package-json-files-required" name="ts-package-json-files-required" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">files</code> to an array containing paths of your package contents. Setting this field prevents extraneous files from ending up in your package by being explicit about which files you ship to npm.</p>
+
+<p><a href="#ts-package-json-types" name="ts-package-json-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">types</code> to point to the TypeScript type declarations for your library’s public surface area, usually <code class="language-plaintext highlighter-rouge">"./types/index.d.ts"</code>.</p>
+
+<p><a href="#ts-package-json-license" name="ts-package-json-license" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">license</code> to “MIT”.</p>
+
+<h3 id="ts-source-distros">Distributions</h3>
+
+<p>Modern npm packages often ship multiple source distributions targeting different usage scenarios. Packages must include a CJS or UMD build, an ESM build, and original soure files. Packages may include other source distributions as necessary for their particular usage scenarios. The main downside of including additional source distributions is the increased package size (larger packages mean CIs take longer). However, performance, compatibility, and developer experience goals are often more important.</p>
+
+<p><a href="#ts-include-original-source" name="ts-include-original-source" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include the source code in your source map files’ <code class="language-plaintext highlighter-rouge">sourcesContent</code> by using the TypeScript compiler option <code class="language-plaintext highlighter-rouge">inlineSources</code>.</p>
+
+<p>The source code in your package helps developers debug your package. <em>Go-to-definition</em> is a quick way to confirm how to use a function. Seeing useful names and readable source code in call stacks helps with debugging. We can aggressively optimize the build artifacts since users won’t need to puzzle through the mangled code.</p>
+
+<p><a href="#ts-include-cjs" name="ts-include-cjs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a CommonJS (CJS) or UMD build in your package if you intend to support Node.</p>
+
+<p><a href="#ts-flatten-umd" name="ts-flatten-umd" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  flatten the CommonJS or UMD module.  <a href="https://rollupjs.org">Rollup</a> is recommended for producing a flattened module.</p>
+
+<p>The process of packing multiple modules into a single file is known as <em>flattening</em>. It’s used to significantly reduce the load time for the library.  Flattening can make a measurable impact on cold start times for services such as Azure Functions. While performance-sensitive developers will likely package their applications themselves, faster start-up is still important especially during development.</p>
+
+<p><a href="#ts-include-esm" name="ts-include-esm" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include an ECMAScript Module (ESM) build in your package.</p>
+
+<p><a href="#ts-include-esm-not-flattened" name="ts-include-esm-not-flattened" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  flatten the ESM build.</p>
+
+<p>An ESM distribution is consumed by tools such as <a href="https://webpack.js.org">Webpack</a> that optimize the module graph. It should be “transpiled” to support the runtime versions you’re targeting. Versions of Webpack before Webpack 4.0 produce better optimized bundles if the ESM build is flattened. However, flattening doesn’t play so well with tree-shaking. The latest versions of Webpack do a better job when using an unflattened ESM build.</p>
+
+<p><a name="ts-browser-umd"></a>
+<a name="ts-browser-umd-global-naming"></a>
+<a name="ts-browser-minify-umd"></a>
+<a name="ts-browser-location"></a>
+<a href="#ts-no-browser-bundle" name="ts-no-browser-bundle" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include a browser bundle in your package. Shipping browser bundles is convenient for users but comes with some significant downsides too. For example, browser bundles must flatten the entire dependency tree and re-distribute all open source components it depends on. This requires ThirdPartyNotices.txt to be accurate which is a complex and error-prone. Security vulnerabilities in any dependency requires servicing the browser bundle as well.</p>
+
+<p>In practice, users working on production applications will likely be using a bundler. Moreover, modern bundlers are much easier to use relative to earlier incarnation. Azure client libraries should work with most popular bundlers.</p>
+
+<h3 id="ts-modules">Modules</h3>
+
+<p><a href="#ts-modules-only-named" name="ts-modules-only-named" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have named exports at the top level</p>
+
+<p><a href="#ts-modules-no-default" name="ts-modules-no-default" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  have a default export at the top level</p>
+
+<p>Azure packages authored using TypeScript export standard ES6 modules. As Node doesn’t support ES6 modules natively, authoring ES6 modules for consumption in Node has a bit of friction. Most notably, a commonJS package can only import a single value.</p>
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

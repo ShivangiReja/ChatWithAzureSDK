@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines dotnet">
+<title>C#.NET Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">C#.NET Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <h2 id="api-implementation">API Implementation</h2>
+
+<p>This section describes guidelines for implementing Azure SDK client libraries. Please note that some of these guidelines are automatically enforced by code generation tools.</p>
+
+<h3 id="the-service-client">The Service Client</h3>
+
+<p>TODO: add a brief mention of the approach to implementing service clients.</p>
+
+<h4 id="service-methods">Service Methods</h4>
+
+<p>TODO: Briefly introduce that service methods are implemented via an <code class="language-plaintext highlighter-rouge">HttpPipeline</code> instance.  Mention that much of this is done for you using code generation.</p>
+
+<h5 id="dotnet-usage-httppipeline">Using HttpPipeline</h5>
+
+<p>The following example shows a typical way of using <code class="language-plaintext highlighter-rouge">HttpPipeline</code> to implement a service call method. The <code class="language-plaintext highlighter-rouge">HttpPipeline</code> will handle common HTTP requirements such as the user agent, logging, distributed tracing, retries, and proxy configuration.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">virtual</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Response</span><span class="p">&lt;</span><span class="n">ConfigurationSetting</span><span class="p">&gt;&gt;</span> <span class="nf">AddAsync</span><span class="p">(</span><span class="n">ConfigurationSetting</span> <span class="n">setting</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">setting</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">setting</span><span class="p">));</span>
+    <span class="p">...</span> <span class="c1">// validate other preconditions</span>
+
+    <span class="c1">// Use HttpPipeline _pipeline filed of the client type to create new HTTP request</span>
+    <span class="k">using</span> <span class="p">(</span><span class="n">Request</span> <span class="n">request</span> <span class="p">=</span> <span class="n">_pipeline</span><span class="p">.</span><span class="nf">CreateRequest</span><span class="p">())</span> <span class="p">{</span>
+
+        <span class="c1">// specify HTTP request line</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Method</span> <span class="p">=</span> <span class="n">RequestMethod</span><span class="p">.</span><span class="n">Put</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Uri</span><span class="p">.</span><span class="nf">Reset</span><span class="p">(</span><span class="n">_endpoint</span><span class="p">);</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Uri</span><span class="p">.</span><span class="nf">AppendPath</span><span class="p">(</span><span class="n">KvRoute</span><span class="p">,</span> <span class="n">escape</span><span class="p">:</span> <span class="k">false</span><span class="p">);</span>
+        <span class="n">requast</span><span class="p">.</span><span class="n">Uri</span><span class="p">.</span><span class="nf">AppendPath</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+
+        <span class="c1">// add headers</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Headers</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">IfNoneMatchWildcard</span><span class="p">);</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Headers</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">MediaTypeKeyValueApplicationHeader</span><span class="p">);</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Headers</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HttpHeader</span><span class="p">.</span><span class="n">Common</span><span class="p">.</span><span class="n">JsonContentType</span><span class="p">);</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Headers</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">HttpHeader</span><span class="p">.</span><span class="n">Common</span><span class="p">.</span><span class="nf">CreateContentLength</span><span class="p">(</span><span class="n">content</span><span class="p">.</span><span class="n">Length</span><span class="p">));</span>
+
+        <span class="c1">// add content</span>
+        <span class="n">ReadOnlyMemory</span><span class="p">&lt;</span><span class="kt">byte</span><span class="p">&gt;</span> <span class="n">content</span> <span class="p">=</span> <span class="nf">Serialize</span><span class="p">(</span><span class="n">setting</span><span class="p">);</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">Content</span> <span class="p">=</span> <span class="n">HttpPipelineRequestContent</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="n">content</span><span class="p">);</span>
+
+        <span class="c1">// send the request</span>
+        <span class="n">Response</span> <span class="n">response</span> <span class="p">=</span> <span class="k">await</span> <span class="n">Pipeline</span><span class="p">.</span><span class="nf">SendRequestAsync</span><span class="p">(</span><span class="n">request</span><span class="p">).</span><span class="nf">ConfigureAwait</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="n">Status</span> <span class="p">==</span> <span class="m">200</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// deserialize content</span>
+            <span class="n">Response</span><span class="p">&lt;</span><span class="n">ConfigurationSetting</span><span class="p">&gt;</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="nf">CreateResponse</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">RequestFailedException</span><span class="p">(</span><span class="n">response</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>TODO: do we still want this code sample now that we’re encouraging moving to Code Gen?</p>
+
+<p>For a more complete example, see the <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/appconfiguration/Azure.Data.AppConfiguration/src/ConfigurationClient.cs">configuration client</a> implementation.</p>
+
+<h5 id="using-httppipelinepolicy">Using HttpPipelinePolicy</h5>
+
+<p>The HTTP pipeline includes a number of policies that all requests pass through.  Examples of policies include setting required headers, authentication, generating a request ID, and implementing proxy authentication.  <code class="language-plaintext highlighter-rouge">HttpPipelinePolicy</code> is the base type of all policies (plugins) of the <code class="language-plaintext highlighter-rouge">HttpPipeline</code>. This section describes guidelines for designing custom policies.</p>
+
+<p><a href="#dotnet-http-pipeline-policy-inherit" name="dotnet-http-pipeline-policy-inherit" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  inherit from <code class="language-plaintext highlighter-rouge">HttpPipelinePolicy</code> if the policy implementation calls asynchronous APIs.</p>
+
+<p>See an example <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/Pipeline/BearerTokenAuthenticationPolicy.cs">here</a>.</p>
+
+<p><a href="#dotnet-sync-http-pipeline-policy-inherit" name="dotnet-sync-http-pipeline-policy-inherit" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  inherit from <code class="language-plaintext highlighter-rouge">HttpPipelineSynchronousPolicy</code> if the policy implementation calls only synchronous APIs.</p>
+
+<p>See an example <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/Pipeline/Internal/ClientRequestIdPolicy.cs">here</a>.</p>
+
+<p><a href="#dotnet-http-pipeline-thread-safety" name="dotnet-http-pipeline-thread-safety" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure <code class="language-plaintext highlighter-rouge">ProcessAsync</code> and <code class="language-plaintext highlighter-rouge">Process</code> methods are thread safe.</p>
+
+<p><code class="language-plaintext highlighter-rouge">HttpMessage</code>, <code class="language-plaintext highlighter-rouge">Request</code>, and <code class="language-plaintext highlighter-rouge">Response</code> don’t have to be thread-safe.</p>
+
+<h4 id="service-method-parameters">Service Method Parameters</h4>
+
+<h5 id="parameter-presence-and-ordering">Parameter presence and ordering</h5>
+
+<p>Public service methods should follow the below parameter presence and ordering guidelines.</p>
+
+<ol>
+  <li>LRO Qualifier: This indicates if the user wants to wait for the LRO to simply start or wait for completion.
+    <ul>
+      <li>If present this <a href="#dotnet-parameter-lro-qualifier-type" name="dotnet-parameter-lro-qualifier-type" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be the type defined in <code class="language-plaintext highlighter-rouge">Azure.Core</code> <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/WaitUntil.cs">here</a>.</li>
+      <li>If present this <a href="#dotnet-parameter-lro-qualifier-required" name="dotnet-parameter-lro-qualifier-required" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be a required parameter.</li>
+      <li>If present this <a href="#dotnet-parameter-lro-qualifier-required" name="dotnet-parameter-lro-qualifier-required" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be the first parameter.</li>
+      <li>For LRO this <a href="#dotnet-parameter-lro-qualifier-presence" name="dotnet-parameter-lro-qualifier-presence" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  be the present.</li>
+    </ul>
+  </li>
+  <li>Required Path: These are parameters that will go in the path of the URI.
+    <ul>
+      <li>These <a href="#dotnet-parameter-path-ordering" name="dotnet-parameter-path-ordering" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be sorted based on their order in the URI so they match.</li>
+      <li>Sometimes these <a href="#dotnet-parameter-path-omit" name="dotnet-parameter-path-omit" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  be omitted as public method parameters when the context is known by the enclosing class such as <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/resourcemanager/Azure.ResourceManager/src/Resources/Generated/ResourceGroupResource.cs#L127">ResourceGroup.Get</a></li>
+    </ul>
+  </li>
+  <li>Required Query / Header: These are simple options that can be set as headers or query params in the request.  Typically primitive types or collections that can be transformed into delimited strings.
+    <ul>
+      <li>Any required query or header parameters <a href="#dotnet-parameter-query-header-order" name="dotnet-parameter-query-header-order" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  come before the body parameter since the body parameter can be optional.</li>
+    </ul>
+  </li>
+  <li>Body: This is typically found in PUT or POST methods and is object passed as the content of the HTTP request.
+    <ul>
+      <li>For PUT this <a href="#dotnet-parameter-body-required-for-put" name="dotnet-parameter-body-required-for-put" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be a required parameter.</li>
+    </ul>
+  </li>
+  <li>ContentType: Defines the content type.
+    <ul>
+      <li>If present this <a href="#dotnet-parameter-content-type-type" name="dotnet-parameter-content-type-type" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be the type defined in <code class="language-plaintext highlighter-rouge">Azure.Core</code> <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/ContentType.cs">here</a>.</li>
+      <li>If present this <a href="#dotnet-parameter-content-type-optional" name="dotnet-parameter-content-type-optional" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be an optional parameter.</li>
+    </ul>
+  </li>
+  <li>Optional Query / Header: These are simple options that can be set as headers or query params in the request.  Typically primitive types or lists that can be transformed into delimited strings.
+    <ul>
+      <li><a href="#dotnet-parameter-query-header-property-bag" name="dotnet-parameter-query-header-property-bag" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  combine these into a property bag when there are more than 2 total including the required ones in item 3 of this list.
+        <ul>
+          <li>The property bag <a href="#dotnet-parameter-query-header-property-bag-required" name="dotnet-parameter-query-header-property-bag-required" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be required if it includes required query or header parameters from item 3 of this list.  In this case the property bag will replace the parameter at position 3 and position 5 will no longer be present.</li>
+          <li>If a method grew exceeded the threshold over time then an overload with the property bag <a href="#dotnet-parameter-property-bag-overload" name="dotnet-parameter-property-bag-overload" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  be provided leaving the old methods in place.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Request Context: This is normally a <code class="language-plaintext highlighter-rouge">CancellationToken</code> and is defined as the last parameter.
+    <ul>
+      <li>When more context is needed than just a <code class="language-plaintext highlighter-rouge">CancellationToken</code> such as DPG you <a href="#dotnet-parameter-request-context" name="dotnet-parameter-request-context" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use the <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/RequestContext.cs">RequestContext</a> defined in <code class="language-plaintext highlighter-rouge">Azure.Core</code>.</li>
+      <li>This <a href="#dotnet-parameter-request-context-presence" name="dotnet-parameter-request-context-presence" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  always exist in one of the two forms and be defined as an optional parameter.</li>
+    </ul>
+  </li>
+</ol>
+
+<h5 id="dotnet-parameters">Parameter validation</h5>
+
+<p>In addition to <a href="/azure-sdk/dotnet_introduction.html#dotnet-parameters">general parameter validation guidelines</a>:</p>
+
+<p><a href="#dotnet-parameter-validation-class" name="dotnet-parameter-validation-class" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  define your own parameter validation class.</p>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">Argument</code> class in Azure.Core or even “extend” it (it’s a partial class included as source) with project-specific argument assertions.
+Just add the following to your project to include it:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!-- Import Azure.Core properties if not already imported. --&gt;</span>
+<span class="nt">&lt;Import</span> <span class="na">Project=</span><span class="s">"$(MSBuildThisFileDirectory)..\..\..\core\Azure.Core\src\Azure.Core.props"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;ItemGroup&gt;</span>
+    <span class="nt">&lt;Compile</span> <span class="na">Include=</span><span class="s">"$(AzureCoreSharedSources)Argument.cs"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/ItemGroup&gt;</span>
+</code></pre></div></div>
+
+<p>See remarks on the <code class="language-plaintext highlighter-rouge">Argument</code> class for more detail.</p>
+
+<h3 id="supporting-types">Supporting Types</h3>
+
+<h4 id="dotnet-usage-json">Serialization</h4>
+
+<h5 id="json-serialization">JSON Serialization</h5>
+
+<p><a href="#dotnet-json-use-system-text-json" name="dotnet-json-use-system-text-json" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://www.nuget.org/packages/System.Text.Json"><code class="language-plaintext highlighter-rouge">System.Text.Json</code></a> package to write and read JSON content.</p>
+
+<p><a href="#dotnet-json-use-utf8jsonwriter" name="dotnet-json-use-utf8jsonwriter" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <code class="language-plaintext highlighter-rouge">Utf8JsonWriter</code> to write JSON payloads:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Utf8JsonWriter</span><span class="p">(</span><span class="n">writer</span><span class="p">);</span>
+<span class="n">json</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">();</span>
+<span class="n">json</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="s">"value"</span><span class="p">,</span> <span class="n">setting</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+<span class="n">json</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="s">"content_type"</span><span class="p">,</span> <span class="n">setting</span><span class="p">.</span><span class="n">ContentType</span><span class="p">);</span>
+<span class="n">json</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+<span class="n">json</span><span class="p">.</span><span class="nf">Flush</span><span class="p">();</span>
+<span class="n">written</span> <span class="p">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">json</span><span class="p">.</span><span class="n">BytesWritten</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><a href="#dotnet-json-use-jsondocument" name="dotnet-json-use-jsondocument" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <code class="language-plaintext highlighter-rouge">JsonDocument</code> to read JSON payloads:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="p">(</span><span class="n">JsonDocument</span> <span class="n">json</span> <span class="p">=</span> <span class="k">await</span> <span class="n">JsonDocument</span><span class="p">.</span><span class="nf">ParseAsync</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="k">default</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">).</span><span class="nf">ConfigureAwait</span><span class="p">(</span><span class="k">false</span><span class="p">))</span>
+<span class="p">{</span>
+    <span class="n">JsonElement</span> <span class="n">root</span> <span class="p">=</span> <span class="n">json</span><span class="p">.</span><span class="n">RootElement</span><span class="p">;</span>
+
+    <span class="kt">var</span> <span class="n">setting</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConfigurationSetting</span><span class="p">();</span>
+
+    <span class="c1">// required property</span>
+    <span class="n">setting</span><span class="p">.</span><span class="n">Key</span> <span class="p">=</span> <span class="n">root</span><span class="p">.</span><span class="nf">GetProperty</span><span class="p">(</span><span class="s">"key"</span><span class="p">).</span><span class="nf">GetString</span><span class="p">();</span>
+
+    <span class="c1">// optional property</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="nf">TryGetProperty</span><span class="p">(</span><span class="s">"last_modified"</span><span class="p">,</span> <span class="k">out</span> <span class="n">JsonElement</span> <span class="n">lastModified</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">lastModified</span><span class="p">.</span><span class="n">Type</span> <span class="p">==</span> <span class="n">JsonValueType</span><span class="p">.</span><span class="n">Null</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">setting</span><span class="p">.</span><span class="n">LastModified</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">setting</span><span class="p">.</span><span class="n">LastModified</span> <span class="p">=</span> <span class="n">DateTimeOffset</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">lastModified</span><span class="p">.</span><span class="nf">GetString</span><span class="p">());</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="p">...</span>
+
+    <span class="k">return</span> <span class="n">setting</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#dotnet-json-use-utf8jsonreader" name="dotnet-json-use-utf8jsonreader" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  consider using <code class="language-plaintext highlighter-rouge">Utf8JsonReader</code> to read JSON payloads.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Utf8JsonReader</code> is faster than <code class="language-plaintext highlighter-rouge">JsonDocument</code> but much less convenient to use.</p>
+
+<p><a href="#dotnet-json-serialization-resilience" name="dotnet-json-serialization-resilience" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make your serialization and deserialization code version resilient.</p>
+
+<p>Optional JSON properties should be deserialized into nullable model properties.</p>
+
+<h4 id="dotnet-enums">Enumeration-like structures</h4>
+
+<p>As described in <a href="/azure-sdk/dotnet_introduction.html#dotnet-enums">general enumeration guidelines</a>, you should use <code class="language-plaintext highlighter-rouge">enum</code> types whenever passing or deserializing a well-known set of values to or from the service.
+There may be times, however, where a <code class="language-plaintext highlighter-rouge">readonly struct</code> is necessary to capture an extensible value from the service even if well-known values are defined,
+or to pass back to the service those same or other user-supplied values:</p>
+
+<ul>
+  <li>The value is retrieved and deserialized from service, and may contain a value not supported by the client library.</li>
+  <li>The value is roundtripped: the value is retrieved and deserialized from the service, and may later be serialized and sent back to the server.</li>
+</ul>
+
+<p>In those cases, you should define a structure that:</p>
+
+<ul>
+  <li>Is <code class="language-plaintext highlighter-rouge">readonly</code>.</li>
+  <li>Implements <code class="language-plaintext highlighter-rouge">IEquatable&lt;T&gt;</code> that compares only the string value.</li>
+  <li>Stores only the string value.</li>
+  <li>Defines <code class="language-plaintext highlighter-rouge">static</code> properties with well-known values.</li>
+  <li>Defines equality, inequality, and an implicit cast-from-string operators.</li>
+  <li>Overrides <code class="language-plaintext highlighter-rouge">Equals</code>, <code class="language-plaintext highlighter-rouge">GetHashCode</code>, and <code class="language-plaintext highlighter-rouge">ToString</code> methods.</li>
+  <li><code class="language-plaintext highlighter-rouge">Equals(object)</code> and <code class="language-plaintext highlighter-rouge">GetHashCode</code> should be attributed with <code class="language-plaintext highlighter-rouge">EditorBrowsable(EditorBrowsableState.Never)</code>.</li>
+</ul>
+
+<p>Type of value comparison should be selected on per-service basis, if the service is inconsistent with how string values are returned the case-insensitive comparison is allowed.</p>
+
+<p>The following example implements these requirements and should be used as a template:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// An algorithm used for encryption and decryption</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="k">public</span> <span class="k">partial</span> <span class="k">readonly</span> <span class="k">struct</span> <span class="nc">EncryptionAlgorithm</span> <span class="p">:</span> <span class="n">IEquatable</span><span class="p">&lt;</span><span class="n">EncryptionAlgorithm</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">internal</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">Rsa15Value</span> <span class="p">=</span> <span class="s">"RSA1_5"</span><span class="p">;</span>
+    <span class="k">internal</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RsaOaepValue</span> <span class="p">=</span> <span class="s">"RSA-OAEP"</span><span class="p">;</span>
+    <span class="k">internal</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RsaOaep256Value</span> <span class="p">=</span> <span class="s">"RSA-OAEP-256"</span><span class="p">;</span>
+
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">_value</span><span class="p">;</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Initializes a new instance of the &lt;see cref="EncryptionAlgorithm"/&gt; structure.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="c1">/// &lt;param name="value"&gt;The string value of the instance.&lt;/param&gt;</span>
+    <span class="k">public</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="kt">string</span> <span class="k">value</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_value</span> <span class="p">=</span> <span class="k">value</span> <span class="p">??</span> <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="k">value</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// RSA1_5</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">EncryptionAlgorithm</span> <span class="n">Rsa15</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="n">Rsa15Value</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// RSA-OAEP</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">EncryptionAlgorithm</span> <span class="n">RsaOaep</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="n">RsaOaepValue</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// RSA-OAEP256</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">EncryptionAlgorithm</span> <span class="n">RsaOaep256</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="n">RsaOaep256Value</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Determines if two &lt;see cref="EncryptionAlgorithm"/&gt; values are the same.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="c1">/// &lt;param name="left"&gt;The first &lt;see cref="EncryptionAlgorithm"/&gt; to compare.&lt;/param&gt;</span>
+    <span class="c1">/// &lt;param name="right"&gt;The second &lt;see cref="EncryptionAlgorithm"/&gt; to compare.&lt;/param&gt;</span>
+    <span class="c1">/// &lt;returns&gt;True if &lt;paramref name="left"/&gt; and &lt;paramref name="right"/&gt; are the same; otherwise, false.&lt;/returns&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="p">==(</span><span class="n">EncryptionAlgorithm</span> <span class="n">left</span><span class="p">,</span> <span class="n">EncryptionAlgorithm</span> <span class="n">right</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">left</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">right</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Determines if two &lt;see cref="EncryptionAlgorithm"/&gt; values are different.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="c1">/// &lt;param name="left"&gt;The first &lt;see cref="EncryptionAlgorithm"/&gt; to compare.&lt;/param&gt;</span>
+    <span class="c1">/// &lt;param name="right"&gt;The second &lt;see cref="EncryptionAlgorithm"/&gt; to compare.&lt;/param&gt;</span>
+    <span class="c1">/// &lt;returns&gt;True if &lt;paramref name="left"/&gt; and &lt;paramref name="right"/&gt; are different; otherwise, false.&lt;/returns&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">bool</span> <span class="k">operator</span> <span class="p">!=(</span><span class="n">EncryptionAlgorithm</span> <span class="n">left</span><span class="p">,</span> <span class="n">EncryptionAlgorithm</span> <span class="n">right</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">left</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">right</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Converts a string to a &lt;see cref="EncryptionAlgorithm"/&gt;.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="c1">/// &lt;param name="value"&gt;The string value to convert.&lt;/param&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">implicit</span> <span class="k">operator</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="kt">string</span> <span class="k">value</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">EncryptionAlgorithm</span><span class="p">(</span><span class="k">value</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;inheritdoc/&gt;</span>
+    <span class="p">[</span><span class="nf">EditorBrowsable</span><span class="p">(</span><span class="n">EditorBrowsableState</span><span class="p">.</span><span class="n">Never</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">bool</span> <span class="nf">Equals</span><span class="p">(</span><span class="kt">object</span> <span class="n">obj</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">obj</span> <span class="k">is</span> <span class="n">EncryptionAlgorithm</span> <span class="n">other</span> <span class="p">&amp;&amp;</span> <span class="nf">Equals</span><span class="p">(</span><span class="n">other</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;inheritdoc/&gt;</span>
+    <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Equals</span><span class="p">(</span><span class="n">EncryptionAlgorithm</span> <span class="n">other</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">_value</span><span class="p">,</span> <span class="n">other</span><span class="p">.</span><span class="n">_value</span><span class="p">,</span> <span class="n">StringComparison</span><span class="p">.</span><span class="n">Ordinal</span><span class="p">);</span>
+
+    <span class="c1">/// &lt;inheritdoc/&gt;</span>
+    <span class="p">[</span><span class="nf">EditorBrowsable</span><span class="p">(</span><span class="n">EditorBrowsableState</span><span class="p">.</span><span class="n">Never</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">int</span> <span class="nf">GetHashCode</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="n">_value</span><span class="p">?.</span><span class="nf">GetHashCode</span><span class="p">()</span> <span class="p">??</span> <span class="m">0</span><span class="p">;</span>
+
+    <span class="c1">/// &lt;inheritdoc/&gt;</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">string</span> <span class="nf">ToString</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="n">_value</span><span class="p">;</span>
+
+    <span class="c1">// Attach extra information to to structs using factory methods:</span>
+    <span class="k">internal</span> <span class="n">RSAEncryptionPadding</span> <span class="nf">GetRsaEncryptionPadding</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="n">_value</span> <span class="k">switch</span>
+    <span class="p">{</span>
+        <span class="n">Rsa15Value</span> <span class="p">=&gt;</span> <span class="n">RSAEncryptionPadding</span><span class="p">.</span><span class="n">Pkcs1</span><span class="p">,</span>
+        <span class="n">RsaOaepValue</span> <span class="p">=&gt;</span> <span class="n">RSAEncryptionPadding</span><span class="p">.</span><span class="n">OaepSHA1</span><span class="p">,</span>
+        <span class="n">RsaOaep256Value</span> <span class="p">=&gt;</span> <span class="n">RSAEncryptionPadding</span><span class="p">.</span><span class="n">OaepSHA256</span><span class="p">,</span>
+        <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">null</span><span class="p">,</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="dotnet-enums-values">Constant values for enumeration-like structures</h5>
+
+<p><a href="#dotnet-enums-values-define" name="dotnet-enums-values-define" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  define a nested static class named <code class="language-plaintext highlighter-rouge">Values</code> with public constants if and only if extensible enum values <em>must</em> be used as constant expressions, for example:</p>
+
+<ul>
+  <li>Attribute values</li>
+  <li>Default parameter values</li>
+  <li>Switch statements and expressions</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">partial</span> <span class="k">readonly</span> <span class="k">struct</span> <span class="nc">EncryptionAlgorithm</span> <span class="p">:</span> <span class="n">IEquatable</span><span class="p">&lt;</span><span class="n">EncryptionAlgorithm</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// The values of all declared &lt;see cref="EncryptionAlgorithm"/&gt; properties as string constants.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">Values</span>
+    <span class="p">{</span>
+        <span class="c1">/// &lt;summary&gt;</span>
+        <span class="c1">/// RSA1_5</span>
+        <span class="c1">/// &lt;/summary&gt;</span>
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">Rsa15</span> <span class="p">=</span> <span class="n">EncryptionAlgorithm</span><span class="p">.</span><span class="n">Rsa15Value</span><span class="p">;</span>
+
+        <span class="c1">/// &lt;summary&gt;</span>
+        <span class="c1">/// RSA-OAEP</span>
+        <span class="c1">/// &lt;/summary&gt;</span>
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RsaOaep</span> <span class="p">=</span> <span class="n">EncryptionAlgorithm</span><span class="p">.</span><span class="n">RsaOaepValue</span><span class="p">;</span>
+
+        <span class="c1">/// &lt;summary&gt;</span>
+        <span class="c1">/// RSA-OAEP256</span>
+        <span class="c1">/// &lt;/summary&gt;</span>
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RsaOaep256</span> <span class="p">=</span> <span class="n">EncryptionAlgorithm</span><span class="p">.</span><span class="n">RsaOaep256Value</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#dotnet-enums-values-test" name="dotnet-enums-values-test" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define tests to ensure extensible enum properties and defined <code class="language-plaintext highlighter-rouge">Values</code> constants declare the same names and define the same values. See <a href="https://github.com/Azure/azure-sdk-for-net/blob/322f6952e4946229949bd3375f5eb6120895fd2f/sdk/search/Azure.Search.Documents/tests/Models/LexicalAnalyzerNameTests.cs#L14-L29">here</a> for an example.</p>
+
+<h4 id="using-azure-core-types">Using Azure Core Types</h4>
+
+<h5 id="dotnet-implement-operation">Implementing Subtypes of Operation&lt;T&gt;</h5>
+
+<p>Subtypes of <code class="language-plaintext highlighter-rouge">Operation&lt;T&gt;</code> are returned from service client methods invoking long running operations (LROs), as described in <a href="/azure-sdk/dotnet_introduction.html#dotnet-longrunning">Methods Invoking Long Running Operations</a>.</p>
+
+<p><a href="#dotnet-lro-return" name="dotnet-lro-return" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  check the value of <code class="language-plaintext highlighter-rouge">HasCompleted</code> in subclass implementations of <code class="language-plaintext highlighter-rouge">UpdateStatus</code> and <code class="language-plaintext highlighter-rouge">UpdateStatusAsync</code> and immediately return the result of <code class="language-plaintext highlighter-rouge">GetRawResponse</code> if it is true.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">override</span> <span class="n">Response</span> <span class="nf">UpdateStatus</span><span class="p">(</span>
+    <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="nf">UpdateStatusAsync</span><span class="p">(</span><span class="k">false</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">).</span><span class="nf">EnsureCompleted</span><span class="p">();</span>
+
+<span class="k">public</span> <span class="k">override</span> <span class="k">async</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">Response</span><span class="p">&gt;</span> <span class="nf">UpdateStatusAsync</span><span class="p">(</span>
+    <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="nf">UpdateStatusAsync</span><span class="p">(</span><span class="k">true</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">).</span><span class="nf">ConfigureAwait</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+
+<span class="k">private</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Response</span><span class="p">&gt;</span> <span class="nf">UpdateStatusAsync</span><span class="p">(</span><span class="kt">bool</span> <span class="k">async</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Short-circuit when already completed (which improves mocking scenarios that won't have a client).</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">HasCompleted</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">GetRawResponse</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="c1">// some service operation call here, which the above check avoids if the operation has already completed.</span>
+    <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#dotnet-lro-return" name="dotnet-lro-return" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  throw from methods on <code class="language-plaintext highlighter-rouge">Operation&lt;T&gt;</code> subclasses in the following scenarios.</p>
+
+<ul>
+  <li>If an underlying service operation call from <code class="language-plaintext highlighter-rouge">UpdateStatus</code>, <code class="language-plaintext highlighter-rouge">WaitForCompletion</code>, or <code class="language-plaintext highlighter-rouge">WaitForCompletionAsync</code> throws, re-throw <code class="language-plaintext highlighter-rouge">RequestFailedException</code> or its subtype.</li>
+  <li>If the operation completes with a non-success result, throw <code class="language-plaintext highlighter-rouge">RequestFailedException</code> or its subtype from <code class="language-plaintext highlighter-rouge">UpdateStatus</code>, <code class="language-plaintext highlighter-rouge">WaitForCompletion</code>, or <code class="language-plaintext highlighter-rouge">WaitForCompletionAsync</code>.
+    <ul>
+      <li>Include any relevant error state information in the exception details.</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">async</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">Response</span><span class="p">&gt;</span> <span class="nf">UpdateStatusAsync</span><span class="p">(</span><span class="kt">bool</span> <span class="k">async</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="p">...</span>
+
+        <span class="k">try</span>
+        <span class="p">{</span>
+            <span class="n">Response</span><span class="p">&lt;</span><span class="n">ExampleOperationResult</span><span class="p">&gt;</span> <span class="n">update</span> <span class="p">=</span> <span class="k">async</span>
+                <span class="p">?</span> <span class="k">await</span> <span class="n">_serviceClient</span><span class="p">.</span><span class="nf">GetExampleResultAsync</span><span class="p">(</span><span class="k">new</span> <span class="nf">Guid</span><span class="p">(</span><span class="n">Id</span><span class="p">),</span> <span class="n">cancellationToken</span><span class="p">).</span><span class="nf">ConfigureAwait</span><span class="p">(</span><span class="k">false</span><span class="p">)</span>
+                <span class="p">:</span> <span class="n">_serviceClient</span><span class="p">.</span><span class="nf">GetExampleResult</span><span class="p">(</span><span class="k">new</span> <span class="nf">Guid</span><span class="p">(</span><span class="n">Id</span><span class="p">),</span> <span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="n">_response</span> <span class="p">=</span> <span class="n">update</span><span class="p">.</span><span class="nf">GetRawResponse</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">update</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Status</span> <span class="p">==</span> <span class="n">OperationStatus</span><span class="p">.</span><span class="n">Succeeded</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="c1">// we need to first assign a value and then mark the operation as completed to avoid race conditions</span>
+                <span class="n">_value</span> <span class="p">=</span> <span class="nf">ConvertValue</span><span class="p">(</span><span class="n">update</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">ExampleResult</span><span class="p">.</span><span class="n">PageResults</span><span class="p">,</span> <span class="n">update</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">ExampleResult</span><span class="p">.</span><span class="n">ReadResults</span><span class="p">);</span>
+                <span class="n">_hasCompleted</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">update</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Status</span> <span class="p">==</span> <span class="n">OperationStatus</span><span class="p">.</span><span class="n">Failed</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">_requestFailedException</span> <span class="p">=</span> <span class="k">await</span> <span class="n">ClientCommon</span>
+                    <span class="p">.</span><span class="nf">CreateExceptionForFailedOperationAsync</span><span class="p">(</span><span class="k">async</span><span class="p">,</span> <span class="n">_diagnostics</span><span class="p">,</span> <span class="n">_response</span><span class="p">,</span> <span class="n">update</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">AnalyzeResult</span><span class="p">.</span><span class="n">Errors</span><span class="p">)</span>
+                    <span class="p">.</span><span class="nf">ConfigureAwait</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+                <span class="n">_hasCompleted</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+
+                <span class="c1">// the operation didn't throw, but it completed with a non-success result.</span>
+                <span class="k">throw</span> <span class="n">_requestFailedException</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">scope</span><span class="p">.</span><span class="nf">Failed</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+            <span class="k">throw</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nf">GetRawResponse</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>If the <code class="language-plaintext highlighter-rouge">Value</code> property is evaluated after the operation failed (<code class="language-plaintext highlighter-rouge">HasValue</code> is false and <code class="language-plaintext highlighter-rouge">HasCompleted</code> is true) throw the same exception as the one thrown when the operation failed.</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">override</span> <span class="n">FooResult</span> <span class="n">Value</span>
+<span class="p">{</span>
+    <span class="k">get</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">HasCompleted</span> <span class="p">&amp;&amp;</span> <span class="p">!</span><span class="n">HasValue</span><span class="p">)</span>
+<span class="cp">#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+</span>
+            <span class="c1">// throw the exception captured when the operation failed.</span>
+            <span class="k">throw</span> <span class="n">_requestFailedException</span><span class="p">;</span>
+
+<span class="cp">#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
+</span>        <span class="k">else</span>
+            <span class="k">return</span> <span class="n">OperationHelpers</span><span class="p">.</span><span class="nf">GetValue</span><span class="p">(</span><span class="k">ref</span> <span class="n">_value</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>If the <code class="language-plaintext highlighter-rouge">Value</code> property is evaluated before the operation is complete (<code class="language-plaintext highlighter-rouge">HasCompleted</code> is false) throw <code class="language-plaintext highlighter-rouge">InvalidOperationException</code>.
+    <ul>
+      <li>The exception message should be: “The operation has not yet completed.”</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// start the operation.</span>
+<span class="n">ExampleOperation</span> <span class="n">operation</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="nf">StartExampleOperationAsync</span><span class="p">(</span><span class="n">someParameter</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(!</span><span class="n">operation</span><span class="p">.</span><span class="n">HasCompleted</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// attempt to get the Value property before the operation has completed.</span>
+    <span class="n">ExampleOperationResult</span> <span class="n">myResult</span> <span class="p">=</span> <span class="n">operation</span><span class="p">.</span><span class="n">Value</span><span class="p">;</span>  <span class="c1">//throws InvalidOperationException.</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(!</span><span class="n">operation</span><span class="p">.</span><span class="n">HasValue</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// attempt to get the Value property after the operation has completed unsuccessfully.</span>
+    <span class="n">ExampleOperationResult</span> <span class="n">myResult</span> <span class="p">=</span> <span class="n">operation</span><span class="p">.</span><span class="n">Value</span><span class="p">;</span>  <span class="c1">//throws RequestFailedException.</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="sdk-feature-implementation">SDK Feature Implementation</h2>
+
+<h3 id="configuration">Configuration</h3>
+
+<p>TODO: Add discussion on configuration environment variables to parallel that of other languages</p>
+
+<h3 id="logging">Logging</h3>
+
+<p>Request logging will be done automatically by the <code class="language-plaintext highlighter-rouge">HttpPipeline</code>.  If a client library needs to add custom logging, follow the <a href="/azure-sdk/dotnet_implementation.html#general-logging">same guidelines</a> and mechanisms as the pipeline logging mechanism.  If a client library wants to do custom logging, the designer of the library must ensure that the logging mechanism is pluggable in the same way as the <code class="language-plaintext highlighter-rouge">HttpPipeline</code> logging policy.</p>
+
+<p><a href="#dotnet-logging-follow-guidelines" name="dotnet-logging-follow-guidelines" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow <a href="/azure-sdk/dotnet_implementation.html#general-logging">the logging section of the Azure SDK General Guidelines</a> if logging directly (as opposed to through the <code class="language-plaintext highlighter-rouge">HttpPipeline</code>).</p>
+
+<h4 id="eventsource">EventSource</h4>
+
+<p>Azure SDKs use EventSource library as a logging mechanism.
+Most Azure SDKs with client methods that make a service request and deserialize the response won’t need to define EventSource of their own as <code class="language-plaintext highlighter-rouge">Azure.Core</code> would provide HTTP request logging, retry logging etc. and the failures would be surfaced to customers as <code class="language-plaintext highlighter-rouge">Exceptions</code>.
+You should only log information that is not possible to infer from the result returned by the client.</p>
+
+<p>For example:</p>
+
+<ul>
+  <li>✔ <strong>GOOD</strong> <code class="language-plaintext highlighter-rouge">Azure.Identity</code> logging which credential type was selected when using <code class="language-plaintext highlighter-rouge">DefaultAzureCredential</code> - it’s impossible to determine from the returned <code class="language-plaintext highlighter-rouge">AccessToken</code> with credential was used to retrieve it.</li>
+  <li>✔ <strong>GOOD</strong> <code class="language-plaintext highlighter-rouge">Azure.Security.KeyVault</code> logging whether an encryption operation was performed locally or remotely - the client can decide to run encryption locally or remotely depending on key properties, the decision is invisible to consumer.</li>
+  <li>❌<strong>BAD</strong> Logging properties of the request or response - <code class="language-plaintext highlighter-rouge">Azure-Core</code> already does this as part of the pipeline.</li>
+  <li>❌<strong>BAD</strong> Logging exception details before throwing - customers would be able to decide if they want the exception to be logged or not.</li>
+</ul>
+
+<p><a href="#dotnet-tracing-eventsource" name="dotnet-tracing-eventsource" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://github.com/microsoft/dotnet-samples/blob/master/Microsoft.Diagnostics.Tracing/EventSource/docs/EventSource.md">EventSource library</a> to produce diagnostic events.</p>
+
+<p><a href="#dotnet-tracing-eventsource-type-name" name="dotnet-tracing-eventsource-type-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the package name with <code class="language-plaintext highlighter-rouge">EventSource</code> suffix for the class name (i.e. . <code class="language-plaintext highlighter-rouge">AzureCoreEventSource</code> for <code class="language-plaintext highlighter-rouge">Azure.Core</code> package).</p>
+
+<p><a href="#dotnet-tracing-eventsource-base-class" name="dotnet-tracing-eventsource-base-class" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">AzureEventSource</code> as the base class.</p>
+
+<p><a href="#dotnet-tracing-eventsource-logging-guidelines" name="dotnet-tracing-eventsource-logging-guidelines" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the logging guidelines when implementing an <code class="language-plaintext highlighter-rouge">[Package]EventSource</code>.</p>
+
+<p><a href="#dotnet-tracing-eventsource-single" name="dotnet-tracing-eventsource-single" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have a single <code class="language-plaintext highlighter-rouge">[Package]EventSource</code> type per library.</p>
+
+<p><a href="#dotnet-tracing-eventsource-internal" name="dotnet-tracing-eventsource-internal" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define <code class="language-plaintext highlighter-rouge">[Package]EventSource</code> class as <code class="language-plaintext highlighter-rouge">internal sealed</code>.</p>
+
+<p><a href="#dotnet-tracing-eventsource-singleton" name="dotnet-tracing-eventsource-singleton" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define and use a singleton instance of <code class="language-plaintext highlighter-rouge">[Package]EventSource</code>:</p>
+
+<p><a href="#dotnet-tracing-eventsource-name" name="dotnet-tracing-eventsource-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">[Package]EventSource</code> name to package name replacing <code class="language-plaintext highlighter-rouge">.</code> with <code class="language-plaintext highlighter-rouge">-</code> (i.e. . <code class="language-plaintext highlighter-rouge">Azure-Core</code> for <code class="language-plaintext highlighter-rouge">Azure.Core</code> package)</p>
+
+<p><a href="#dotnet-tracing-eventsource-event-message" name="dotnet-tracing-eventsource-event-message" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have <code class="language-plaintext highlighter-rouge">Message</code> property of EventAttribute set for all events.</p>
+
+<p><a href="#dotnet-tracing-eventsource-public-api" name="dotnet-tracing-eventsource-public-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  treat <code class="language-plaintext highlighter-rouge">[Package]EventSource</code> name, guid, event id and parameters as public API and follow the appropriate versioning rules.</p>
+
+<p><a href="#dotnet-tracing-eventsource-is-enabled" name="dotnet-tracing-eventsource-is-enabled" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  check IsEnabled property before doing expensive work (formatting parameters, calling ToString, allocations etc.)</p>
+
+<p><a href="#dotnet-tracing-eventsource-event-param-exception" name="dotnet-tracing-eventsource-event-param-exception" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  define events with <code class="language-plaintext highlighter-rouge">Exception</code> parameters as they are not supported by <code class="language-plaintext highlighter-rouge">EventSource</code>.</p>
+
+<p><a href="#dotnet-tracing-eventsource-test" name="dotnet-tracing-eventsource-test" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have a test that asserts <code class="language-plaintext highlighter-rouge">[Package]EventSource</code> name, guid and generates the manifest to verify that event source is correctly defined.</p>
+
+<p><a href="#dotnet-tracing-eventsource-test-events" name="dotnet-tracing-eventsource-test-events" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  test that expected events are produced when appropriate. <code class="language-plaintext highlighter-rouge">TestEventListener</code> class can be used to collect events. Make sure you mark the test as <code class="language-plaintext highlighter-rouge">[NonParallelizable]</code>.</p>
+
+<p><a href="#dotnet-tracing-eventsource-thrown-exceptions" name="dotnet-tracing-eventsource-thrown-exceptions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  avoid logging exceptions that are going to get thrown to user code anyway.</p>
+
+<p><a href="#dotnet-tracing-eventsource-event-size-limit" name="dotnet-tracing-eventsource-event-size-limit" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  be aware of event size limit of 64K.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[Test]
+public void MatchesNameAndGuid()
+{
+    // Arrange &amp; Act
+    Type eventSourceType = typeof(AzureCoreEventSource);
+
+    // Assert
+    Assert.NotNull(eventSourceType);
+    Assert.AreEqual("Azure-Core", EventSource.GetName(eventSourceType));
+    Assert.AreEqual(Guid.Parse("1015ab6c-4cd8-53d6-aec3-9b937011fa95"), EventSource.GetGuid(eventSourceType));
+    Assert.IsNotEmpty(EventSource.GenerateManifest(eventSourceType, "assemblyPathToIncludeInManifest"));
+}
+</code></pre></div></div>
+
+<p>Sample <code class="language-plaintext highlighter-rouge">EventSource</code> declaration:</p>
+
+<pre><code class="language-C#">
+[EventSource(Name = EventSourceName)]
+internal sealed class AzureCoreEventSource : AzureEventSource
+{
+    private const string EventSourceName = "Azure-Core";
+
+    // Having event ids defined as const makes it easy to keep track of them
+    private const int MessageSentEventId = 0;
+    private const int ClientClosingEventId = 1;
+
+    public static AzureCoreEventSource Shared { get; } = new AzureCoreEventSource();
+
+    private AzureCoreEventSource() : base(EventSourceName) { }
+
+    [NonEvent]
+    public void MessageSent(Guid clientId, string messageBody)
+    {
+        // We are calling Guid.ToString make sure anyone is listening before spending resources
+        if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+        {
+            MessageSent(clientId.ToString("N"), messageBody);
+        }
+    }
+
+    // In this example we don't do any expensive parameter formatting so we can avoid extra method and IsEnabled check
+
+    [Event(ClientClosingEventId, Level = EventLevel.Informational, Message = "Client {0} is closing the connection.")]
+    public void ClientClosing(string clientId)
+    {
+        WriteEvent(ClientClosingEventId, clientId);
+    }
+
+    [Event(MessageSentEventId, Level = EventLevel.Informational, Message = "Client {0} sent message with body '{1}'")]
+    private void MessageSent(string clientId, string messageBody)
+    {
+        WriteEvent(MessageSentEventId, clientId, messageBody);
+    }
+}
+</code></pre>
+
+<h3 id="dotnet-distributedtracing">Distributed Tracing</h3>
+
+<p>Distributed tracing allows customers to observe public API methods that are called and network calls that are made from Azure SDK libraries.  With these traces, customers can view the timing of these calls and any errors that occurred.</p>
+
+<p>Distributed traces for network calls are sent automatically by the <code class="language-plaintext highlighter-rouge">HttpPipeline</code> in Azure.Core.  Library authors must trace public service methods using <code class="language-plaintext highlighter-rouge">ClientDiagnostics.CreateScope</code>.  The .NET <code class="language-plaintext highlighter-rouge">Activity</code> types are used for this internally by the <code class="language-plaintext highlighter-rouge">ClientDiagnostics</code> via .NET <a href="https://github.com/dotnet/runtime/blob/main/src/libraries/System.Diagnostics.DiagnosticSource/src/DiagnosticSourceUsersGuide.md"><code class="language-plaintext highlighter-rouge">DiagnosticSource</code></a> or <a href="https://docs.microsoft.com/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs"><code class="language-plaintext highlighter-rouge">ActivitySource</code></a>.</p>
+
+<p><a href="#dotnet-tracing" name="dotnet-tracing" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow <a href="/azure-sdk/general_implementation.html#distributed-tracing">General Distributed Tracing Guidance</a>.</p>
+
+<p><a href="#dotnet-tracing-opentelemetry" name="dotnet-tracing-opentelemetry" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support distributed tracing by using <code class="language-plaintext highlighter-rouge">ClientDiagnostics</code> and <code class="language-plaintext highlighter-rouge">DiagnosticScope</code></p>
+
+<p><a href="#dotnet-tracing-new-span-per-method-failure" name="dotnet-tracing-new-span-per-method-failure" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  If method throws exception, record exception on scope using <code class="language-plaintext highlighter-rouge">scope.Failed(ex)</code>. Do not record exception if exception is handled within service method.</p>
+
+<p><a href="#dotnet-tracing-suppress-client-spans-for-inner-methods" name="dotnet-tracing-suppress-client-spans-for-inner-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  enable inner client scope suppression when creating <code class="language-plaintext highlighter-rouge">ClientDiagnostics</code> by setting corresponding suppression flag to <code class="language-plaintext highlighter-rouge">true</code>. Client libraries that currently don’t suppress inner client scopes must keep the flag value default (<code class="language-plaintext highlighter-rouge">null</code>) for backward compatibility reasons.</p>
+
+<p><a href="#dotnet-tracing-sources" name="dotnet-tracing-sources" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use <code class="language-plaintext highlighter-rouge">DiagnosticSource</code>, or <code class="language-plaintext highlighter-rouge">ActivitySource</code> API directly from client libraries. <code class="language-plaintext highlighter-rouge">Activity</code> can be used directly when <code class="language-plaintext highlighter-rouge">DiagnosticScope</code> does not expose corresponding APIs.</p>
+
+<h3 id="telemetry">Telemetry</h3>
+
+<p>TODO: Add guidance regarding user agent strings</p>
+
+<h2 id="ecosystem-integration">Ecosystem Integration</h2>
+
+<h3 id="integration-with-aspnet-core">Integration with ASP.NET Core</h3>
+
+<p>All Azure client libraries ship with a set of extension methods that provide integration with ASP.NET Core applications by registering clients with DependencyInjection container, flowing Azure SDK logs to ASP.NET Core logging subsystem and providing ability to use configuration subsystem for client configuration (for more examples see https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/core/Microsoft.Extensions.Azure)</p>
+
+<p><a href="#dotnet-builder-class-name" name="dotnet-builder-class-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a single <code class="language-plaintext highlighter-rouge">*ClientBuilderExtensions</code> class for every Azure SDK client library that contains client types. Name of the type should use the same prefix as the <code class="language-plaintext highlighter-rouge">*ClientOptions</code> class used across the library. For example: <code class="language-plaintext highlighter-rouge">SecretClientBuilderExtensions</code>, <code class="language-plaintext highlighter-rouge">BlobClientBuilderExtensions</code></p>
+
+<p><a href="#dotnet-client-builder-class-namespace" name="dotnet-client-builder-class-namespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <code class="language-plaintext highlighter-rouge">Microsoft.Extensions.Azure</code> as a namespace.</p>
+
+<p><a href="#dotnet-client-builder-class-service-client" name="dotnet-client-builder-class-service-client" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide integration extension methods for every top level client type users are expected to start with in the main namespace. Do not include integration extension methods for secondary clients, child clients, or clients in advanced namespaces.</p>
+
+<p><a href="#dotnet-client-builder-extension-name" name="dotnet-client-builder-extension-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name extension methods as <code class="language-plaintext highlighter-rouge">Add[ClientName]</code> for example. Add <code class="language-plaintext highlighter-rouge">AddSecretsClient</code>, <code class="language-plaintext highlighter-rouge">AddBlobServiceClient</code>.</p>
+
+<p><a href="#dotnet-client-builder-overloads" name="dotnet-client-builder-overloads" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an overload for every set of constructor parameters.</p>
+
+<p><a href="#dotnet-client-builder-overload-normal" name="dotnet-client-builder-overload-normal" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide extension method for <code class="language-plaintext highlighter-rouge">IAzureClientFactoryBuilder</code> interface for constructors that don’t take <code class="language-plaintext highlighter-rouge">TokenCredentials</code>. Extension method should take same set of parameters as constructor and call into <code class="language-plaintext highlighter-rouge">builder.RegisterClientFactory</code></p>
+
+<p>Sample implementation:</p>
+
+<pre><code class="language-C#">public static IAzureClientBuilder&lt;ConfigurationClient, ConfigurationClientOptions&gt; AddConfigurationClient&lt;TBuilder&gt;(this TBuilder builder, string connectionString)
+    where TBuilder : IAzureClientFactoryBuilder
+{
+    return builder.RegisterClientFactory&lt;ConfigurationClient, ConfigurationClientOptions&gt;(options =&gt; new ConfigurationClient(connectionString, options));
+}
+</code></pre>
+
+<p><a href="#dotnet-client-builder-overload-tokencredential" name="dotnet-client-builder-overload-tokencredential" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide extension method for <code class="language-plaintext highlighter-rouge">IAzureClientFactoryBuilderWithCredential</code> interface for constructors that take <code class="language-plaintext highlighter-rouge">TokenCredentials</code>. Extension method should take same set of parameters as constructor except the <code class="language-plaintext highlighter-rouge">TokenCredential</code> and call into <code class="language-plaintext highlighter-rouge">builder.RegisterClientFactory</code> overload that provides the token credential as part of factory lambda.</p>
+
+<p>Sample implementation:</p>
+
+<pre><code class="language-C#">public static IAzureClientBuilder&lt;SecretClient, SecretClientOptions&gt; AddSecretClient&lt;TBuilder&gt;(this TBuilder builder, Uri vaultUri)
+     where TBuilder : IAzureClientFactoryBuilderWithCredential
+{
+    return builder.RegisterClientFactory&lt;SecretClient, SecretClientOptions&gt;((options, cred) =&gt; new SecretClient(vaultUri, cred, options));
+}
+</code></pre>
+
+<p><a href="#dotnet-client-builder-overload-configuration" name="dotnet-client-builder-overload-configuration" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide extension method for <code class="language-plaintext highlighter-rouge">IAzureClientFactoryBuilderWithConfiguration&lt;TConfiguration&gt;</code> that takes <code class="language-plaintext highlighter-rouge">TConfiguration configuration</code>. This overload would allow customers to pass in a <code class="language-plaintext highlighter-rouge">IConfiguration</code> object and create client dynamically based on configuration values.</p>
+
+<p>Sample implementation:</p>
+<pre><code class="language-C#">public static IAzureClientBuilder&lt;SecretClient, SecretClientOptions&gt; AddSecretClient&lt;TBuilder, TConfiguration&gt;(this TBuilder builder, TConfiguration configuration)
+    where TBuilder : IAzureClientFactoryBuilderWithConfiguration&lt;TConfiguration&gt;
+{
+    return builder.RegisterClientFactory&lt;SecretClient, SecretClientOptions&gt;(configuration);
+}
+</code></pre>
+
+<!-- Links -->
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

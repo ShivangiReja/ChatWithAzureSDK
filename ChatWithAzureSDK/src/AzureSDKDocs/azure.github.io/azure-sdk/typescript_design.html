@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines typescript">
+<title>TypeScript Guidelines: API Design | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">TypeScript Guidelines: API Design</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <p>The API surface of your client library must have the most thought as it is the primary interaction that the consumer has with your service.</p>
+
+<h2 id="ts-platform-support">Platform Support</h2>
+
+<p><a href="#ts-node-support" name="ts-node-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support <a href="https://github.com/nodejs/Release#release-schedule">all LTS versions of Node</a> and newer versions up to and including the latest release.</p>
+
+<p><a href="#ts-browser-support" name="ts-browser-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following browsers and versions:</p>
+
+<ul>
+  <li>Apple Safari: latest two versions</li>
+  <li>Google Chrome: latest two versions</li>
+  <li>Microsoft Edge: all supported versions</li>
+  <li>Mozilla FireFox: latest two versions</li>
+</ul>
+
+<p>Use <a href="https://caniuse.com">caniuse.com</a> to determine whether you can use a given platform feature in the runtime versions you support. Syntax support is provided by TypeScript.</p>
+
+<p><a href="#ts-no-ie11-support" name="ts-no-ie11-support" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  support IE11. If you have a business justification for IE11 support, contact the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.</p>
+
+<p><a href="#ts-support-ts" name="ts-support-ts" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  compile without errors on all versions of TypeScript greater than 3.1.</p>
+
+<p>While consumers are fast at adopting new versions of TypeScript, version 3.1 is used by Angular 7, which is still commonly used.  Supporting older versions of TypeScript can be a challenge. There are two general approaches:</p>
+
+<ol>
+  <li>Don’t use new features.</li>
+  <li>Use <a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-1.html#version-selection-with-typesversions"><code class="language-plaintext highlighter-rouge">typesVersions</code></a>, which might require manual effort to produce typings compatible with older versions based on the new typings.</li>
+</ol>
+
+<p><a href="#ts-register-dropped-platforms" name="ts-register-dropped-platforms" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  get approval from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> to drop support for any platform (except IE11 and Node 6) even if support isn’t required.</p>
+
+<h2 id="ts-namespace">Namespaces, NPM Scopes, and Distribution Tags</h2>
+
+<p><a href="#ts-azure-scope" name="ts-azure-scope" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  publish your library to the <code class="language-plaintext highlighter-rouge">@azure</code> npm scope.</p>
+
+<p><a href="#ts-namespace-serviceclient" name="ts-namespace-serviceclient" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  pick a package name that allows the consumer to tie the namespace to the service being used.  As a default, use the compressed service name at the end of the namespace.  The namespace does <strong>NOT</strong> change when the branding of the product changes. Avoid the use of marketing names that may change.</p>
+
+<p><a href="#ts-npm-dist-tag-beta" name="ts-npm-dist-tag-beta" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  tag beta packages with the npm distribution tag <code class="language-plaintext highlighter-rouge">next</code>. If there is no generally available release of this package, it should also be tagged <code class="language-plaintext highlighter-rouge">latest</code>.</p>
+
+<p><a href="#ts-npm-dist-tag-next" name="ts-npm-dist-tag-next" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  tag generally available npm packages <code class="language-plaintext highlighter-rouge">latest</code>. Generally available packages may also be tagged <code class="language-plaintext highlighter-rouge">next</code> if they include the changes from the most recent beta.</p>
+
+<p><a href="#ts-npm-package-name-prefix" name="ts-npm-package-name-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix your data plane package names with the kebab-case version of the appropriate namespace from the following table:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Namespace Group</th>
+      <th style="text-align: left">Functional Area</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">ai</code></td>
+      <td style="text-align: left">Artificial intelligence, including machine learning</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">analytics</code></td>
+      <td style="text-align: left">Gathering data for metrics or usage</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">containers</code></td>
+      <td style="text-align: left">Services related to containers</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">communication</code></td>
+      <td style="text-align: left">Communication services</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">data</code></td>
+      <td style="text-align: left">Dealing with structured data stores like databases</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">diagnostics</code></td>
+      <td style="text-align: left">Gathering data for diagnosing issues</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">digitaltwins</code></td>
+      <td style="text-align: left">Digital Twins, digital representations of physical spaces and IoT devices</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">identity</code></td>
+      <td style="text-align: left">Authentication and authorization</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">iot</code></td>
+      <td style="text-align: left">Internet of things</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">management</code></td>
+      <td style="text-align: left">Control Plane (Azure Resource Manager)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">media</code></td>
+      <td style="text-align: left">Audio and video technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">messaging</code></td>
+      <td style="text-align: left">Messaging services, like push notifications or pub-sub</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">mixedreality</code></td>
+      <td style="text-align: left">Mixed reality technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">monitor</code></td>
+      <td style="text-align: left">Services that are offered by Azure Monitor</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">quantum</code></td>
+      <td style="text-align: left">Quantum computing technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">search</code></td>
+      <td style="text-align: left">Search technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">security</code></td>
+      <td style="text-align: left">Security and cryptography</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">storage</code></td>
+      <td style="text-align: left">Storage of unstructured data</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For example, these package names meet the guidelines:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">@azure/cosmos</code></li>
+  <li><code class="language-plaintext highlighter-rouge">@azure/storage-blob</code></li>
+  <li><code class="language-plaintext highlighter-rouge">@azure/digital-twins-core</code></li>
+</ul>
+
+<p>The following are examples that do not meet the guidelines:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">@microsoft/cosmos</code> (not in <code class="language-plaintext highlighter-rouge">@azure</code> scope).</li>
+  <li><code class="language-plaintext highlighter-rouge">@azure/digitaltwins</code> (not kebab-cased).</li>
+</ul>
+
+<p><a href="#ts-npm-package-name-follow-conventions" name="ts-npm-package-name-follow-conventions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  you should follow the casing conventions of any existing stable packages released in the <code class="language-plaintext highlighter-rouge">@azure</code> npm scope. It’s not worth renaming a package just to align on naming conventions.</p>
+
+<h2 id="ts-apisurface-serviceclient">The Client API</h2>
+
+<p>Your API surface will consist of one or more <em>service clients</em> that the consumer will instantiate to connect to your service, plus a set of supporting types. The basic shape of JavaScript service clients is shown in the following example:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">class</span> <span class="nx">ServiceClient</span> <span class="p">{</span>
+  <span class="c1">// client constructors have overloads for handling different</span>
+  <span class="c1">// authentication schemes.</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">connectionString</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">?:</span> <span class="nx">ServiceClientOptions</span><span class="p">);</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">host</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">credential</span><span class="p">:</span> <span class="nx">TokenCredential</span><span class="p">,</span> <span class="nx">options</span><span class="p">?:</span> <span class="nx">ServiceClientOptions</span><span class="p">);</span>
+  <span class="kd">constructor</span><span class="p">(...)</span> <span class="p">{</span> <span class="p">}</span>
+
+  <span class="c1">// Service methods. Options take at least an abortSignal.</span>
+  <span class="k">async</span> <span class="nx">createItem</span><span class="p">(</span><span class="nx">options</span><span class="p">?:</span> <span class="nx">CreateItemOptions</span><span class="p">):</span> <span class="nx">CreateItemResponse</span><span class="p">;</span>
+  <span class="k">async</span> <span class="nx">deleteItem</span><span class="p">(</span><span class="nx">options</span><span class="p">?:</span> <span class="nx">DeleteItemOptions</span><span class="p">):</span> <span class="nx">DeleteItemResponse</span><span class="p">;</span>
+
+  <span class="c1">// Simple paginated API</span>
+  <span class="nx">listItems</span><span class="p">():</span> <span class="nx">PagedAsyncIterableIterator</span><span class="o">&lt;</span><span class="nx">Item</span><span class="p">,</span> <span class="nx">ItemPage</span><span class="o">&gt;</span> <span class="p">{</span> <span class="p">}</span>
+
+  <span class="c1">// Clients for sub-resources</span>
+  <span class="nx">getItemClient</span><span class="p">(</span><span class="nx">itemName</span><span class="p">:</span> <span class="nx">string</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="client-constructors-and-factories">Client constructors and factories</h3>
+
+<p><a href="#ts-apisurface-serviceclientnamespace" name="ts-apisurface-serviceclientnamespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place service client types that the consumer is most likely to interact as a top-level export from your library.  That is, the service client type should be something that can be imported directly by the consumer.</p>
+
+<p><a href="#ts-apisurface-serviceclientconstructor" name="ts-apisurface-serviceclientconstructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to construct a service client with the minimal information needed to connect and authenticate to the service.</p>
+
+<p><a href="#ts-apisurface-standardized-verbs" name="ts-apisurface-standardized-verbs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  standardize verb prefixes within a set of client libraries for a service (see <a href="#ts-approved-verbs">approved verbs</a>).</p>
+
+<p>The service speaks about specific operations in a cross-language manner within outbound materials (such as documentation, blogs, and public speaking).  The service can’t be consistent across languages if the same operation is referred to by different verbs in different languages.</p>
+
+<p><a href="#ts-apisurface-supportallfeatures" name="ts-apisurface-supportallfeatures" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support 100% of the features provided by the Azure service the client library represents.</p>
+
+<p>Gaps in functionality cause confusion and frustration among developers. A feature may be omitted if there isn’t support on the platform. For example, a library that depends on local file system access may not work in a browser.</p>
+
+<p><a href="#ts-use-constructor-overloads" name="ts-use-constructor-overloads" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  provide overloaded constructors for all client construction scenarios.</p>
+
+<p>Don’t use static methods to construct a client unless an overload would be ambiguous.  Prefix the static method with <code class="language-plaintext highlighter-rouge">from</code> if you require a static constructor.</p>
+
+<p><a href="#ts-use-overloads-over-unions" name="ts-use-overloads-over-unions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer overloads over unions when either:</p>
+
+<ol>
+  <li>Users want to see documentation (for example, signature help) tailored specifically to the parameters they’re passing in, or</li>
+  <li>Multiple parameters are correlated.</li>
+</ol>
+
+<p>Unions may be used if neither of these conditions are met. Let’s say we have an API that takes either two numbers or two strings but not both. In this case, the parameters are correlated. If we implemented the types using unions like the following code:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">a</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">b</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span><span class="p">):</span> <span class="k">void</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>We have mistakenly allowed invalid arguments; that is <code class="language-plaintext highlighter-rouge">foo(number, string)</code> and <code class="language-plaintext highlighter-rouge">foo(string, number)</code>. Overloads naturally express this correlation:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">a</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">b</span><span class="p">:</span> <span class="nx">string</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">a</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">b</span><span class="p">:</span> <span class="nx">number</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">foo</span><span class="p">(</span><span class="nx">a</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">b</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span><span class="p">):</span> <span class="k">void</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>The overload approach also lets us attach documentation to each overload individually.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// bad example</span>
+<span class="kd">class</span> <span class="nx">ExampleClient</span> <span class="p">{</span>
+  <span class="kd">constructor</span> <span class="p">(</span><span class="nx">connectionString</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">:</span> <span class="nx">ExampleClientOptions</span><span class="p">);</span>
+  <span class="kd">constructor</span> <span class="p">(</span><span class="nx">url</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">:</span> <span class="nx">ExampleClientOptions</span><span class="p">);</span>
+  <span class="kd">constructor</span> <span class="p">(</span><span class="nx">urlOrCS</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">:</span> <span class="nx">ExampleClientOptions</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// have to dig into the first parameter to see whether its</span>
+    <span class="c1">// a url or a connection string. Not ideal.</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// better example</span>
+<span class="kd">class</span> <span class="nx">ExampleClient</span> <span class="p">{</span>
+  <span class="kd">constructor</span> <span class="p">(</span><span class="nx">url</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">:</span> <span class="nx">ExampleClientOptions</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="p">}</span>
+
+  <span class="kd">static</span> <span class="nx">fromConnectionString</span><span class="p">(</span><span class="nx">connectionString</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">options</span><span class="p">:</span> <span class="nx">ExampleClientOptions</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="ts-service-versions">Service Versions</h3>
+
+<p><a href="#ts-service-versions-use-latest" name="ts-service-versions-use-latest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  call the highest supported service API version by default.</p>
+
+<p><a href="#ts-service-versions-select-api-version" name="ts-service-versions-select-api-version" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to explicitly select a supported service API version when instantiating the client if multiple service versions are supported.</p>
+
+<p><a href="#ts-service-versions-use-client-options" name="ts-service-versions-use-client-options" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a <code class="language-plaintext highlighter-rouge">serviceVersion</code> option in the client constructor’s option bag for providing a service version. The type of this should be a string literal union with supported service versions. You may also provide a string enum with supported service versions.</p>
+
+<h3 id="ts-options">Options</h3>
+
+<p>The guidelines in this section apply to options passed in options bags to clients, whether methods or constructors. When referring to option names, this means the key of the object users must use to specify that option when passing it into a method or constructor.</p>
+
+<p><a href="#ts-naming-options" name="ts-naming-options" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name the type of the options bag as <code class="language-plaintext highlighter-rouge">&lt;class name&gt;Options</code> and <code class="language-plaintext highlighter-rouge">&lt;method name&gt;Options</code> for constructors and methods respectively.</p>
+
+<p><a href="#ts-options-abortSignal" name="ts-options-abortSignal" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name abort signal options <code class="language-plaintext highlighter-rouge">abortSignal</code>.</p>
+
+<p><a href="#ts-options-suffix-durations" name="ts-options-suffix-durations" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  suffix durations with <code class="language-plaintext highlighter-rouge">In&lt;Unit&gt;</code>. Unit should be <code class="language-plaintext highlighter-rouge">ms</code> for milliseconds, and otherwise the name of the unit. Examples include <code class="language-plaintext highlighter-rouge">timeoutInMs</code> and <code class="language-plaintext highlighter-rouge">delayInSeconds</code>.</p>
+
+<h4 id="ts-retry-options">Retry-specific Options</h4>
+
+<p>Many services have a notion of retries and have various means to configure them.</p>
+
+<p><a href="#ts-use-retry-option-names" name="ts-use-retry-option-names" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the option names specified in the table below</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Values</th>
+      <th>Usage</th>
+      <th>Other Names (informational)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>retryMode</td>
+      <td>‘fixed’, ‘linear’, ‘exponential’</td>
+      <td>Used to specify the retry strategy</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>maxRetries</td>
+      <td>number &gt;= 0</td>
+      <td>Number of times to retry. 0 effectively disables retrying.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>retryDelayInMs</td>
+      <td>number &gt; 0</td>
+      <td>Delay between retries. For linear and exponential strategies, this is the initial retry delay and increases thereafter based on the strategy used.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>maxRetryDelayInMs</td>
+      <td>number &gt; 0</td>
+      <td>Maximum delay between retries. For linear and exponential strategies, this effectively clamps the maximum amount of time between retries.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>tryTimeoutInMs</td>
+      <td>number &gt; 0</td>
+      <td>How long to wait for a particular retry to complete before giving up</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>TODO: Please add a code sample showing how these fit into a track 2 JS/TS library.</p>
+
+<p><a href="#ts-use-retry-strategies" name="ts-use-retry-strategies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following retry strategies:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">fixed</code>: retry after some duration, where the duration never changes.</li>
+  <li><code class="language-plaintext highlighter-rouge">exponential</code>: retry after some duration, where the duration increases exponentially after each attempt.</li>
+</ul>
+
+<p>TODO: Are these implemented by default in Azure Core or does the API designer need to implement these?  If there is no action for the API Designer, let’s take this out.</p>
+
+<h3 id="ts-responses">Response formats</h3>
+
+<p>Requests to the service fall into two basic groups - methods that make a single logical request, or a deterministic sequence of requests.  An example of a <em>single logical request</em> is a request that may be retried inside the operation.  An example of a <em>deterministic sequence of requests</em> is a paged operation. The <em>logical entity</em> is a protocol neutral representation of a response. For HTTP, the logical entity may combine data from headers, the body, and the status line.  For example, you may add the <code class="language-plaintext highlighter-rouge">ETag</code> header as a property on the logical entity to the deserialized content from the body of the response.</p>
+
+<p><a href="#ts-return-logical-entities" name="ts-return-logical-entities" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  optimize for returning the logical entity for a given request. The logical entity MUST represent the information needed in the 99%+ case.</p>
+
+<p>TODO: the above guideline is a little vague and I’m not sure how to concretely apply this in JS/TS.</p>
+
+<p><a href="#ts-return-expose-raw" name="ts-return-expose-raw" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  <em>make it possible</em> for a developer to get access to the complete response, including the status line, headers, and body.</p>
+
+<p>TODO: a code sample to go with this might be nice, or a direct discussion of the typical response format and how to do this in JS/TS.  As an example of this, .NET discusses Response&lt;T&gt; in this section rather than the general guidelines, since Response&lt;T&gt; solves this problem for the API designer and then they don’t have to think of another way to do it.</p>
+
+<p><a href="#ts-return-document-raw-stream" name="ts-return-document-raw-stream" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document how to access the raw and streamed response for a request (if exposed by the client library).  Include comprehensive samples.  We don’t expect all methods to expose a streamed response.</p>
+
+<p>TODO: Should the above guideline go in the Samples section?</p>
+
+<p>For methods that combine multiple requests into a single call:</p>
+
+<p><a href="#general-return-no-headers-if-confusing" name="general-return-no-headers-if-confusing" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  return headers and other per-request metadata unless it’s obvious as to which specific HTTP request the methods return value corresponds to.</p>
+
+<p>TODO: It’s unclear regarding the above that this is referring to the model type.  (Is it?)  An example of how we’ve solved this problem in existing Track 2 JS/TS APIs would be helpful here to make this guideline more actionable.</p>
+
+<p><a href="#general-expose-data-for-composite-failures" name="general-expose-data-for-composite-failures" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide enough information in failure cases for an application to take appropriate corrective action.</p>
+
+<p>TODO: Would the above guideline go better in the Exceptions &amp; Errors section?  In the training, we say that exceptions should A) describe the problem and B) tell the developer how to solve the problem.</p>
+
+<p><a href="#general-dont-use-value" name="general-dont-use-value" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use the following property names within a logical entity:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">object</code></li>
+  <li><code class="language-plaintext highlighter-rouge">value</code></li>
+</ul>
+
+<p>Using names that are commonly used as reserved words can cause confusion and will cause consistency issues between languages.</p>
+
+<p><a name="ts-example-return-types"></a>
+An example:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Service operation method on a service client</span>
+  <span class="kr">public</span> <span class="k">async</span> <span class="nx">getProperties</span><span class="p">(</span>
+    <span class="nx">options</span><span class="p">:</span> <span class="nx">ContainerGetPropertiesOptions</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="p">):</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">Models</span><span class="p">.</span><span class="nx">ContainerGetPropertiesResponse</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+
+<span class="c1">// Response type, in this case for a service which returns the</span>
+<span class="c1">// relevant info in headers. Note how the headers are represented</span>
+<span class="c1">// in first-class properties with intellisense etc.</span>
+<span class="k">export</span> <span class="nx">type</span> <span class="nx">ContainerGetPropertiesResponse</span> <span class="o">=</span> <span class="nx">ContainerGetPropertiesHeaders</span> <span class="o">&amp;</span> <span class="p">{</span>
+  <span class="cm">/**
+   * The underlying HTTP response.
+   */</span>
+  <span class="na">_response</span><span class="p">:</span> <span class="nx">msRest</span><span class="p">.</span><span class="nx">HttpResponse</span> <span class="o">&amp;</span> <span class="p">{</span>
+      <span class="cm">/**
+       * The parsed HTTP response headers.
+       */</span>
+      <span class="na">parsedHeaders</span><span class="p">:</span> <span class="nx">ContainerGetPropertiesHeaders</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">};</span>
+
+<span class="k">export</span> <span class="kr">interface</span> <span class="nx">ContainerGetPropertiesHeaders</span> <span class="p">{</span>
+  <span class="c1">// ...</span>
+  <span class="cm">/**
+   * @member {PublicAccessType} [blobPublicAccess] Indicated whether data in
+   * the container may be accessed publicly and the level of access. Possible
+   * values include: 'container', 'blob'
+   */</span>
+  <span class="nx">blobPublicAccess</span><span class="p">?:</span> <span class="nx">PublicAccessType</span><span class="p">;</span>
+  <span class="cm">/**
+   * @member {boolean} [hasImmutabilityPolicy] Indicates whether the container
+   * has an immutability policy set on it.
+   */</span>
+  <span class="nx">hasImmutabilityPolicy</span><span class="p">?:</span> <span class="nx">boolean</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="ts-client-naming-conventions">Client naming conventions</h3>
+
+<p><a href="#ts-apisurface-serviceclientnaming" name="ts-apisurface-serviceclientnaming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name service client types with the <em>Client</em> suffix.</p>
+
+<p><a href="#ts-approved-verbs" name="ts-approved-verbs" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use one of the approved verbs in the below table when referring to service operations.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Verb</th>
+      <th>Parameters</th>
+      <th>Returns</th>
+      <th>Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">create\&lt;Noun&gt;</code></td>
+      <td>key, item</td>
+      <td>Created item</td>
+      <td>Create new item. Fails if item already exists.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">upsert\&lt;Noun&gt;</code></td>
+      <td>key, item</td>
+      <td>Updated or created item</td>
+      <td>Create new item, or update existing item. Verb is primarily used in database-like services</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">set\&lt;Noun&gt;</code></td>
+      <td>key, item</td>
+      <td>Updated or created item</td>
+      <td>Create new item, or update existing item. Verb is primarily used for dictionary-like properties of a service</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">update\&lt;Noun&gt;</code></td>
+      <td>key, partial item</td>
+      <td>Updated item</td>
+      <td>Fails if item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">replace\&lt;Noun&gt;</code></td>
+      <td>key, item</td>
+      <td>Replace existing item</td>
+      <td>Completely replaces an existing item. Fails if the item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">append\&lt;Noun&gt;</code></td>
+      <td>item</td>
+      <td>Appended item</td>
+      <td>Add item to a collection. Item will be added last.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">add\&lt;Noun&gt;</code></td>
+      <td>index, item</td>
+      <td>Added item</td>
+      <td>Add item to a collection. Item will be added at the given index.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">get\&lt;Noun&gt;</code></td>
+      <td>key</td>
+      <td>Item</td>
+      <td>Will return null if item doesn’t exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">list\&lt;Noun&gt;s</code></td>
+      <td> </td>
+      <td><code class="language-plaintext highlighter-rouge">PagedAsyncIterableIterator&lt;TItem, TPage&gt;</code></td>
+      <td>Return list of items. Returns empty list if no items exist</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">\&lt;noun&gt;Exists</code></td>
+      <td>key</td>
+      <td><code class="language-plaintext highlighter-rouge">bool</code></td>
+      <td>Return true if the item exists.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">delete\&lt;Noun&gt;</code></td>
+      <td>key</td>
+      <td>None</td>
+      <td>Delete an existing item. Will succeed even if item didn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">remove\&lt;Noun&gt;</code></td>
+      <td>key</td>
+      <td>None or removed item</td>
+      <td>Remove item from a collection.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#ts-naming-drop-noun" name="ts-naming-drop-noun" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include the <code class="language-plaintext highlighter-rouge">Noun</code> when the operation is operating on the resource itself,  For example, if you have an <code class="language-plaintext highlighter-rouge">ItemClient</code> with a delete method, it should be called <code class="language-plaintext highlighter-rouge">delete</code> rather than <code class="language-plaintext highlighter-rouge">deleteItem</code>. The noun is implicitly <code class="language-plaintext highlighter-rouge">this</code>.</p>
+
+<p><a href="#ts-naming-subclients" name="ts-naming-subclients" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix methods that create or vend subclients with <code class="language-plaintext highlighter-rouge">get</code> and suffix with <code class="language-plaintext highlighter-rouge">client</code>.  For example, <code class="language-plaintext highlighter-rouge">container.getBlobClient()</code>.</p>
+
+<p>TODO: Put the above with the discussion of hierarchical clients?</p>
+
+<p>TODO: A code sample here would help illustrate this.</p>
+
+<p><a name="ts-example-naming"></a>
+The following are good examples of names for operations in a TypeScript client library:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">containerClient</span><span class="p">.</span><span class="nx">listBlobs</span><span class="p">();</span>
+<span class="nx">containerClient</span><span class="p">.</span><span class="k">delete</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>The following are bad examples:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">containerClient</span><span class="p">.</span><span class="nx">deleteContainer</span><span class="p">();</span> <span class="c1">// don't include noun for direct manipulation</span>
+<span class="nx">containerClient</span><span class="p">.</span><span class="nx">newBlob</span><span class="p">();</span> <span class="c1">// use create instead of new</span>
+<span class="nx">containerClient</span><span class="p">.</span><span class="nx">createOrUpdate</span><span class="p">();</span> <span class="c1">// use upsert</span>
+<span class="nx">containerClient</span><span class="p">.</span><span class="nx">createBlobClient</span><span class="p">();</span> <span class="c1">// should be `getBlobClient`.</span>
+</code></pre></div></div>
+
+<h3 id="ts-network-requests">Network requests</h3>
+
+<p>When an application makes a network request, the network infrastructure (like routers) and the called service may take a long time to respond. In fact, the network infrastructure may never respond. A well-written application should <strong>NEVER</strong> give up its control to the network infrastructure or service.</p>
+
+<p>Consider the following examples. An orchestrator needs to stop a service because of a scaling operation, reconfiguration, or upgrading to a new version). The orchestrator typically notifies a running service instance by sending an interrupt signal. The service should stop as quickly as possible when it receives this signal. Similarly, when a web server receives a request, it may set a time limit indicating how much time it’s allowing before giving a response to the user. A UI application may offer the user a cancel button when making a network request.</p>
+
+<p>The best way for consumers to work with cancellation is to think of cancellation objects as forming a tree. For example:</p>
+
+<ul>
+  <li>Cancelling a parent automatically cancels its children.</li>
+  <li>Children can time out sooner than their parent but can’t extend the total time.</li>
+  <li>Cancellation can happen because of a timeout or an explicit request.</li>
+</ul>
+
+<p>TODO: Regarding the above discussion … is it needed?  Could we just say the Azure SDK requires service calls to be cancellable and here are the rules for how to do it in JS/TS?  Please consider adding a code sample for this, and if there are implementation specifics for this, it might be nice to have them in the Implementation section (but the latter is technically out of scope for MQ).</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept an <code class="language-plaintext highlighter-rouge">AbortSignalLike</code> parameter on all asynchronous calls. This type is provided by <code class="language-plaintext highlighter-rouge">@azure/abort-controller</code>.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  only check cancellation tokens on I/O calls (such as network requests and file loads).  Don’t check the cancellation token between I/O calls within the client library (for example, when processing data between I/O calls).</p>
+
+<p>TODO: Does JS/TS use cancellation tokens?</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  leak the underlying protocol transport implementation details to the consumer.  All types from the protocol transport implementation must be appropriately abstracted.</p>
+
+<h3 id="authentication">Authentication</h3>
+
+<p>Azure services use different kinds of authentication schemes to allow clients to access the service.  Conceptually, there are two entities responsible in this process: a credential and an authentication policy.  Credentials provide confidential authentication data.  Authentication policies use the data provided by a credential to authenticate requests to the service.</p>
+
+<p><a href="#ts-apisurface-supportcancellation" name="ts-apisurface-supportcancellation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support all authentication techniques that the service supports.</p>
+
+<p><a href="#ts-apisurface-check-cancel-on-io-calls" name="ts-apisurface-check-cancel-on-io-calls" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use credential and authentication policy implementations from the Azure Core library where available.</p>
+
+<p>TODO: Please mention the specific type examples to make this more actionable.</p>
+
+<p><a href="#general-apisurface-no-leaking-implementation" name="general-apisurface-no-leaking-implementation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide credential types that can be used to fetch all data needed to authenticate a request to the service. Credential types should be non-blocking and atomic.  Use credential types from the <code class="language-plaintext highlighter-rouge">@azure/core-auth</code> library where possible.</p>
+
+<p><a href="#general-apisurface-auth-in-constructors" name="general-apisurface-auth-in-constructors" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide service client constructors or factories that accept any supported authentication credentials.</p>
+
+<p>Client libraries may support connection strings <strong>ONLY IF</strong> the service provides a connection string to users via the portal or other tooling. Connection strings are easily integrated into an application by copy/paste from the portal.  However, connection strings don’t allow the credentials to be rotated within a running process.</p>
+
+<p><a href="#general-apisurface-no-connection-strings" name="general-apisurface-no-connection-strings" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  support constructing a service client with a connection string unless such connection string is available within tooling (for copy/paste operations).</p>
+
+<p>TODO: Please make this section more actionable with regard to what JS/TS does specifically.</p>
+
+<h3 id="ts-modern-javascript">Modern &amp; Idiomatic JavaScript</h3>
+
+<p><a href="#ts-use-promises" name="ts-use-promises" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use built-in promises for asynchronous operations. You may provide overloads that take a callback. Don’t import a polyfill or library to implement promises.</p>
+
+<p>Promises were added to JavaScript ES2015. ES2016 and later added <code class="language-plaintext highlighter-rouge">async</code> functions to make working with promises easier. Promises are broadly supported in JavaScript runtimes, including all currently supported versions of Node.</p>
+
+<p><a href="#ts-use-async-functions" name="ts-use-async-functions" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <code class="language-plaintext highlighter-rouge">async</code> functions for implementing asynchronous library APIs.</p>
+
+<p>If you need to support ES5 and are concerned with library size, use <code class="language-plaintext highlighter-rouge">async</code> when combining asynchronous code with control flow constructs.  Use promises for simpler code flows.  <code class="language-plaintext highlighter-rouge">async</code> adds code bloat (especially when targeting ES5) when transpiled.</p>
+
+<p><a href="#ts-use-iterators" name="ts-use-iterators" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators">Iterators</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of">Async Iterators</a> for sequences and streams of all sorts.</p>
+
+<p>Both iterators and async iterators are built into JavaScript and easy to consume. Other streaming interfaces (such as node streams) may be used where appropriate as long as they’re idiomatic.</p>
+
+<p><a href="#ts-use-interface-parameters" name="ts-use-interface-parameters" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer interface types to class types. JavaScript is fundamentally a duck-typed language, and so alternative classes that implement the same interface should be allowed. Declare parameters as interface types over class types whenever possible. Overloads with specific class types are fine but there should be an overload present with the generic interface.</p>
+
+<p><a href="#ts-avoid-extending-cross-package" name="ts-avoid-extending-cross-package" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  not extend classes from a different package. It can be non-obvious that a dependent package is broken by a change to a base class. For example, adding a non-compatible method signature or a new private member is considered a non-breaking additive change, but would potentially conflict in the derived class.</p>
+
+<p><a name="ts-example-iterators"></a></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// bad synchronous example</span>
+<span class="kd">function</span> <span class="nx">listItems</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">nextItem</span><span class="p">()</span> <span class="p">{</span> <span class="cm">/*...*/</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// better synchronous example</span>
+<span class="kd">function</span><span class="o">*</span> <span class="nx">listItems</span><span class="p">()</span> <span class="p">{</span>
+  <span class="cm">/* ... */</span>
+<span class="p">}</span>
+
+<span class="c1">// bad asynchronous examples</span>
+<span class="kd">function</span> <span class="nx">listItems</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">Rx</span><span class="p">.</span><span class="nx">Observable</span><span class="p">.</span><span class="k">of</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">listItems</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// fetch items</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">items</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">callback</span> <span class="p">(</span><span class="nx">item</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// better asynchronous example</span>
+<span class="k">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">listItems</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">items</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">yield</span> <span class="nx">item</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>~</p>
+
+<h3 id="ts-modern-typescript">Modern &amp; Idiomatic TypeScript</h3>
+
+<p><a href="#ts-use-typescript" name="ts-use-typescript" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement your library in TypeScript.</p>
+
+<p><a href="#ts-ship-type-declarations" name="ts-ship-type-declarations" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include type declarations for your library.</p>
+
+<p>TypeScript static types provide significant benefit for both the library authors and consumers. TypeScript also compiles modern JavaScript language features for use with older runtimes.</p>
+
+<h4 id="ts-tsconfig.json">tsconfig.json</h4>
+
+<p>Your <code class="language-plaintext highlighter-rouge">tsconfig.json</code> should look similar to the following example:
+<a name="ts-figure-tsconfig-json"></a></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="dl">"</span><span class="s2">compilerOptions</span><span class="dl">"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">declaration</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">module</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">es6</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">moduleResolution</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">node</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">strict</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">noUnusedLocals</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">noUnusedParameters</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">noImplicitReturns</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">noFallthroughCasesInSwitch</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">outDir</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">./dist-esm</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">target</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">es6</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">sourceMap</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">declarationMap</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">esModuleInterop</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">allowSyntheticDefaultImports</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">forceConsistentCasingInFileNames</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">importHelpers</span><span class="dl">"</span><span class="p">:</span> <span class="kc">true</span>
+  <span class="p">},</span>
+  <span class="dl">"</span><span class="s2">include</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">./src/**/*</span><span class="dl">"</span><span class="p">],</span>
+  <span class="dl">"</span><span class="s2">exclude</span><span class="dl">"</span><span class="p">:</span> <span class="p">[</span><span class="dl">"</span><span class="s2">node_modules</span><span class="dl">"</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#ts-config-exclude" name="ts-config-exclude" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  have at least “node_modules” in the <code class="language-plaintext highlighter-rouge">exclude</code> array. TypeScript shouldn’t needlessly type check your dependencies.</p>
+
+<p><a href="#ts-config-lib" name="ts-config-lib" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use the <code class="language-plaintext highlighter-rouge">compilerOptions.lib</code> field. Built in typescript libraries (for example, <code class="language-plaintext highlighter-rouge">esnext.asynciterable</code>) should be included via reference directives. See also <a href="https://github.com/Microsoft/TypeScript/issues/27416">Microsoft/TypeScript#27416</a>.</p>
+
+<p><a href="#ts-config-strict" name="ts-config-strict" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.strict</code> to true. The <code class="language-plaintext highlighter-rouge">strict</code> flag is a best practice for developers as it provides the best TypeScript experience. The <code class="language-plaintext highlighter-rouge">strict</code> flag also ensures that your type definitions are maximally pedantic.</p>
+
+<p><a href="#ts-config-esModuleInterop" name="ts-config-esModuleInterop" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.esModuleInterop</code> to true.</p>
+
+<p><a href="#ts-config-allowSyntheticDefaultImports" name="ts-config-allowSyntheticDefaultImports" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.allowSyntheticDefaultImports</code> to true.</p>
+
+<p><a href="#ts-config-target" name="ts-config-target" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.target</code>, but it can be any valid value so long as the final source distributions are compatible with the runtimes your library targets. See also [#ts-source-distros].</p>
+
+<p><a href="#ts-config-forceConsistentCasingInFileNames" name="ts-config-forceConsistentCasingInFileNames" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.forceConsistentCasingInFileNames</code> to true. <code class="language-plaintext highlighter-rouge">forceConsistentCasingInFileNames</code> forces TypeScript to treat files as case sensitive, and ensures you don’t get surprised by build failures when moving between platforms.</p>
+
+<p><a href="#ts-config-module" name="ts-config-module" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.module</code> to <code class="language-plaintext highlighter-rouge">es6</code>. Use a bundler such as <a href="https://rollupjs.org/guide/en/">Rollup</a> or <a href="https://webpack.js.org/">Webpack</a> to produce the CommonJS and UMD builds.</p>
+
+<p><a href="#ts-config-moduleResolution" name="ts-config-moduleResolution" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.moduleResolution</code> to “node” if your library targets Node. Otherwise, it should be absent.</p>
+
+<p><a href="#ts-config-declaration" name="ts-config-declaration" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.declaration</code> to true. The <code class="language-plaintext highlighter-rouge">--declaration</code> option tells TypeScript to emit a <code class="language-plaintext highlighter-rouge">d.ts</code> file that contains the public surface area of your library. TypeScript and editors use this file to provide intellisense and type checking capabilities. Ensure you reference this type declaration file from the <code class="language-plaintext highlighter-rouge">types</code> field of your package.json.</p>
+
+<p><a href="#ts-config-no-experimentalDecorators" name="ts-config-no-experimentalDecorators" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.experimentalDecorators</code> to <code class="language-plaintext highlighter-rouge">true</code>. The experimentalDecorators flag adds support for “v1 decorators” to TypeScript. Unfortunately the standards process has moved on to an incompatible second version that is not yet implemented by TypeScript. Taking a dependency on decorators now means signing up your users for breaking changes later.</p>
+
+<p><a href="#ts-config-sourceMap" name="ts-config-sourceMap" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.sourceMap</code> and <code class="language-plaintext highlighter-rouge">compilerOptions.declarationMap</code> to true. Shipping source maps in your package ensures clients can easily debug into your library code. <code class="language-plaintext highlighter-rouge">sourceMap</code> maps your emitted JS source to the declaration file and <code class="language-plaintext highlighter-rouge">declarationMap</code> maps the declaration file back to the TypeScript source that generated it. Be sure to include your original TypeScript sources in the package.</p>
+
+<p><a href="#ts-config-importHelpers" name="ts-config-importHelpers" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set <code class="language-plaintext highlighter-rouge">compilerOptions.importHelpers</code> to true. Using external helpers keeps your package size down. Without this flag, TypeScript will add a helper block to each file that needs it. The file size savings using this option can be huge when using <code class="language-plaintext highlighter-rouge">async</code> functions (as an example) in a number of different files.</p>
+
+<h4 id="ts-coding-guidelines">TypeScript Coding Guidelines</h4>
+
+<p><a href="#ts-no-namespaces" name="ts-no-namespaces" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use TypeScript namespaces. Namespaces either use the <code class="language-plaintext highlighter-rouge">namespace</code> keyword explicitly, or the <code class="language-plaintext highlighter-rouge">module</code> keyword with a module name (for example, <code class="language-plaintext highlighter-rouge">module Microsoft.ApplicationInsights { ... }</code>). Use top-level imports/exports with ECMAScript modules instead. Namespaces make your code less compatible with standard ECMAScript and create significant friction with the TypeScript community.</p>
+
+<p><a href="#ts-no-const-enums" name="ts-no-const-enums" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use <code class="language-plaintext highlighter-rouge">const enum</code>. <code class="language-plaintext highlighter-rouge">Const enum</code> requires global understanding of your program to compile properly. As a result, <code class="language-plaintext highlighter-rouge">const enum</code> can’t be used with Babel 7, which otherwise supports TypeScript. Avoiding <code class="language-plaintext highlighter-rouge">const enum</code> will make sure your code can be compiled by any tool. Use regular enums instead.</p>
+
+<h2 id="ts-pagination">Pagination</h2>
+
+<p>Most developers will want to process a list one item at a time. Higher-level APIs (for example, async iterators) are preferred in the majority of use cases.  Finer-grained control over handling paginated result sets is sometimes required (for example, to handle over-quota or throttling).</p>
+
+<p><a href="#ts-pagination-provide-list" name="ts-pagination-provide-list" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a <code class="language-plaintext highlighter-rouge">list</code> method that returns a <code class="language-plaintext highlighter-rouge">PagedAsyncIterableIterator</code> from the module <code class="language-plaintext highlighter-rouge">@azure/core-paging</code>.</p>
+
+<p><a href="#ts-pagination-provide-bypage-settings" name="ts-pagination-provide-bypage-settings" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide page-related settings to the <code class="language-plaintext highlighter-rouge">byPage()</code> iterator and not the per-item iterator.</p>
+
+<p><a href="#ts-pagination-take-continuationToken" name="ts-pagination-take-continuationToken" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  take a <code class="language-plaintext highlighter-rouge">continuationToken</code> option in the <code class="language-plaintext highlighter-rouge">byPage()</code> method. You must rename other parameters that perform a similar function (for example, <code class="language-plaintext highlighter-rouge">nextMarker</code>).  If your page type has a continuation token, it must be named <code class="language-plaintext highlighter-rouge">continuationToken</code>.</p>
+
+<p><a href="#ts-pagination-take-maxpagesize" name="ts-pagination-take-maxpagesize" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  take a <code class="language-plaintext highlighter-rouge">maxPageSize</code> option in the <code class="language-plaintext highlighter-rouge">byPage()</code> method.</p>
+
+<p>An example of a paginating client:
+<a name="ts-example-pagination"></a></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// usage</span>
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ServiceClient</span><span class="p">()</span>
+<span class="k">for</span> <span class="k">await</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">client</span><span class="p">.</span><span class="nx">listItems</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="k">await</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">page</span> <span class="k">of</span> <span class="nx">client</span><span class="p">.</span><span class="nx">listItems</span><span class="p">().</span><span class="nx">byPage</span><span class="p">({</span> <span class="na">maxPageSize</span><span class="p">:</span> <span class="mi">50</span> <span class="p">}))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">page</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// implementation</span>
+<span class="kr">interface</span> <span class="nx">Item</span> <span class="p">{</span>
+    <span class="nl">name</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">Page</span> <span class="p">{</span>
+    <span class="nl">continuationToken</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+    <span class="nl">items</span><span class="p">:</span> <span class="nx">Item</span><span class="p">[];</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nx">ServiceClient</span> <span class="p">{</span>
+    <span class="cm">/* ... */</span>
+    <span class="nx">listItems</span><span class="p">():</span> <span class="nx">PagedAsyncIterableIterator</span><span class="o">&lt;</span><span class="nx">Item</span><span class="p">,</span> <span class="nx">Page</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">pages</span> <span class="p">()</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+        <span class="k">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">items</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">page</span> <span class="k">of</span> <span class="nx">pages</span><span class="p">())</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">page</span><span class="p">.</span><span class="nx">items</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="nx">item</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="kd">const</span> <span class="nx">itemIter</span> <span class="o">=</span> <span class="nx">items</span><span class="p">();</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">itemIter</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+                <span class="cm">/* ... */</span>
+            <span class="p">},</span>
+            <span class="nx">byPage</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nx">pages</span><span class="p">();</span>
+            <span class="p">},</span>
+            <span class="p">[</span><span class="nb">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span> <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#general-pagination-paginate-lists" name="general-pagination-paginate-lists" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose non-paginated list endpoints identically to paginated list endpoints. Users shouldn’t need to appreciate the difference.</p>
+
+<p><a href="#general-pagination-distinct-types" name="general-pagination-distinct-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use different types for entities returned from a <code class="language-plaintext highlighter-rouge">list</code> endpoint and a <code class="language-plaintext highlighter-rouge">get</code> endpoint if the returned entities have a different shape.  If both entities are the same form, use the same type.</p>
+
+<div class="alert alert-info" role="alert"><i class="fa fa-info-circle"></i> <b>Note:</b> Services should return the same shape for entities from a <code>list</code> endpoint vs. a <code>get</code> endpoint unless there’s a good reason for the difference.  Using the same type for both operations will make the API surface in the client library simpler.</div>
+
+<p><a href="#general-pagination-no-item-iterators" name="general-pagination-no-item-iterators" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an iterator over individual items if it causes additional service requests.  Some services charge on a per-request basis. One <code class="language-plaintext highlighter-rouge">GET</code> per item is often too expensive when the data isn’t used.</p>
+
+<p><a href="#general-pagination-support-toArray" name="general-pagination-support-toArray" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an API to get a paginated collection into an array. Services may return many pages, which can lead to memory exhaustion in the application.</p>
+
+<h2 id="ts-lro">Long Running Operations</h2>
+
+<p>Long-running operations are operations which consist of an initial request to start the operation followed by polling to determine when the operation has completed or failed. Long-running
+operations in Azure tend to follow the <a href="https://github.com/microsoft/api-guidelines/blob/vNext/Guidelines.md#13-long-running-operations">REST API guidelines for Long-running Operations</a>, but there are exceptions.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  represent long-running operations with some object that encapsulates the polling and the operation status. This object, called a <em>poller</em>, must provide APIs for:</p>
+
+<ol>
+  <li>querying the current operation state (either asynchronously, which may consult the service, or synchronously which must not)</li>
+  <li>requesting an asynchronous notification when the operation has completed</li>
+  <li>cancelling the operation if cancellation is supported by the service</li>
+  <li>registering disinterest in the operation so polling stops</li>
+  <li>triggering a poll operation manually (automatic polling must be disabled)</li>
+  <li>progress reporting (if supported by the service)</li>
+</ol>
+
+<p><a href="#ts-lro-support-options" name="ts-lro-support-options" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following polling configuration options:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">pollInterval</code></li>
+</ul>
+
+<p>Polling configuration may be used only in the absence of relevant retry-after headers from service, and otherwise should be ignored.</p>
+
+<p><a href="#ts-lro-prefix-methods" name="ts-lro-prefix-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix method names which return a poller with either <code class="language-plaintext highlighter-rouge">begin</code>.</p>
+
+<p><a href="#ts-lro-continuation" name="ts-lro-continuation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a way to instantiate a poller with the serialized state of another poller to begin where it left off, for example by passing the state as a parameter to the same method which started the operation, or by directly instantiating a poller with that state.</p>
+
+<p><a href="#ts-lro-cancellation" name="ts-lro-cancellation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  cancel the long-running operation when cancellation is requested via a cancellation token. The cancellation token is cancelling the polling operation and should not have any effect on the service.</p>
+
+<p><a href="#ts-lro-logging" name="ts-lro-logging" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log polling status at the <code class="language-plaintext highlighter-rouge">Info</code> level (including time to next retry)</p>
+
+<p><a href="#ts-lro-progress-reporting" name="ts-lro-progress-reporting" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose a progress reporting mechanism to the consumer if the service reports progress as part of the polling operation.  Language-dependent guidelines will present additional guidance on how to expose progress reporting in this case.</p>
+
+<div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>DRAFT:</b> Long-running operations will use the <code>@azure/core-lro</code> package, which is an abstraction that provides the above requirements</div>
+
+<p>TODO: If this is largely implemented for the API Designer, please include an example of how to use the Azure Core type in the public API.  It would be ideal to remove guidelines where the requirement has already been addressed for the API Designer in the type.</p>
+
+<h2 id="ts-conditional-requests">Conditional Request Methods</h2>
+
+<p>There are two patterns in use depending on whether <code class="language-plaintext highlighter-rouge">etag</code> is a member of the model type or not.</p>
+
+<p><a href="#ts-conditional-request-options-1" name="ts-conditional-request-options-1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide the following options in a method’s options bag when the model type has an <code class="language-plaintext highlighter-rouge">etag</code> property:</p>
+
+<ul>
+  <li>onlyIfChanged - sets the <code class="language-plaintext highlighter-rouge">if-match</code> header to the <code class="language-plaintext highlighter-rouge">etag</code>.</li>
+  <li>onlyIfUnchanged - sets the <code class="language-plaintext highlighter-rouge">if-none-match</code> header to the <code class="language-plaintext highlighter-rouge">etag</code>.</li>
+  <li>onlyIfMissing - sets the <code class="language-plaintext highlighter-rouge">if-none-match</code> header to <code class="language-plaintext highlighter-rouge">*</code>.</li>
+  <li>onlyIfPresent - sets the <code class="language-plaintext highlighter-rouge">if-match</code> header to <code class="language-plaintext highlighter-rouge">*</code>.</li>
+</ul>
+
+<p><a href="#ts-conditional-request-options-2" name="ts-conditional-request-options-2" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide the following options in a method’s options bag’s <code class="language-plaintext highlighter-rouge">conditions</code> property when the model type does not have an <code class="language-plaintext highlighter-rouge">etag</code> property:</p>
+
+<ul>
+  <li>ifMatch - sets the <code class="language-plaintext highlighter-rouge">if-match</code> header to the value provided.</li>
+  <li>ifNoneMatch - sets the <code class="language-plaintext highlighter-rouge">if-none-match</code> header to the value provided.</li>
+  <li>ifModifiedSince - sets the <code class="language-plaintext highlighter-rouge">if-modified-since</code> header to the value provided</li>
+  <li>ifUnmodifiedSince - sets the <code class="language-plaintext highlighter-rouge">if-unmodified-since</code> header to the value provided.</li>
+</ul>
+
+<p><a href="#ts-conditional-request-no-dupe-options" name="ts-conditional-request-no-dupe-options" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  throw an error if the user provides options from both option sets, for example passing <code class="language-plaintext highlighter-rouge">onlyIfChanged: true</code> and <code class="language-plaintext highlighter-rouge">ifMatch: "..."</code>. In some cases you may want to provide both sets of options, but it is not required or necessarily recommended.</p>
+
+<h2 id="ts-model-types">Model Types</h2>
+
+<p>Client libraries represent entities transferred to and from Azure services as model types. Certain types are used for round-trips to the service. They can be sent to the service (as an addition or update operation) and retrieved from the service (as a get operation). These must be named according to the type. For example, a <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code> in App Configuration, or an <code class="language-plaintext highlighter-rouge">Event</code> on Event Grid.</p>
+
+<p><a href="#ts-model-types-use-good-name" name="ts-model-types-use-good-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the above convention for types which round-trip to the service and represent a complete entity.</p>
+
+<p>Data within the model type can generally be split into two parts - data used to support one of the champion scenarios for the service, and less important data. Given a type <code class="language-plaintext highlighter-rouge">Foo</code>, the less important details can be gathered in a type called <code class="language-plaintext highlighter-rouge">FooDetails</code> and attached to <code class="language-plaintext highlighter-rouge">Foo</code> as the <code class="language-plaintext highlighter-rouge">details</code> property.</p>
+
+<p>For example:</p>
+
+<figure class="highlight"><pre><code class="language-typescript" data-lang="typescript"><span class="kr">interface</span> <span class="nx">ConfigurationSettingDetails</span> <span class="p">{</span>
+    <span class="nl">lastModifiedOn</span><span class="p">:</span> <span class="nb">Date</span><span class="p">;</span>
+    <span class="nl">receivedOn</span><span class="p">:</span> <span class="nb">Date</span><span class="p">;</span>
+    <span class="nl">etag</span><span class="p">:</span> <span class="kr">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">ConfigurationSetting</span> <span class="p">{</span>
+    <span class="nl">key</span><span class="p">:</span> <span class="kr">string</span><span class="p">;</span>
+    <span class="nl">value</span><span class="p">:</span> <span class="kr">string</span><span class="p">;</span>
+    <span class="nl">details</span><span class="p">:</span> <span class="nx">ConfigurationSettingDetails</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ts-model-types-use-details" name="ts-model-types-use-details" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use <code class="language-plaintext highlighter-rouge">details</code> to separate commonly needed and less commonly needed properties. If you use this convention, you MUST follow these naming conventions.</p>
+
+<p>In cases where a partial schema is returned, use the following types:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;model&gt;Item</code> for each item in an enumeration if the enumeration returns a partial schema for the model. For example, <code class="language-plaintext highlighter-rouge">GetBlobs()</code> return an enumeration of <code class="language-plaintext highlighter-rouge">BlobItem</code>, which contains the blob name and metadata, but not the content of the blob.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code> for the result of an operation. The <code class="language-plaintext highlighter-rouge">&lt;operation&gt;</code> is tied to a specific service operation. If the same result can be used for multiple operations, use a suitable noun-verb phrase instead. For example, use <code class="language-plaintext highlighter-rouge">UploadBlobResult</code> for the result from <code class="language-plaintext highlighter-rouge">UploadBlob</code>, but <code class="language-plaintext highlighter-rouge">ContainerChangeResult</code> for results from the various methods that change a blob container. In cases where a result is just a primitive type, do not create a type alias for it - just use it directly, and do not follow these conventions.</li>
+</ul>
+
+<p><a href="#ts-model-types-partial-naming" name="ts-model-types-partial-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the above naming conventions when partial schemas are returned.</p>
+
+<p>The following table enumerates the various models you might create:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Type</td>
+      <td>Example</td>
+      <td>Usage</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;</code></td>
+      <td><code class="language-plaintext highlighter-rouge">Secret</code></td>
+      <td>The full data for a resource</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;Details</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretDetails</code></td>
+      <td>Less important details about a resource. Attached to <code class="language-plaintext highlighter-rouge">&lt;model&gt;.details</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;Item</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretItem</code></td>
+      <td>A partial set of data returned for enumeration</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Options</code></td>
+      <td><code class="language-plaintext highlighter-rouge">AddSecretOptions</code></td>
+      <td>Optional parameters to a single operation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code></td>
+      <td><code class="language-plaintext highlighter-rouge">AddSecretResult</code></td>
+      <td>A partial or different set of data for a single operation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;&lt;verb&gt;Result</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretChangeResult</code></td>
+      <td>A partial or different set of data for multiple operations on a model</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="ts-core-types">Using Azure Core</h2>
+
+<p><a href="#ts-core-types-must" name="ts-core-types-must" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make use of packages in Azure Core to provide behavior consistent across all Azure SDK libraries. This includes, but is not limited to:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">core-http</code> for http client, pipeline and related functionality</li>
+  <li><code class="language-plaintext highlighter-rouge">logger</code> for logging</li>
+  <li><code class="language-plaintext highlighter-rouge">core-tracing</code> for distributed tracing</li>
+  <li><code class="language-plaintext highlighter-rouge">core-auth</code> for common auth interfaces</li>
+  <li><code class="language-plaintext highlighter-rouge">core-lro</code> for long running operations</li>
+</ul>
+
+<p>See the <a href="https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/core">Azure Core readme</a> for more details.</p>
+
+<p>TODO: Please add a section on extensible enums, if this is relevant to JS/TS.</p>
+
+<h2 id="general-other-protocols">Support for non-HTTP protocols</h2>
+
+<p>Most Azure services expose a RESTful API over HTTPS.  However, a few services use other protocols, such as <a href="https://www.amqp.org/">AMQP</a>, <a href="http://mqtt.org/">MQTT</a>, or <a href="https://webrtc.org/">WebRTC</a>. In these cases, the operation of the protocol can be split into two phases:</p>
+
+<ul>
+  <li>Per-connection (surrounding when the connection is initiated and terminated)</li>
+  <li>Per-operation (surrounding when an operation is sent through the open connection)</li>
+</ul>
+
+<p>The policies that are added to a HTTP request/response (authentication, unique request ID, telemetry, distributed tracing, and logging) are still valid on both a per-connection and per-operation basis.  However, the methods by which these policies are implemented are protocol dependent.</p>
+
+<p><a href="#general-other-protocols-pipeline-policies" name="general-other-protocols-pipeline-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement as many of the policies as possible on a per-connection and per-operation basis.</p>
+
+<p>For example, MQTT over WebSockets provides the ability to add headers during the initiation of the WebSockets connection, so this is a good place to add authentication, telemetry, and distributed tracing policies.  However, MQTT has no metadata (the equivalent of HTTP headers), so per-operation policies are not possible.  AMQP, by contract, does have per-operation metadata.  Unique request ID, and distributed tracing headers can be provided on a per-operation basis with AMQP.</p>
+
+<p><a href="#general-other-protocols-consult-on-policies" name="general-other-protocols-consult-on-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  consult the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> on policy decisions for non-HTTP protocols.  Implementation of all policies is expected.  If the protocol cannot support a policy, obtain an exception from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.</p>
+
+<p><a href="#general-other-protocols-use-global-config" name="general-other-protocols-use-global-config" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the global configuration established in the Azure Core library to configure policies for non-HTTP protocols.  Consumers don’t necessarily know what protocol is used by the client library.  They will expect the client library to honor global configuration that they have established for the entire Azure SDK.</p>
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

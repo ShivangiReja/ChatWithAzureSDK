@@ -1,0 +1,66 @@
+﻿@page "/"
+@using System.Text;
+@using ChatWithAzureSDK;
+@using Azure.AI.OpenAI;
+
+<PageTitle>Chatbot</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+        </div>
+        <div class="col-4">
+            <div class="messages">
+                @for (int i = 0; i < messages.Count; i++)
+                {
+                    @if (i % 2 == 0)
+                    {
+                        <div class="question">@messages[i]</div>
+                    }
+                    else
+                    {
+                        <div class="response" @key=i>
+                            @if (IsCodeBlock(messages[i]))
+                            {
+                                <pre class="code-block">@messages[i].Substring(3)</pre>
+                            }
+                            else
+                            {
+                                @messages[i]
+                            }
+                        </div>
+                    }
+                }
+            </div>
+            <div class="textMessage">
+                <input @bind="message" />
+                <button @onclick="SendMessageAsync" disabled="@string.IsNullOrEmpty(message)">Send</button>
+            </div>
+        </div>
+        <div class="col-4">
+        </div>
+
+    </div>
+</div>
+
+@code{
+    public string message;
+    public List<string> messages = new List<string>();
+    public Queue<ChatMessage> conversationMessages = new Queue<ChatMessage>();
+    private static HttpClient Http = new HttpClient();
+
+    public void SendMessageAsync()
+    {
+        Http = new HttpClient();
+        messages.Add(message);
+        var text = message;
+        message = "";
+
+        ChatbotClient client = new ChatbotClient();
+        var generatedText = client.SendMessage(text, conversationMessages);
+        messages.Add(generatedText);
+        StateHasChanged();
+    }
+
+    private bool IsCodeBlock(string message) => message.StartsWith("```");
+}

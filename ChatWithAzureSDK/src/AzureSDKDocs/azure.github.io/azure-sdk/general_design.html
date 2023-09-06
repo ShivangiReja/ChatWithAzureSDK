@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines">
+<title>General Guidelines: API Design | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">General Guidelines: API Design</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <p>The API surface of your client library must have the most thought as it is the primary interaction that the consumer has with your service.</p>
+
+<h2 id="namespaces">Namespaces</h2>
+
+<p>Some languages have a concept of namespaces to group related types.  Grouping services within a cloud infrastructure is common since it aids discoverability and provides structure to the reference documentation.</p>
+
+<p><a href="#general-namespaces-support" name="general-namespaces-support" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  support namespaces if namespace usage is common within the language ecosystem.</p>
+
+<p><a href="#general-namespaces-naming" name="general-namespaces-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a root namespace of the form <code class="language-plaintext highlighter-rouge">&lt;AZURE&gt;.&lt;group&gt;.&lt;service&gt;</code>.  All consumer-facing APIs that are commonly used should exist within this namespace.  The namespace is comprised of three parts:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;AZURE&gt;</code> indicates a common prefix for all Azure services.  This may be <code class="language-plaintext highlighter-rouge">Azure</code> or <code class="language-plaintext highlighter-rouge">com.azure</code> or similiar, depending on the common form within the language.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;group&gt;</code> is the group for the service.  See the list below.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;service&gt;</code> is the shortened service name.</li>
+</ul>
+
+<p><a href="#general-namespaces-shortened-name" name="general-namespaces-shortened-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  pick a shortened service name that allows the consumer to tie the package to the service being used.  As a default, use the compressed service name.  The namespace does <strong>NOT</strong> change when the branding of the product changes, so avoid the use of marketing names that may change.</p>
+
+<p>A compressed service name is the service name without spaces.  It may further be shortened if the shortened version is well known in the community.  For example, “Azure Media Analytics” would have a compressed service name of <code class="language-plaintext highlighter-rouge">MediaAnalytics</code>, whereas “Azure Service Bus” would become <code class="language-plaintext highlighter-rouge">ServiceBus</code>.</p>
+
+<p><a href="#general-namespaces-approved-list" name="general-namespaces-approved-list" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the following list as the group of services (if the target language supports namespaces):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Namespace Group</th>
+      <th style="text-align: left">Functional Area</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">ai</code></td>
+      <td style="text-align: left">Artificial intelligence, including machine learning</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">analytics</code></td>
+      <td style="text-align: left">Gathering data for metrics or usage</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">containers</code></td>
+      <td style="text-align: left">Services related to containers</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">communication</code></td>
+      <td style="text-align: left">Communication services</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">data</code></td>
+      <td style="text-align: left">Dealing with structured data stores like databases</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">diagnostics</code></td>
+      <td style="text-align: left">Gathering data for diagnosing issues</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">digitaltwins</code></td>
+      <td style="text-align: left">Digital Twins, digital representations of physical spaces and IoT devices</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">identity</code></td>
+      <td style="text-align: left">Authentication and authorization</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">iot</code></td>
+      <td style="text-align: left">Internet of things</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">management</code></td>
+      <td style="text-align: left">Control Plane (Azure Resource Manager)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">media</code></td>
+      <td style="text-align: left">Audio and video technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">messaging</code></td>
+      <td style="text-align: left">Messaging services, like push notifications or pub-sub</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">mixedreality</code></td>
+      <td style="text-align: left">Mixed reality technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">monitor</code></td>
+      <td style="text-align: left">Services that are offered by Azure Monitor</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">quantum</code></td>
+      <td style="text-align: left">Quantum computing technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">search</code></td>
+      <td style="text-align: left">Search technologies</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">security</code></td>
+      <td style="text-align: left">Security and cryptography</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">storage</code></td>
+      <td style="text-align: left">Storage of unstructured data</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If the client library does not seem to fit into the group list, contact the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> to discuss the namespace requirements.</p>
+
+<p><a href="#general-namespaces-mgmt" name="general-namespaces-mgmt" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place the management (Azure Resource Manager) API in the <code class="language-plaintext highlighter-rouge">management</code> group.  Use the grouping <code class="language-plaintext highlighter-rouge">&lt;AZURE&gt;.management.&lt;group&gt;.&lt;service&gt;</code> for the namespace. Since more services require control plane APIs than data plane APIs, other namespaces may be used explicitly for control plane only.  Data plane usage is by exception only.  Additional namespaces that can be used for control plane SDKs include:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Namespace Group</th>
+      <th style="text-align: left">Functional Area</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">appmodel</code></td>
+      <td style="text-align: left">Application models, such as Functions or App Frameworks</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">compute</code></td>
+      <td style="text-align: left">Virtual machines, containers, and other compute services</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">integration</code></td>
+      <td style="text-align: left">Integration services (such as Logic Apps)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">management</code></td>
+      <td style="text-align: left">Management services (such as Cost Analytics)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">networking</code></td>
+      <td style="text-align: left">Services such as VPN, WAN, and Networking</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Many <code class="language-plaintext highlighter-rouge">management</code> APIs do not have a data plane because they deal with management of the Azure account. Place the management library in the <code class="language-plaintext highlighter-rouge">&lt;AZURE&gt;.management</code> namespace.  For example, use <code class="language-plaintext highlighter-rouge">azure.management.costanalysis</code> instead of <code class="language-plaintext highlighter-rouge">azure.management.management.costanalysis</code>.</p>
+
+<p><a href="#general-namespaces-similar-names" name="general-namespaces-similar-names" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  choose similar names for clients that do different things.</p>
+
+<p><a href="#general-namespaces-registration" name="general-namespaces-registration" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  register the chosen namespace with the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.  Open an issue to request the namespace.  See <a href="registered_namespaces.html">the registered namespace list</a> for a list of the currently registered namespaces.</p>
+
+<h3 id="example-namespaces">Example Namespaces</h3>
+
+<p>Here are some examples of namespaces that meet these guidelines:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Azure.Data.Cosmos</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.Identity.ActiveDirectory</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.IoT.DeviceProvisioning</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.Storage.Blobs</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.Messaging.NotificationHubs</code> (the client library for Notification Hubs)</li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.Management.Messaging.NotificationHubs</code> (the management library for Notification Hubs)</li>
+</ul>
+
+<p>Here are some namespaces that do not meet the guidelines:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Microsoft.Azure.CosmosDB</code> (not in the <code class="language-plaintext highlighter-rouge">Azure</code> namespace and does not use grouping)</li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.MixedReality.Kinect</code> (the grouping is not in the approved list)</li>
+  <li><code class="language-plaintext highlighter-rouge">Azure.IoT.IoTHub.DeviceProvisioning</code> (too many levels in the group)</li>
+</ul>
+
+<h2 id="client-interface">Client interface</h2>
+
+<p>The API surface will consist of one of more <em>service clients</em> that the consumer will instantiate to connect to your service, plus a set of supporting types.</p>
+
+<p>The number of service clients in a client library should be minimized to provide consumers a clear starting point for using the library. However, multiple service clients may be appropriate in the following situations:</p>
+
+<ul>
+  <li>The service supports two distinct use cases, such as “authoring” and “inference”, or “administration” and “runtime”, that are unlikely to be used together.</li>
+  <li>The service has a small subset of methods that are needed for its hero scenarios.</li>
+  <li>A subset of service requests require special/different permissions.</li>
+</ul>
+
+<p>When a client library has multiple service clients, these must have descriptive names so that the consumer can quickly determine which client to use to accomplish their task.</p>
+
+<p><a href="#general-client-naming" name="general-client-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name service client types with the <code class="language-plaintext highlighter-rouge">client</code> suffix.</p>
+
+<p>There are times when operations require the addition of optional data, provided in what is colloquially known as an “options bag”.  Libraries should strive for consistent naming.</p>
+
+<p><a href="#general-client-options-naming" name="general-client-options-naming" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  name the type for service client option bags with the <code class="language-plaintext highlighter-rouge">client_options</code> suffix.</p>
+
+<p><a href="#general-client-options-param-naming" name="general-client-options-param-naming" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  name operation option bag types with the <code class="language-plaintext highlighter-rouge">options</code> suffix.  For example, if the operation is <code class="language-plaintext highlighter-rouge">get_secret</code>, then the type of the options bag would be called <code class="language-plaintext highlighter-rouge">get_secret_options</code>.</p>
+
+<p><a href="#general-client-in-namespace" name="general-client-in-namespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place service client types that the consumer is most likely to interact with in the root namespace of the client library (assuming namespaces are supported in the target language).  Specialized service clients may be placed in sub-namespaces.</p>
+
+<p><a href="#general-client-minimal-constructor" name="general-client-minimal-constructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to construct a service client with the minimal information needed to connect and authenticate to the service.</p>
+
+<p><a href="#general-client-standardize-verbs" name="general-client-standardize-verbs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  standardize verb prefixes within a set of client libraries for a service.  The service must be able to speak about a specific operation in a cross-language manner within outbound materials (such as documentation, blogs, and public speaking).  They cannot do this if the same operation is referred to by different verbs in different languages.</p>
+
+<p>The following are standard verb prefixes.  You should have a good (articulated) reason to have an alternate verb for one of these operations.  For example, .NET uses <code class="language-plaintext highlighter-rouge">Get&lt;noun&gt;s</code> instead of <code class="language-plaintext highlighter-rouge">List&lt;noun&gt;s</code> since it is idiomatic to the language.</p>
+
+<!-- The table data is in yaml format on _data/tables/standard_verbs -->
+
+<div class="standard-verbs-table-container">
+    <!-- Table Header -->
+    <div class="standard-verbs-table-row">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-header standard-verbs-table-cell-verb">Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-header">Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-header">Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-header standard-verbs-table-cell-comments">
+            Comments</div>
+    </div>
+    <!-- Table Rows -->
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>create_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>key, item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>Created item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Create new item. Fails if item already exists.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>upsert_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>key, item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Create new item, or update existing item. Verb is primarily used in database-like services.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>set_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>key, item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Create new item, or update existing item. Verb is primarily used for dictionary-like properties of a service.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>update_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>key, partial item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Fails if item doesn’t exist.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>replace_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>ey, item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Replaces an existing item. Fails if the item doesn’t exist.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>append_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Add item to a collection. Item will be added last.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>add_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>index, item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Add item to a collection. Item will be added at the given index.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>get_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>key</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Raises an error if item doesn’t exist.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>list_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>Pageable[Item]</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Return an iterable of items. Returns iterable with no items if no items exist.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>&lt;noun&gt;_exists</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>key</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>boolean`</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Return <code class="language-plaintext highlighter-rouge">True</code> if the item exists. Must raise an error if the method failed to determine if the item exists (for example, the service returned an HTTP 503 response).</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Verb</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair standard-verbs-table-cell-verb">
+            <p>delete_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Parameters</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair"><p>key</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Returns</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header standard-verbs-table-cell-pair">
+            Comments</div>
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-pair">
+            <p>Delete an existing item. Must succeed even if item didn’t exist.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+    
+    
+    <div class="standard-verbs-table-row">
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-verb">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Verb</div>
+        <div class="standard-verbs-table-cell  standard-verbs-table-cell-verb">
+            <p>remove_&lt;noun&gt;</p>
+
+        </div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Parameters</div>
+        <div class="standard-verbs-table-cell "><p>key</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Returns</div>
+        <div class="standard-verbs-table-cell "><p>removed item</p>
+</div>
+    </div>
+    <div class="standard-verbs-table-cell-container standard-verbs-table-cell-comments">
+        <div class="standard-verbs-table-cell standard-verbs-table-cell-mobile-header ">
+            Comments</div>
+        <div class="standard-verbs-table-cell ">
+            <p>Remove a reference to an item from a collection. This method doesn’t delete the actual item, only the reference.</p>
+</div>
+    </div>
+</div>
+
+    
+    
+</div>
+
+<p><a href="#general-client-feature-support" name="general-client-feature-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support 100% of the features provided by the Azure service the client library represents. Gaps in functionality cause confusion and frustration among developers.</p>
+
+<h2 id="service-api-versions">Service API versions</h2>
+
+<p>The purposes of the client library is to communicate with an Azure service.  Azure services support multiple API versions.  To understand the capabilities of the service, the client library must be able to support multiple service API versions.</p>
+
+<p><a href="#general-service-apiversion-1" name="general-service-apiversion-1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  only target generally available service API versions when releasing a stable version of the client library.</p>
+
+<p><a href="#general-service-apiversion-8" name="general-service-apiversion-8" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to explicitly select a supported service API version when instantiating the client.</p>
+
+<p><a href="#general-service-apiversion-2" name="general-service-apiversion-2" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  target the latest generally available service API version by default in stable versions of the client library.</p>
+
+<p><a href="#general-service-apiversion-5" name="general-service-apiversion-5" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document the service API version that is used by default.</p>
+
+<p><a href="#general-service-apiversion-3" name="general-service-apiversion-3" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  target the latest public preview API version by default when releasing a public beta version of the client library.</p>
+
+<p><a href="#general-service-apiversion-4" name="general-service-apiversion-4" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include all service API versions that are supported by the client library in a <code class="language-plaintext highlighter-rouge">ServiceVersion</code> enumerated value.</p>
+
+<p><a href="#general-service-apiversion-6" name="general-service-apiversion-6" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that the values of the <code class="language-plaintext highlighter-rouge">ServiceVersion</code> enumerated value “match” the version strings in the service Swagger definition.</p>
+
+<p><a href="#general-service-apiversion-7" name="general-service-apiversion-7" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add or replace the <code class="language-plaintext highlighter-rouge">api-version</code> query parameter on any URI returned by the service e.g., <code class="language-plaintext highlighter-rouge">Operation-Location</code>, next page links, etc., with the service version passed configured on the client.</p>
+
+<p>For the purposes of this requirement, semantic changes are allowed.  For instance, many version strings are based on SemVer, which allows dots and dashes.  However, these characters are not allowed in identifiers.  The developer <strong>MUST</strong> be able to clearly understand what service API version will be used when the service version is set to each value in the <code class="language-plaintext highlighter-rouge">ServiceVersion</code> enumerated value.</p>
+
+<h2 id="model-types">Model types</h2>
+
+<p>Client libraries represent entities transferred to and from Azure services as model types.   Certain types are used for round-trips to the service.  They can be sent to the service (as an addition or update operation) and retrieved from the service (as a get operation).  These should be named according to the type.  For example, a <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code> in App Configuration, or an <code class="language-plaintext highlighter-rouge">Event</code> on Event Grid.</p>
+
+<p>Data within the model type can generally be split into two parts - data used to support one of the champion scenarios for the service, and less important data.  Given a type <code class="language-plaintext highlighter-rouge">Foo</code>, the less important details can be gathered in a type called <code class="language-plaintext highlighter-rouge">FooDetails</code> and attached to <code class="language-plaintext highlighter-rouge">Foo</code> as the <code class="language-plaintext highlighter-rouge">details</code> property.</p>
+
+<p>For example:</p>
+
+<figure class="highlight"><pre><code class="language-csharp" data-lang="csharp"><span class="k">class</span> <span class="nc">ConfigurationSettingDetails</span> <span class="p">{</span>
+    <span class="n">DateTimeOffset</span> <span class="n">lastModifiedDate</span><span class="p">;</span>
+    <span class="n">DateTimeOffset</span> <span class="n">receivedDate</span><span class="p">;</span>
+    <span class="n">ETag</span> <span class="n">eTag</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">ConfigurationSetting</span> <span class="p">{</span>
+    <span class="n">String</span> <span class="n">key</span><span class="p">;</span>
+    <span class="n">String</span> <span class="k">value</span><span class="p">;</span>
+    <span class="n">ConfigurationSettingDetails</span> <span class="n">details</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Optional parameters and settings to an operation should be collected into an options bag named <code class="language-plaintext highlighter-rouge">&lt;operation&gt;Options</code>. For example, the <code class="language-plaintext highlighter-rouge">GetConfigurationSetting</code> method might take a <code class="language-plaintext highlighter-rouge">GetConfigurationSettingOptions</code> class for specifying optional parameters.</p>
+
+<p>Results should use the model type (e.g. <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code>) where the return value is a complete set of data for the model.  However, in cases where a partial schema is returned, use the following types:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;model&gt;Item</code> for each item in an enumeration if the enumeration returns a partial schema for the model.  For example, <code class="language-plaintext highlighter-rouge">GetBlobs()</code> return an enumeration of <code class="language-plaintext highlighter-rouge">BlobItem</code>, which contains the blob name and metadata, but not the content of the blob.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code> for the result of an operation.  The <code class="language-plaintext highlighter-rouge">&lt;operation&gt;</code> is tied to a specific service operation.  If the same result can be used for multiple operations, use a suitable noun-verb phrase instead.  For example, use <code class="language-plaintext highlighter-rouge">UploadBlobResult</code> for the result from <code class="language-plaintext highlighter-rouge">UploadBlob</code>, but <code class="language-plaintext highlighter-rouge">ContainerChangeResult</code> for results from the various methods that change a blob container.</li>
+</ul>
+
+<p>The following table enumerates the various models you might create:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Type</td>
+      <td>Example</td>
+      <td>Usage</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;</code></td>
+      <td><code class="language-plaintext highlighter-rouge">Secret</code></td>
+      <td>The full data for a resource</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;Details</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretDetails</code></td>
+      <td>Less important details about a resource.  Attached to <code class="language-plaintext highlighter-rouge">&lt;model&gt;.details</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;Item</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretItem</code></td>
+      <td>A partial set of data returned for enumeration</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Options</code></td>
+      <td><code class="language-plaintext highlighter-rouge">AddSecretOptions</code></td>
+      <td>Optional parameters to a single operation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;operation&gt;Result</code></td>
+      <td><code class="language-plaintext highlighter-rouge">AddSecretResult</code></td>
+      <td>A partial or different set of data for a single operation</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;model&gt;&lt;verb&gt;Result</code></td>
+      <td><code class="language-plaintext highlighter-rouge">SecretChangeResult</code></td>
+      <td>A partial or different set of data for multiple operations on a model</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="network-requests">Network requests</h2>
+
+<p>Since the client library generally wraps one or more HTTP requests, it is important to support standard network capabilities.  Asynchronous programming techniques are not widely understood, although such techniques are essential in developing scalable web services and required in certain environments (such as mobile or Node environments).  Many developers prefer synchronous method calls for their easy semantics when learning how to use a technology.  In addition, consumers have come to expect certain capabilities in a network stack - capabilities such as call cancellation, automatic retry, and logging.</p>
+
+<p><a href="#general-network-support-sync-and-async" name="general-network-support-sync-and-async" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support both synchronous and asynchronous method calls, except where the language or default runtime does not support one or the other.</p>
+
+<p><a href="#general-network-identify-sync-methods" name="general-network-identify-sync-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that the consumer can identify which methods are async and which are synchronous.</p>
+
+<p>When an application makes a network request, the network infrastructure (like routers) and the called service may take a long time to respond and, in fact, may never respond. A well-written application SHOULD NEVER give up its control to the network infrastucture or service. Here are some examples as to why this is so important:</p>
+
+<ul>
+  <li>When an orchestrator needs to terminate a service (due to scale in, reconfiguration, or upgrading to a new version), the orchestrator typically notifies a running service instance by sending the Posix SIGINT. When the service receives this signal, it should terminate as quickly and gracefully as possible by setting a cancellation mechanism which is honored by all network operations that are currently in progress.</li>
+  <li>When a consumer’s web server receives a request, it may set a time limit indicating how much time it is allowing before it must give a response to the user.</li>
+  <li>When a consumer’s GUI application makes a request to an Azure service via our SDK, the GUI might offer a cancel button so that the end user can indicate that they are no longer in waiting for an operation or operations to complete.</li>
+</ul>
+
+<p>The best way for consumers to work with cancellation is to think of cancellation objects as forming a tree. For example:</p>
+
+<ul>
+  <li>Cancelling a parent automatically cancels its children.</li>
+  <li>Children can time out sooner than their parent but cannot extend the total time.</li>
+  <li>Cancellation can happen due to timeout or due to a manual/explicit cancel.</li>
+</ul>
+
+<p>Here is an example of how an application would use the tree of cancellations:</p>
+
+<ul>
+  <li>When an application starts, it should create a cancellation object that represents the entire application; this object is explicitly terminated in response to the application receiving a SIGINT notification.</li>
+  <li>When a web server receives an incoming request, it would create a new cancellation object that is a child of the application node. The new cancellation object would specify a maximum time that the web server is allowed to operate on the request.</li>
+  <li>As part of operating on the incoming request, the web server might need to make multiple requests to other services (like a database). If these requests can be made serially or in parallel, then they might share the previously created cancellation object. However, if the web server wants to limit the time spent on 1 or more of the requests, it can create a new cancellation object (with the desired timeout value) and make this object a child of the incoming node; this way, the individual request times out either when the overall request times out or when the maximum time for this operation is exceeded - whichever happens first.</li>
+  <li>Note that if multiple requests are made in parallel, it is common for the consumer to want to cancel all of them if any one of them fails. This should be a supported scenario.</li>
+</ul>
+
+<p><a href="#general-network-accept-cancellation" name="general-network-accept-cancellation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept platform-native cancellation tokens (that implement a timeout) on all asynchronous calls.</p>
+
+<p><a href="#general-network-check-cancellation" name="general-network-check-cancellation" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  check cancellation tokens only on I/O calls (such as network requests and file loads).  Do not check cancellation tokens in between I/O calls within the client library (for example, when processing data between I/O calls).</p>
+
+<p><a href="#general-network-no-leakage" name="general-network-no-leakage" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  leak the underlying protocol transport implementation details to the consumer.  All types from the protocol transport implementation must be appropriately abstracted.</p>
+
+<h2 id="authentication">Authentication</h2>
+<p>Azure services use a variety of different authentication schemes to allow clients to access the service.  Conceptually, there are two entities responsible in this process: a credential and an authentication policy.  Credentials provide confidential authentication data.  Authentication policies use the data provided by a credential to authenticate requests to the service.</p>
+
+<p>Primarily, all Azure services should support Azure Active Directory OAuth token authentication, and all clients must support authenticating requests in this manner.</p>
+
+<p><a href="#general-auth-provide-token-client-constructor" name="general-auth-provide-token-client-constructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a service client constructor or factory that accepts an instance of the TokenCredential abstraction from Azure Core.</p>
+
+<p><a href="#auth-client-no-token-persistence" name="auth-client-no-token-persistence" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  persist, cache, or reuse tokens returned from the token credential. This is <strong>CRITICAL</strong> as credentials generally have a short validity period and the token credential is responsible for refreshing these.</p>
+
+<p><a href="#general-auth-use-core" name="general-auth-use-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use authentication policy implementations from the Azure Core library where available.</p>
+
+<p><a href="#general-auth-reserve-when-not-suported" name="general-auth-reserve-when-not-suported" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  reserve the API surface needed for TokenCredential authentication, in the rare case that a service does not yet support Azure Active Directory authentication.</p>
+
+<p>In addition to Azure Active Directory OAuth, services may provide custom authentication schemes. In this case the following guidelines apply.</p>
+
+<p><a href="#general-auth-support" name="general-auth-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support all authentication schemes that the service supports.</p>
+
+<p><a href="#general-auth-provide-credential-types" name="general-auth-provide-credential-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define a public custom credential type which enables clients to authenticate requests using the custom scheme.</p>
+
+<p><a href="#general-auth-credential-type-base" name="general-auth-credential-type-base" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  define custom credential types extending or implementing the TokenCredential abstraction from Azure Core. This is especially true in type safe languages where extending or implementing this abstraction would break the type safety of other service clients, allowing users to instantiate them with the custom credential of the wrong service.</p>
+
+<p><a href="#general-auth-credential-type-placement" name="general-auth-credential-type-placement" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define custom credential types in the same namespace and package as the client, or in a service group namespace and shared package, not in Azure Core or Azure Identity.</p>
+
+<p><a href="#general-auth-credential-type-prefix" name="general-auth-credential-type-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prepend custom credential type names with the service name or service group name to provide clear context to its intended scope and usage.</p>
+
+<p><a href="#general-auth-credential-type-suffix" name="general-auth-credential-type-suffix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  append Credential to the end of the custom credential type name. Note this must be singular not plural.</p>
+
+<p><a href="#general-auth-provide-credential-constructor" name="general-auth-provide-credential-constructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define a constructor or factory for the custom credential type which takes in ALL data needed for the custom authentication protocol.</p>
+
+<p><a href="#general-auth-provide-update-method" name="general-auth-provide-update-method" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define an update method which accepts all mutable credential data, and updates the credential in an atomic, thread safe manner.</p>
+
+<p><a href="#general-auth-credential-set-properties" name="general-auth-credential-set-properties" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  define public settable properties or fields which allow users to update the authentication data directly in a non-atomic manner.</p>
+
+<p><a href="#general-auth-credential-get-properties" name="general-auth-credential-get-properties" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  define public properties or fields which allow users to access the authentication data directly. They are most often not needed by end users, and are difficult to use in a thread safe manner. In the case that exposing the authentication data is necessary, all the data needed to authenticate requests should be returned from a single API which guarantees the data returned is in a consistent state.</p>
+
+<p><a href="#general-auth-provide-client-constructor" name="general-auth-provide-client-constructor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide service client constructors or factories that accept all supported credential types.</p>
+
+<p>Client libraries may support providing credential data via a connection string <strong>ONLY IF</strong> the service provides a connection string to users via the portal or other tooling.   Connection strings are generally good for getting started as they are easily integrated into an application by copy/paste from the portal.  However, connection strings are considered a lesser form of authentication because the credentials cannot be rotated within a running process.</p>
+
+<p><a href="#general-auth-connection-strings" name="general-auth-connection-strings" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  support constructing a service client with a connection string unless such connection string is available within tooling (for copy/paste operations).</p>
+
+<h2 id="response-formats">Response formats</h2>
+
+<p>Requests to the service fall into two basic groups - methods that make a single logical request, or a deterministic sequence of requests.  An example of a <em>single logical request</em> is a request that may be retried inside the operation.  An example of a <em>deterministic sequence of requests</em> is a paged operation.</p>
+
+<p>The <em>logical entity</em> is a protocol neutral representation of a response. For HTTP, the logical entity may combine data from headers, body and the status line. A common example is exposing an ETag header as a property on the logical entity in addition to any deserialized content from the body.</p>
+
+<p><a href="#general-response-logical-entity" name="general-response-logical-entity" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  optimize for returning the logical entity for a given request. The logical entity must represent the information needed in the 99%+ case.</p>
+
+<p><a href="#general-response-complete" name="general-response-complete" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow a consumer to access the complete response, including the status line, headers and body. The client library must follow the language specific guidance for accomplishing this.</p>
+
+<p><a href="#general-response-streaming" name="general-response-streaming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide examples on how to access the raw and streamed response for a given request, where exposed by the client library.  We do not expect all methods to expose a streamed response.</p>
+
+<p><a href="#general-response-enumeration" name="general-response-enumeration" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a language idiomatic way to enumerate all logical entities for a paged operation, automatically fetching new pages as needed.</p>
+
+<p>For example, in Python:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">client</span><span class="p">.</span><span class="n">list_instances</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+<span class="c1"># No - don't force the caller of the library to do paging:
+</span><span class="n">next_page</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+    <span class="n">list_instance_result</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">list_instances</span><span class="p">(</span><span class="n">page</span><span class="o">=</span><span class="n">next_page</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">instance</span> <span class="n">ln</span> <span class="n">list_instance_result</span><span class="p">.</span><span class="n">response</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+    <span class="n">next_page</span> <span class="o">=</span> <span class="n">list_instance_result</span><span class="p">.</span><span class="n">next_page</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="n">next_page</span> <span class="ow">is</span> <span class="bp">None</span>
+</code></pre></div></div>
+
+<p>For methods that combine multiple requests into a single call:</p>
+
+<p><a href="#general-response-return-headers" name="general-response-return-headers" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return headers and other per-request metadata unless it is obvious as to which specific HTTP request the methods return value corresponds to.</p>
+
+<p><a href="#general-response-failure-cases" name="general-response-failure-cases" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide enough information in failure cases for an application to take appropriate corrective action.</p>
+
+<p><a href="#general-response-no-reserved-words" name="general-response-no-reserved-words" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use common reserved words as a property name within the models returned within the logical entity.  For example:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">object</code></li>
+  <li><code class="language-plaintext highlighter-rouge">value</code></li>
+</ul>
+
+<p>Such usage can cause confusion and will inevitably have to be changed on a per-language basis, which can cause consistency problems.</p>
+
+<h2 id="conditional-requests">Conditional requests</h2>
+
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests">Conditional requests</a> are normally performed using HTTP headers.  The primary usage provides headers that match the <code class="language-plaintext highlighter-rouge">ETag</code> to some known value.  The <code class="language-plaintext highlighter-rouge">ETag</code> is an opaque identifier that represents a single version of a resource. For example, adding the following header will translate to “if the record’s version, specified by the <code class="language-plaintext highlighter-rouge">ETag</code>, is not the same”.</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">If-Not-Match: "etag-value"</code></pre></figure>
+
+<p>With headers, tests are possible for the following:</p>
+
+<ul>
+  <li>Unconditionally (no additional headers)</li>
+  <li>If (not) modified since a version (<code class="language-plaintext highlighter-rouge">If-Match</code> and <code class="language-plaintext highlighter-rouge">If-Not-Match</code>)</li>
+  <li>If (not) modified since a date (<code class="language-plaintext highlighter-rouge">If-Modified-Since</code> and <code class="language-plaintext highlighter-rouge">If-Unmodified-Since</code>)</li>
+  <li>If (not) present (<code class="language-plaintext highlighter-rouge">If-Match</code> and <code class="language-plaintext highlighter-rouge">If-Not-Match</code> with a <code class="language-plaintext highlighter-rouge">ETag=*</code> value)</li>
+</ul>
+
+<p>Not all services support all of these semantics, and may not support any of them.  Developers have varying levels of understanding of the <code class="language-plaintext highlighter-rouge">ETag</code> and conditional requests, so it is best to abstract this concept from the API surface.  There are two types of conditional requests we need to be concerned with:</p>
+
+<p><strong>Safe conditional requests</strong> (e.g. GET)</p>
+
+<p>These are typically used to save bandwidth in an “update cache” scenario, i.e. I have a cached value, only send me the data if what the service has is newer than my copy. These return either a 200 or a 304 status code, indicating the value was not modified, which tells the caller that their cached value is up to date.</p>
+
+<p><strong>Unsafe conditional requests</strong> (e.g. POST, PUT, or DELETE)</p>
+
+<p>These are typically used to prevent losing updates in an optimistic concurrency scenario, i.e. I’ve modified the cached value I’m holding, but don’t update the service version unless it has the same copy I’ve got. These return either a success or a 412 error status code, indicating the value was modified, to indicate to the caller that they’ll need to retry their update if they want it to succeed.</p>
+
+<p>These two cases are handled differently in client libraries.  However, the form of the call is the same in both cases.  The signature of the method should be:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">client.&lt;method&gt;(&lt;item&gt;, requestOptions)</code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">requestOptions</code> field provides preconditions to the HTTP request.  The <code class="language-plaintext highlighter-rouge">Etag</code> value will be retrieved from the item that is passed into the method where possible, and method arguments where not possible. The form of the method will be modified based on idiomatic usage patterns in the language of choice.  In cases where the <code class="language-plaintext highlighter-rouge">ETag</code> value is not known, the operation cannot be conditional.
+If the library developer doens’t need to support advanced usage of precondition headers, they can add a boolean parameter that is set to true to establish the condition.  For example, use one of the following boolean names instead of the conditions operator:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">onlyIfChanged</code></li>
+  <li><code class="language-plaintext highlighter-rouge">onlyIfUnchanged</code></li>
+  <li><code class="language-plaintext highlighter-rouge">onlyIfMissing</code></li>
+  <li><code class="language-plaintext highlighter-rouge">onlyIfPresent</code></li>
+</ul>
+
+<p>In all cases, the conditional expression is “opt-in”, and the default is to perform the operation unconditionally.</p>
+
+<p>The return value from a conditional operation must be carefully considered.  For safe operators (e.g. GET), return a response that will throw if the value is accessed (or follow the same convention used fro a <code class="language-plaintext highlighter-rouge">204 No Content</code> response), since there is no value in the body to reference.  For unsafe operators (e.g. PUT, DELETE, or POST), throw a specific error when a <code class="language-plaintext highlighter-rouge">Precondition Failed</code> or <code class="language-plaintext highlighter-rouge">Conflict</code> result is received.  This allows the consumer to do something different in the case of conflicting results.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept a <code class="language-plaintext highlighter-rouge">conditions</code> parameter (which takes an enumerated type) on service methods that allow a conditional check on the service.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept an additional boolean or enum parameter on service methods as necessary to enable conditional checks using <code class="language-plaintext highlighter-rouge">ETag</code>.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  include the <code class="language-plaintext highlighter-rouge">ETag</code> field as part of the object model when conditional operations are supported.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  throw an error when a <code class="language-plaintext highlighter-rouge">304 Not Modified</code> response is received from the service, unless such errors are idiomatic to the language.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  throw a distinct error when a <code class="language-plaintext highlighter-rouge">412 Precondition Failed</code> response or a <code class="language-plaintext highlighter-rouge">409 Conflict</code> response is received from the service due to a conditional check.</p>
+
+<h2 id="pagination">Pagination</h2>
+
+<p>Azure client libraries eschew low-level pagination APIs in favor of high-level abstractions that implement per-item iterators. High-level APIs are easy for developers to use for the majority of use cases but can be more confusing when finer-grained control is required (for example, over-quota/throttling) and debugging when things go wrong. Other guidelines in this document work to mitigate this limitation, for example by providing robust logging, tracing, and pipeline customization options.</p>
+
+<p><a href="#general-pagination-use-async-iterators" name="general-pagination-use-async-iterators" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose paginated collections using language-canonical iterators over items within pages. The APIs used to expose the async iterators are language-dependent but should align with any existing common practices in your ecosystem.</p>
+
+<p><a href="#general-pagination-use-iterators" name="general-pagination-use-iterators" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose paginated collections using an iterator or cursor pattern if async iterators aren’t a built-in feature of your language.</p>
+
+<p><a href="#general-pagination-expose-lists-equally" name="general-pagination-expose-lists-equally" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose non-paginated list endpoints identically to paginated list endpoints. Users shouldn’t need to appreciate the difference.</p>
+
+<p><a href="#general-pagination-use-distinct-types" name="general-pagination-use-distinct-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use distinct types for entities in a list endpoint and an entity returned from a get endpoint if these are different types, and otherwise you must use the same types in these situations.</p>
+
+<div class="alert alert-warning" role="alert"><i class="fa fa-warning"></i> <b>Important:</b> Services should refrain from having a difference between the type of a particular entity as it exists in a list versus the result of a GET request for that individual item as it makes the client library’s surface area simpler.</div>
+
+<p><a href="#general-pagination-expose-individual-items" name="general-pagination-expose-individual-items" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an iterator over each individual item if getting each item requires a corresponding GET request to the service. One GET per item is often too expensive and so not an action we want to take on behalf of users.</p>
+
+<p><a href="#general-pagination-no-arrays" name="general-pagination-no-arrays" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an API to get a paginated collection into an array. This is a dangerous capability for services which may return many pages.</p>
+
+<p><a href="#general-pagination-expose-paging-apis" name="general-pagination-expose-paging-apis" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose paging APIs when iterating over a collection. Paging APIs must accept a continuation token (from a prior run) and a maximum number of items to return, and must return a continuation token as part of the response so that the iterator may continue, potentially on a different machine.</p>
+
+<h2 id="long-running-operations">Long running operations</h2>
+
+<p>Long-running operations are operations which consist of an initial request to start the operation followed by polling to determine when the operation has completed or failed. Long-running operations in Azure tend to follow the <a href="https://github.com/microsoft/api-guidelines/blob/vNext/Guidelines.md#13-long-running-operations">REST API guidelines for Long-running Operations</a>, but there are exceptions.</p>
+
+<p><a href="#general-lro-expose-poller" name="general-lro-expose-poller" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  represent long-running operations with some object that encapsulates the polling and the operation status. This object, called a <em>poller</em>, must provide APIs for:</p>
+
+<ol>
+  <li>querying the current operation state (either asynchronously, which may consult the service, or synchronously which must not)</li>
+  <li>requesting an asynchronous notification when the operation has completed</li>
+  <li>cancelling the operation if cancellation is supported by the service</li>
+  <li>registering disinterest in the operation so polling stops</li>
+  <li>triggering a poll operation manually (automatic polling must be disabled)</li>
+  <li>progress reporting (if supported by the service)</li>
+</ol>
+
+<p><a href="#general-lro-polling-config" name="general-lro-polling-config" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following polling configuration options:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">pollInterval</code></li>
+</ul>
+
+<p>Polling configuration may be used only in the absence of relevant retry-after headers from service, and otherwise should be ignored.</p>
+
+<p><a href="#general-lro-prefix" name="general-lro-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix method names which return a poller with either <code class="language-plaintext highlighter-rouge">begin</code> or <code class="language-plaintext highlighter-rouge">start</code>.  Language-specific guidelines will dictate which verb to use.</p>
+
+<p><a href="#general-lro-continuation" name="general-lro-continuation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a way to instantiate a poller with the serialized state of another poller to begin where it left off, for example by passing the state as a parameter to the same method which started the operation, or by directly instantiating a poller with that state.</p>
+
+<p><a href="#general-lro-cancellation" name="general-lro-cancellation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  cancel the long-running operation when cancellation is requested via a cancellation token. The cancellation token is cancelling the polling operation and should not have any effect on the service.</p>
+
+<p><a href="#general-lro-logging" name="general-lro-logging" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log polling status at the <code class="language-plaintext highlighter-rouge">Info</code> level (including time to next retry)</p>
+
+<p><a href="#general-lro-progress-reporting" name="general-lro-progress-reporting" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose a progress reporting mechanism to the consumer if the service reports progress as part of the polling operation.  Language-dependent guidelines will present additional guidance on how to expose progress reporting in this case.</p>
+
+<h2 id="repeatable-requests">Repeatable requests</h2>
+
+<p>The ability to retry failed requests for which a client never received a response greatly simplifies the ability to write resilient distributed applications. When the method on the service is not idempotent, the service may support safe retry by supporting repeatability headers as defined in <a href="https://docs.oasis-open.org/odata/repeatable-requests/v1.0/repeatable-requests-v1.0.html">OASIS Repeatable Requests Version 1.0</a>.</p>
+
+<p><a href="#general-repeatable-requests-support" name="general-repeatable-requests-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add the <code class="language-plaintext highlighter-rouge">Repeatability-Request-ID</code> (a uuid) and <code class="language-plaintext highlighter-rouge">Repeatability-First-Sent</code> (IMF fixdate) request headers before sending the HTTP request to the pipeline in any client method that directly invokes a single service operation. These header values remain the same cross all retries.</p>
+
+<p><a href="#general-repeatable-requests-parameters" name="general-repeatable-requests-parameters" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  offer explicit parameters on client methods allowing the consumer to explicitly set the repeatability headers value.</p>
+
+<p>NOTE: If the client method allows the consumer to set arbitrary headers, then any values for these two headers should be used and must not be overwritten by the client method code.</p>
+
+<p><a href="#general-repeatable-requests-support" name="general-repeatable-requests-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose the Repeatability-Result response header in the response model for the method.</p>
+
+<h2 id="support-for-non-http-protocols">Support for non-HTTP protocols</h2>
+
+<p>Most Azure services expose a RESTful API over HTTPS.  However, a few services use other protocols, such as <a href="https://www.amqp.org/">AMQP</a>, <a href="http://mqtt.org/">MQTT</a>, or <a href="https://webrtc.org/">WebRTC</a>. In these cases, the operation of the protocol can be split into two phases:</p>
+
+<ul>
+  <li>Per-connection (surrounding when the connection is initiated and terminated)</li>
+  <li>Per-operation (surrounding when an operation is sent through the open connection)</li>
+</ul>
+
+<p>The policies that are added to a HTTP request/response (authentication, unique request ID, telemetry, distributed tracing, and logging) are still valid on both a per-connection and per-operation basis.  However, the methods by which these policies are implemented are protocol dependent.</p>
+
+<p><a href="#general-proto-policies" name="general-proto-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement as many of the policies as possible on a per-connection and per-operation basis.</p>
+
+<p>For example, MQTT over WebSockets provides the ability to add headers during the initiation of the WebSockets connection, so this is a good place to add authentication, telemetry, and distributed tracing policies.  However, MQTT has no metadata (the equivalent of HTTP headers), so per-operation policies are not possible.  AMQP, by contract, does have per-operation metadata.  Unique request ID, and distributed tracing headers can be provided on a per-operation basis with AMQP.</p>
+
+<p><a href="#general-proto-adparch" name="general-proto-adparch" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  consult the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> on policy decisions for non-HTTP protocols.  Implementation of all policies is expected.  If the protocol cannot support a policy, obtain an exception from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.</p>
+
+<p><a href="#general-proto-config" name="general-proto-config" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the global configuration established in the Azure Core library to configure policies for non-HTTP protocols.  Consumers don’t necessarily know what protocol is used by the client library.  They will expect the client library to honor global configuration that they have established for the entire Azure SDK.</p>
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Aug 14, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>
