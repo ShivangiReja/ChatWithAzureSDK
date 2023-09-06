@@ -34,7 +34,7 @@
             </div>
             <div class="textMessage">
                 <input @bind="message" />
-                <button @onclick="SendMessageAsync" disabled="@string.IsNullOrEmpty(message)">Send</button>
+                <button @onclick="SendMessage" disabled="@string.IsNullOrEmpty(message)">Send</button>
             </div>
         </div>
         <div class="col-4">
@@ -49,7 +49,7 @@
     public Queue<ChatMessage> conversationMessages = new Queue<ChatMessage>();
     private static HttpClient Http = new HttpClient();
 
-    public void SendMessageAsync()
+    public void SendMessage()
     {
         Http = new HttpClient();
         messages.Add(message);
@@ -58,9 +58,24 @@
 
         ChatbotClient client = new ChatbotClient();
         var generatedText = client.SendMessage(text, conversationMessages);
+        message = "";
         messages.Add(generatedText);
         StateHasChanged();
     }
+
+    // public async Task SendMessage()
+    // {
+    //     Http = new HttpClient();
+    //     messages.Add(message);
+    //     var text = message;
+    //     message = "";
+
+    //     ChatbotClient client = new ChatbotClient();
+    //     var generatedText = await client.SendMessageUsingSearch(text, conversationMessages);
+    //     message = "";
+    //     messages.Add(generatedText);
+    //     StateHasChanged();
+    // }
 
     private bool IsCodeBlock(string message) => message.StartsWith("```");
 }

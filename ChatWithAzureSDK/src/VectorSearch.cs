@@ -10,9 +10,9 @@ namespace ChatWithAzureSDK
 {
     public partial class VectorSearch
     {
-        private const string ModelName = "text-embedding-ada-002"; // Max token - 8,191
+        private const string ModelName = "text-embedding-ada-002";
         private const int ModelDimensions = 1536;
-        private const string IndexName = "index-1000-chunksperdoc"; 
+        private const string IndexName = "index-800-chunksperdoc"; 
 
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
         private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));

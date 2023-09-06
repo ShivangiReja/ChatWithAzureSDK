@@ -70,7 +70,7 @@ def tiktoken_len(text):
 
 # To create these chunks we use the RecursiveCharacterTextSplitter
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
+    chunk_size=800,
     chunk_overlap=50,  # number of tokens overlap between chunks
     length_function=tiktoken_len,
     separators=['\n\n', '\n', ' ', '']
