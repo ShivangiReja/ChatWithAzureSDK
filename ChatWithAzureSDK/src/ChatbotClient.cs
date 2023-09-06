@@ -93,7 +93,6 @@ namespace ChatWithAzureSDK
 
         public async Task<string> SendMessageUsingSearch(string query, Queue<ChatMessage> conversation)
         {
-            //LoadDocuments();
             Console.WriteLine($"Here's the new query\n");
             Console.WriteLine($"User: {query} \n");
             // Create a Stopwatch instance
