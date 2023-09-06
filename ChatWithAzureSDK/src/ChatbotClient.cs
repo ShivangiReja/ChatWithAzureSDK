@@ -91,8 +91,6 @@ namespace ChatWithAzureSDK
             return userQuery;
         }
 
-        
-
         public async Task<string> SendMessageUsingSearch(string query, Queue<ChatMessage> conversation)
         {
             //LoadDocuments();
