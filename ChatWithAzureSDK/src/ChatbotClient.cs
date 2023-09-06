@@ -64,6 +64,7 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"Waiting for an Open AI response....\n-");
             ChatCompletions answers = openAIClient.GetChatCompletions(modelName, chatCompletionsOptions);
 
+            conversation.Enqueue(answers.Choices[0].Message.AzureExtensionsContext.Messages[0]);
             conversation.Enqueue(answers.Choices[0].Message);
 
             Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
