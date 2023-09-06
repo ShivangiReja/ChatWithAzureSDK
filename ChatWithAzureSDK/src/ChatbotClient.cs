@@ -26,14 +26,13 @@ namespace ChatWithAzureSDK
             var modelName = "gpt-35-turbo";
 
             // Add System prompt including context
-            string prompt = "You are an AI assistant who helps users answer questions based on the documents fetched from Search Index.  If they don't provide enough context, do not answer.";
+            string prompt = "You are an AI assistant who helps users answer questions based on given documents.  If they don't provide enough context, do not answer.";
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
                 Messages =
                 {
                     new ChatMessage(ChatRole.System, prompt),
-                },
-                MaxTokens = 4000
+                }
             };
 
             conversation.Enqueue(new(ChatRole.User, query));
@@ -51,7 +50,6 @@ namespace ChatWithAzureSDK
                     new AzureCognitiveSearchChatExtensionConfiguration(AzureChatExtensionType.AzureCognitiveSearch, searchEndpoint, searchCredential, SearchIndexName)
                     {
                         QueryType = AzureCognitiveSearchQueryType.Vector,
-                        DocumentCount = 10,
                         EmbeddingEndpoint = embeddingEndpoint,
                         EmbeddingKey = openAICredential,
                         FieldMappingOptions = new AzureCognitiveSearchIndexFieldMappingOptions(){
