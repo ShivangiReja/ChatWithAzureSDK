@@ -15,7 +15,7 @@ namespace ChatWithAzureSDK
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
         private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));
 
-        private const string SearchIndexName = "index-1000-chunksperdoc";
+        private const string SearchIndexName = "index-800-chunksperdoc";
 
         public string SendMessage(string query, Queue<ChatMessage> conversation)
         {
@@ -23,7 +23,7 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"User: {query} \n");
 
             OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
-            var modelName = "gpt-4-32k";
+            var modelName = "gpt-35-turbo";
 
             // Add System prompt including context
             string prompt = "You are an AI assistant who helps users answer questions based on the documents fetched from Search Index.  If they don't provide enough context, do not answer.";
@@ -50,7 +50,7 @@ namespace ChatWithAzureSDK
                     new AzureCognitiveSearchChatExtensionConfiguration(AzureChatExtensionType.AzureCognitiveSearch, searchEndpoint, searchCredential, SearchIndexName)
                     {
                         QueryType = AzureCognitiveSearchQueryType.Vector,
-                        DocumentCount = 16,
+                        DocumentCount = 10,
                         EmbeddingEndpoint = embeddingEndpoint,
                         EmbeddingKey = openAICredential,
                         FieldMappingOptions = new AzureCognitiveSearchIndexFieldMappingOptions(){
@@ -64,13 +64,31 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"Waiting for an Open AI response....\n-");
             ChatCompletions answers = openAIClient.GetChatCompletions(modelName, chatCompletionsOptions);
 
-            conversation.Enqueue(answers.Choices[0].Message.AzureExtensionsContext.Messages[0]);
+            var intentJson = GetIntentJson(answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content);
+            conversation.Enqueue(new ChatMessage(ChatRole.Tool, intentJson));
             conversation.Enqueue(answers.Choices[0].Message);
 
-            Console.WriteLine($"Content : {answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content} \n\n\n");
+            Console.WriteLine($"Search Query : {intentJson} \n\n");
             Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
 
             return answers.Choices[0].Message.Content;
+        }
+
+        private string GetIntentJson(string contentJson)
+        {
+            var userQuery = "";
+            using (JsonDocument document = JsonDocument.Parse(contentJson))
+            {
+                JsonElement root = document.RootElement;
+                foreach (JsonProperty property in root.EnumerateObject())
+                {
+                    if(property.Name == "intent")
+                    {
+                        userQuery = $"{{{property}}}";
+                    }
+                }
+            }
+            return userQuery;
         }
 
         public static void LoadDocuments()
