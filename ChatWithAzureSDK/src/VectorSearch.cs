@@ -56,7 +56,6 @@ namespace ChatWithAzureSDK
                 Console.WriteLine($"------------------------------------------------------------- \n\n");
                 yield return result.Document.Content;
             }
-
         }
 
 

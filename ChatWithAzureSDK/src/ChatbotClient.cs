@@ -67,6 +67,7 @@ namespace ChatWithAzureSDK
             conversation.Enqueue(answers.Choices[0].Message.AzureExtensionsContext.Messages[0]);
             conversation.Enqueue(answers.Choices[0].Message);
 
+            Console.WriteLine($"Content : {answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content} \n\n\n");
             Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
 
             return answers.Choices[0].Message.Content;
