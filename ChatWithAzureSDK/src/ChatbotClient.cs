@@ -63,10 +63,10 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"Waiting for an Open AI response....\n-");
             ChatCompletions answers = openAIClient.GetChatCompletions(modelName, chatCompletionsOptions);
 
-            var intentJson = GetIntentJson(answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content);
-            conversation.Enqueue(new ChatMessage(ChatRole.Tool, intentJson));
+            conversation.Enqueue(answers.Choices[0].Message.AzureExtensionsContext.Messages[0]);
             conversation.Enqueue(answers.Choices[0].Message);
 
+            var intentJson = GetIntentJson(answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content);
             Console.WriteLine($"Search Query : {intentJson} \n\n");
             Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
             Console.WriteLine($"\n-------------------------------------------------------\n");
