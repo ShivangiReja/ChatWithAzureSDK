@@ -23,7 +23,7 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"User: {query} \n");
 
             OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
-            var modelName = "gpt-35-turbo";
+            var modelName = "gpt-35-turbo-16k";
 
             // Add System prompt including context
             string prompt = "You are an AI assistant who helps users answer questions based on given documents.  If they don't provide enough context, do not answer.";
