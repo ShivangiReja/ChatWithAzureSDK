@@ -15,7 +15,8 @@ namespace ChatWithAzureSDK
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
         private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));
 
-        private const string SearchIndexName = "index-800-chunksperdoc";
+        private const string VectorSearchIndexName = "index-800-chunksperdoc";
+        private const string SemanticVectorSearchIndexName = "semantic-index-800-chunksperdoc";
 
         public string SendMessage(string query, Queue<ChatMessage> conversation)
         {
@@ -23,7 +24,7 @@ namespace ChatWithAzureSDK
             Console.WriteLine($"User: {query} \n");
 
             OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
-            var modelName = "gpt-35-turbo-16k";
+            var modelName = "gpt-35-turbo";
 
             // Add System prompt including context
             string prompt = "You are an AI assistant who helps users answer questions based on given documents.  If they don't provide enough context, do not answer.";
@@ -47,9 +48,67 @@ namespace ChatWithAzureSDK
             {
                 Extensions =
                 {
-                    new AzureCognitiveSearchChatExtensionConfiguration(AzureChatExtensionType.AzureCognitiveSearch, searchEndpoint, searchCredential, SearchIndexName)
+                    new AzureCognitiveSearchChatExtensionConfiguration(AzureChatExtensionType.AzureCognitiveSearch, searchEndpoint, searchCredential, VectorSearchIndexName)
                     {
                         QueryType = AzureCognitiveSearchQueryType.Vector,
+                        EmbeddingEndpoint = embeddingEndpoint,
+                        EmbeddingKey = openAICredential,
+                        FieldMappingOptions = new AzureCognitiveSearchIndexFieldMappingOptions(){
+                            ContentFieldNames = { "Content" },
+                            VectorFieldNames = { "ContentVector" }
+                        }
+                    },
+                }
+            };
+
+            Console.WriteLine($"Waiting for an Open AI response....\n-");
+            ChatCompletions answers = openAIClient.GetChatCompletions(modelName, chatCompletionsOptions);
+
+            conversation.Enqueue(answers.Choices[0].Message.AzureExtensionsContext.Messages[0]);
+            conversation.Enqueue(answers.Choices[0].Message);
+
+            var intentJson = GetIntentJson(answers.Choices[0].Message.AzureExtensionsContext.Messages[0].Content);
+            Console.WriteLine($"Search Query : {intentJson} \n\n");
+            Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
+            Console.WriteLine($"\n-------------------------------------------------------\n");
+
+            return answers.Choices[0].Message.Content;
+        }
+
+        public string SendMessageUsingSemanticVectorSearch(string query, Queue<ChatMessage> conversation)
+        {
+            Console.WriteLine($"Here's the new query\n");
+            Console.WriteLine($"User: {query} \n");
+
+            OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
+            var modelName = "gpt-35-turbo";
+
+            // Add System prompt including context
+            string prompt = "You are an AI assistant who helps users answer questions based on given documents.  If they don't provide enough context, do not answer.";
+            var chatCompletionsOptions = new ChatCompletionsOptions()
+            {
+                Messages =
+                {
+                    new ChatMessage(ChatRole.System, prompt),
+                }
+            };
+
+            conversation.Enqueue(new(ChatRole.User, query));
+
+            // Add all the history including user query in chatCompletionsOptions
+            foreach (ChatMessage chatMessage in conversation)
+            {
+                chatCompletionsOptions.Messages.Add(chatMessage);
+            }
+
+            chatCompletionsOptions.AzureExtensionsOptions = new()
+            {
+                Extensions =
+                {
+                    new AzureCognitiveSearchChatExtensionConfiguration(AzureChatExtensionType.AzureCognitiveSearch, searchEndpoint, searchCredential, SemanticVectorSearchIndexName)
+                    {
+                        QueryType = AzureCognitiveSearchQueryType.VectorSemanticHybrid,
+                        SemanticConfiguration = "my-semantic-config",
                         EmbeddingEndpoint = embeddingEndpoint,
                         EmbeddingKey = openAICredential,
                         FieldMappingOptions = new AzureCognitiveSearchIndexFieldMappingOptions(){

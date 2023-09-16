@@ -12,7 +12,8 @@ namespace ChatWithAzureSDK
     {
         private const string ModelName = "text-embedding-ada-002";
         private const int ModelDimensions = 1536;
-        private const string IndexName = "index-800-chunksperdoc"; 
+        private const string VectorSearchIndexName = "index-800-chunksperdoc";
+       // private const string SemanticVectorSearchIndexName = "semantic-index-800-chunksperdoc";
 
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
         private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));
@@ -25,7 +26,7 @@ namespace ChatWithAzureSDK
             //-----------Create Index---------------------
             SearchIndexClient indexClient = new(searchEndpoint, searchCredential);
 
-            SearchIndex index = GetIndex(IndexName);
+            SearchIndex index = GetIndex(VectorSearchIndexName);
             indexClient.CreateIndex(index);
 
             //--------Upload chunked documents------------
@@ -34,7 +35,7 @@ namespace ChatWithAzureSDK
 
         internal static IEnumerable<string> Search(string query, int count)
         {
-            SearchClient searchClient = new(searchEndpoint, IndexName, searchCredential);
+            SearchClient searchClient = new(searchEndpoint, VectorSearchIndexName, searchCredential);
             OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
 
             var vectorizedResult = Vectorize(openAIClient, query);
@@ -84,7 +85,21 @@ namespace ChatWithAzureSDK
                     {
                         new HnswVectorSearchAlgorithmConfiguration(vectorSearchConfigName)
                     }
-                }
+                },
+                //SemanticSettings = new()
+                //{
+                //    Configurations =
+                //    {
+                //        new SemanticConfiguration("my-semantic-config", new()
+                //        {
+                //            TitleField = new(){ FieldName = "Source" },
+                //            ContentFields =
+                //            {
+                //                new() { FieldName = "Content" }
+                //            }
+                //        })
+                //    }
+                //}
             };
 
             return searchIndex;
@@ -92,7 +107,7 @@ namespace ChatWithAzureSDK
 
         internal static void UploadChunks(string path)
         {
-            SearchClient searchClient = new(searchEndpoint, IndexName, searchCredential);
+            SearchClient searchClient = new(searchEndpoint, VectorSearchIndexName, searchCredential);
             OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
 
             List<AzureSDKDocument> docs = new();
