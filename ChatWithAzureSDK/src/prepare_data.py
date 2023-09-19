@@ -19,14 +19,7 @@ def load_documents(html_files_path):
 
     output_directory = r'C:\Users\shreja\Demo\ChatWithAzureSDK\ChatWithAzureSDK\src\JsonDocument'
     write_documents_to_jsonl(formatted_docs, output_directory)
-    return f"\n Token count Doc1 - {token_counts[0]} \n Token count Doc2 - {token_counts[1]} \n Doc1 chunk length {len(doc1_chunks)} chunk1 token count {tiktoken_len(doc1_chunks[0])} \n Doc2 chunk length {len(doc2_chunks)} chunk1 token count {tiktoken_len(doc2_chunks[0])} \n\n Formatted docs length: {len(formatted_docs)} \n\n Formatted doc 1: {formatted_docs[0]}"
-
-# create the function to load the documents -- Not working -- default html tag is <div class="main">
-def test_func(html_files_path):
-    loader = ReadTheDocsLoader(html_files_path, encoding="utf-8", custom_html_tag=("div", "class=*"), features="html.parser")
-    docs = loader.load()
-    len(docs)
-    return f"Hello, {len(docs)} - {docs[0]} - {docs[0].page_content}!"
+    return f"\n \n Token count Doc0 - {token_counts[0]} \n Token count Doc1 - {token_counts[1]} \n Doc0 chunks length {len(doc1_chunks)} chunk1 token count {tiktoken_len(doc1_chunks[0])} \n Doc1 chunks length {len(doc2_chunks)} chunk1 token count {tiktoken_len(doc2_chunks[0])} \n\n Formatted docs length: {len(formatted_docs)} \n\n Formatted doc 1: {formatted_docs[0]}"
 
 # Custom class to hold document data
 class Document:
@@ -118,21 +111,3 @@ def write_documents_to_jsonl(documents, output_directory):
     with open(output_file, 'w') as f:
         for doc in documents:
             f.write(json.dumps(doc) + '\n')
-
-def load_documents_test1(html_files_path):
-    docs = parse_html_content(html_files_path)
-
-    token_counts = [tiktoken_len(doc.page_content) for doc in docs]
-    doc1_chunks = text_splitter.split_text(docs[0].page_content)
-    doc2_chunks = text_splitter.split_text(docs[1].page_content)
-
-    return f"\n Token count Doc1 - {token_counts[0]} \n Token count Doc2 - {token_counts[1]} \n Doc1 chunk length {len(doc1_chunks)} chunk1 token count {tiktoken_len(doc1_chunks[0])} \n Doc2 chunk length {len(doc2_chunks)} chunk1 token count {tiktoken_len(doc2_chunks[0])} \n\n Formatted docs length: {len(formatted_docs)} \n\n Formatted doc 1: {formatted_docs[0]}"
-
-def load_documents_test2(html_files_path):
-    docs = test_func(html_files_path)
-
-    token_counts = [tiktoken_len(doc.page_content) for doc in docs]
-    doc1_chunks = text_splitter.split_text(docs[0].page_content)
-    doc2_chunks = text_splitter.split_text(docs[1].page_content)
-
-    return f"\n Token count Doc1 - {token_counts[0]} \n Token count Doc2 - {token_counts[1]} \n Doc1 chunk length {len(doc1_chunks)} chunk1 token count {tiktoken_len(doc1_chunks[0])} \n Doc2 chunk length {len(doc2_chunks)} chunk1 token count {tiktoken_len(doc2_chunks[0])} \n\n Formatted docs length: {len(formatted_docs)} \n\n Formatted doc 1: {formatted_docs[0]}"

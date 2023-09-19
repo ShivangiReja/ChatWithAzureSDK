@@ -508,18 +508,6 @@ sys.path.append(r'{folderPath}')");
                     string result = loadDocuments("C:\\Users\\shreja\\Demo\\ChatWithAzureSDK\\ChatWithAzureSDK\\src\\AzureSDKDocs"); // Call the Python function
 
                     Console.WriteLine(result);
-
-                    //dynamic loadDocuments = python.load_documents_test1; // Get the Python function
-                    //string result = loadDocuments("C:\\Users\\shreja\\Demo\\ChatWithAzureSDK\\ChatWithAzureSDK\\src\\AzureSDKDocs"); // Call the Python function
-
-                    //Console.WriteLine(result);
-
-                    //Console.WriteLine("Testing..................!!!!!!");
-
-                    //loadDocuments = python.load_documents_test2; // Get the Python function
-                    //result = loadDocuments("C:\\Users\\shreja\\Demo\\ChatWithAzureSDK\\ChatWithAzureSDK\\src\\AzureSDKDocs"); // Call the Python function
-
-                    //Console.WriteLine(result);
                 }
                 catch (PythonException ex)
                 {
