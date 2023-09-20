@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines python">
+<title>Python Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">Python Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <h2 id="api-implementation">API implementation</h2>
+
+<h3 id="service-client">Service client</h3>
+
+<h4 id="http-pipeline">Http pipeline</h4>
+
+<p>Since the client library generally wraps one or more HTTP requests, it’s important to support standard network capabilities. Although not widely understood, asynchronous programming techniques are essential in developing resilient web services. Many developers prefer synchronous method calls for their easy semantics when learning how to use a technology. The HTTP pipeline is a component in the <code class="language-plaintext highlighter-rouge">azure-core</code> library that assists in providing connectivity to HTTP-based Azure services.</p>
+
+<p><a href="#python-network-http-pipeline" name="python-network-http-pipeline" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <a href="python_implementation.html#azure-core">HTTP pipeline</a> to send requests to service REST endpoints.</p>
+
+<p><a href="#python-network-use-policies" name="python-network-use-policies" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  include the following policies in the HTTP pipeline:</p>
+
+<ul>
+  <li>Unique Request ID (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.RequestIdPolicy</code>)</li>
+  <li>Headers (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.HeadersPolicy</code>)</li>
+  <li>Telemetry (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.UserAgentPolicy</code>)</li>
+  <li>Proxy (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.ProxyPolicy</code>)</li>
+  <li>Content decoding (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.ContentDecodePolicy</code>)</li>
+  <li>Retry (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.RetryPolicy</code> and <code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.AsyncRetryPolicy</code>)</li>
+  <li>Credentials (e.g. <code class="language-plaintext highlighter-rouge">BearerTokenCredentialPolicy</code>, <code class="language-plaintext highlighter-rouge">AzureKeyCredentialPolicy</code>, etc)</li>
+  <li>Distributed tracing (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.DistributedTracingPolicy</code>)</li>
+  <li>Logging (<code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.NetworkTraceLoggingPolicy</code>)</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kn">from</span> <span class="nn">azure.core.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="kn">from</span> <span class="nn">azure.core.pipeline.policies</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BearerTokenCredentialPolicy</span><span class="p">,</span>
+    <span class="n">ContentDecodePolicy</span><span class="p">,</span>
+    <span class="n">DistributedTracingPolicy</span><span class="p">,</span>
+    <span class="n">HeadersPolicy</span><span class="p">,</span>
+    <span class="n">HttpLoggingPolicy</span><span class="p">,</span>
+    <span class="n">NetworkTraceLoggingPolicy</span><span class="p">,</span>
+    <span class="n">UserAgentPolicy</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">ExampleClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="p">...</span>
+
+    <span class="k">def</span> <span class="nf">_create_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">credential</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">transport</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'transport'</span><span class="p">)</span> <span class="ow">or</span> <span class="n">RequestsTransport</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">policies</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">'policies'</span><span class="p">]</span>
+        <span class="k">except</span> <span class="nb">KeyError</span><span class="p">:</span>
+            <span class="n">scope</span> <span class="o">=</span> <span class="n">base_url</span><span class="p">.</span><span class="n">strip</span><span class="p">(</span><span class="s">"/"</span><span class="p">)</span> <span class="o">+</span> <span class="s">"/.default"</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="s">"get_token"</span><span class="p">):</span>
+                <span class="n">credential_policy</span> <span class="o">=</span> <span class="n">BearerTokenCredentialPolicy</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">scope</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span>
+                    <span class="s">"Please provide an instance from azure-identity or a class that implement the 'get_token protocol"</span>
+                <span class="p">)</span>
+            <span class="n">policies</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">HeadersPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">UserAgentPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">ContentDecodePolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">RetryPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">credential_policy</span><span class="p">,</span>
+                <span class="n">HttpLoggingPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">DistributedTracingPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="n">NetworkTraceLoggingPolicy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">transport</span><span class="p">,</span> <span class="n">policies</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<h5 id="custom-policies">Custom policies</h5>
+
+<p>Some services may require custom policies to be implemented. For example, custom policies may implement fall back to secondary endpoints during retry, request signing, or other specialized authentication techniques.</p>
+
+<p><a href="#python-pipeline-core-policies" name="python-pipeline-core-policies" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the policy implementations in <code class="language-plaintext highlighter-rouge">azure-core</code> whenever possible.</p>
+
+<p><a href="#python-custom-policy-review" name="python-custom-policy-review" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  review the proposed policy with the Azure SDK <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Architecture Board</a>. There may already be an existing policy that can be modified/parameterized to satisfy your need.</p>
+
+<p><a href="#python-custom-policy-base-class" name="python-custom-policy-base-class" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  derive from <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.9.0/azure.core.pipeline.policies.html#azure.core.pipeline.policies.HTTPPolicy">HTTPPolicy</a>/<a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.9.0/azure.core.pipeline.policies.html#azure.core.pipeline.policies.AsyncHTTPPolicy">AsyncHTTPPolicy</a> (if you need to make network calls) or <a href="https://azuresdkdocs.blob.core.windows.net/$web/python/azure-core/1.9.0/azure.core.pipeline.policies.html#azure.core.pipeline.policies.SansIOHTTPPolicy">SansIOHTTPPolicy</a> (if you do not).</p>
+
+<p><a href="#python-custom-policy-thread-safe" name="python-custom-policy-thread-safe" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure thread-safety for custom policies. A practical consequence of this is that you should keep any per-request or connection bookkeeping data in the context rather than in the policy instance itself.</p>
+
+<p><a href="#python-pipeline-document-policies" name="python-pipeline-document-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document any custom policies in your package. The documentation should make it clear how a user of your library is supposed to use the policy.</p>
+
+<p><a href="#python-pipeline-policy-namespace" name="python-pipeline-policy-namespace" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add the policies to the <code class="language-plaintext highlighter-rouge">azure.&lt;package name&gt;.pipeline.policies</code> namespace.</p>
+
+<h4 id="service-methods">Service Methods</h4>
+
+<h5 id="parameter-validation">Parameter validation</h5>
+
+<p><a href="#python-client-parameter-validation" name="python-client-parameter-validation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use <code class="language-plaintext highlighter-rouge">isinstance</code> to validate parameter value types other than for <a href="https://docs.python.org/3/library/stdtypes.html">built-in types</a> (e.g. <code class="language-plaintext highlighter-rouge">str</code> etc). For other types, use <a href="python_implementation.html#types-or-not">structural type checking</a>.</p>
+
+<h3 id="supporting-types">Supporting types</h3>
+
+<p><a href="#python-models-repr" name="python-models-repr" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement <code class="language-plaintext highlighter-rouge">__repr__</code> for model types. The representation <strong>must</strong> include the type name and any key properties (that is, properties that help identify the model instance).</p>
+
+<p><a href="#python-models-repr-length" name="python-models-repr-length" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  truncate the output of <code class="language-plaintext highlighter-rouge">__repr__</code> after 1024 characters.</p>
+
+<h5 id="extensible-enumerations">Extensible enumerations</h5>
+
+<p>Any Enums defined in the SDK should be interchangeable with case-insensitive strings. This is achieved by using the <code class="language-plaintext highlighter-rouge">CaseInsensitiveEnumMeta</code> class defined in <code class="language-plaintext highlighter-rouge">azure-core</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">azure.core</span> <span class="kn">import</span> <span class="n">CaseInsensitiveEnumMeta</span>
+
+<span class="k">class</span> <span class="nc">MyCustomEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">CaseInsensitiveEnumMeta</span><span class="p">):</span>
+    <span class="n">FOO</span> <span class="o">=</span> <span class="s">'foo'</span>
+    <span class="n">BAR</span> <span class="o">=</span> <span class="s">'bar'</span>
+</code></pre></div></div>
+
+<h3 id="sdk-feature-implementation">SDK Feature implementation</h3>
+
+<h4 id="configuration">Configuration</h4>
+
+<p><a href="#python-envvars-global" name="python-envvars-global" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  honor the following environment variables for global configuration settings:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Environment Variable</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Proxy Settings</strong></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>HTTP_PROXY</td>
+      <td>Proxy for HTTP connections</td>
+    </tr>
+    <tr>
+      <td>HTTPS_PROXY</td>
+      <td>Proxy for HTTPS connections</td>
+    </tr>
+    <tr>
+      <td>NO_PROXY</td>
+      <td>Hosts which must not use a proxy</td>
+    </tr>
+    <tr>
+      <td>ALL_PROXY</td>
+      <td>Proxy for HTTP and/or HTTPS connections in case HTTP_PROXY and/or HTTPS_PROXY are not defined</td>
+    </tr>
+    <tr>
+      <td><strong>Identity</strong></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>MSI_ENDPOINT</td>
+      <td>Azure AD MSI Credentials</td>
+    </tr>
+    <tr>
+      <td>MSI_SECRET</td>
+      <td>Azure AD MSI Credentials</td>
+    </tr>
+    <tr>
+      <td>AZURE_USERNAME</td>
+      <td>Azure username for U/P Auth</td>
+    </tr>
+    <tr>
+      <td>AZURE_PASSWORD</td>
+      <td>Azure password for U/P Auth</td>
+    </tr>
+    <tr>
+      <td>AZURE_CLIENT_CERTIFICATE_PATH</td>
+      <td>Azure Active Directory</td>
+    </tr>
+    <tr>
+      <td>AZURE_CLIENT_ID</td>
+      <td>Azure Active Directory</td>
+    </tr>
+    <tr>
+      <td>AZURE_CLIENT_SECRET</td>
+      <td>Azure Active Directory</td>
+    </tr>
+    <tr>
+      <td>AZURE_TENANT_ID</td>
+      <td>Azure Active Directory</td>
+    </tr>
+    <tr>
+      <td>AZURE_AUTHORITY_HOST</td>
+      <td>Azure Active Directory</td>
+    </tr>
+    <tr>
+      <td><strong>Pipeline Configuration</strong></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>AZURE_TELEMETRY_DISABLED</td>
+      <td>Disables telemetry</td>
+    </tr>
+    <tr>
+      <td>AZURE_LOG_LEVEL</td>
+      <td>Enable logging by setting a log level.</td>
+    </tr>
+    <tr>
+      <td>AZURE_TRACING_DISABLED</td>
+      <td>Disables tracing</td>
+    </tr>
+    <tr>
+      <td><strong>General SDK Configuration</strong></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>AZURE_CLOUD</td>
+      <td>Name of the sovereign cloud</td>
+    </tr>
+    <tr>
+      <td>AZURE_SUBSCRIPTION_ID</td>
+      <td>Azure subscription</td>
+    </tr>
+    <tr>
+      <td>AZURE_RESOURCE_GROUP</td>
+      <td>Azure Resource Group</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="logging">Logging</h4>
+
+<p><a href="#python-logging-usage" name="python-logging-usage" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use Pythons standard <a href="https://docs.python.org/3/library/logging.html">logging module</a>.</p>
+
+<p><a href="#python-logging-nameed-logger" name="python-logging-nameed-logger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a named logger for your library.</p>
+
+<p>The logger for your package <strong>must</strong> use the name of the module. The library may provide additional child loggers. If child loggers are provided, document them.</p>
+
+<p>For example:</p>
+<ul>
+  <li>Package name: <code class="language-plaintext highlighter-rouge">azure-someservice</code></li>
+  <li>Module name: <code class="language-plaintext highlighter-rouge">azure.someservice</code></li>
+  <li>Logger name: <code class="language-plaintext highlighter-rouge">azure.someservice</code></li>
+  <li>Child logger: <code class="language-plaintext highlighter-rouge">azure.someservice.achild</code></li>
+</ul>
+
+<p>These naming rules allow the consumer to enable logging for all Azure libraries, a specific client library, or a subset of a client library.</p>
+
+<p><a href="#python-logging-error" name="python-logging-error" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">ERROR</code> logging level for failures where it’s unlikely the application will recover (for example, out of memory).</p>
+
+<p><a href="#python-logging-warn" name="python-logging-warn" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">WARNING</code> logging level when a function fails to perform its intended task. The function should also raise an exception.</p>
+
+<p>Don’t include occurrences of self-healing events (for example, when a request will be automatically retried).</p>
+
+<p><a href="#python-logging-info" name="python-logging-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">INFO</code> logging level when a function operates normally.</p>
+
+<p><a href="#python-logging-debug" name="python-logging-debug" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">DEBUG</code> logging level for detailed trouble shooting scenarios.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">DEBUG</code> logging level is intended for developers or system administrators to diagnose specific failures.</p>
+
+<p><a href="#python-logging-sensitive-info" name="python-logging-sensitive-info" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  send sensitive information in log levels other than <code class="language-plaintext highlighter-rouge">DEBUG</code>.  For example, redact or remove account keys when logging headers.</p>
+
+<p><a href="#python-logging-request" name="python-logging-request" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log the request line, response line, and headers for an outgoing request as an <code class="language-plaintext highlighter-rouge">INFO</code> message.</p>
+
+<p><a href="#python-logging-cancellation" name="python-logging-cancellation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log an <code class="language-plaintext highlighter-rouge">INFO</code> message, if a service call is canceled.</p>
+
+<p><a href="#python-logging-exceptions" name="python-logging-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log exceptions thrown as a <code class="language-plaintext highlighter-rouge">WARNING</code> level message. If the log level set to <code class="language-plaintext highlighter-rouge">DEBUG</code>, append stack trace information to the message.</p>
+
+<p>You can determine the logging level for a given logger by calling <a href="https://docs.python.org/3/library/logging.html#logging.Logger.isEnabledFor"><code class="language-plaintext highlighter-rouge">logging.Logger.isEnabledFor</code></a>.</p>
+
+<h4 id="distributed-tracing">Distributed tracing</h4>
+
+<p><a href="#python-tracing-span-per-method" name="python-tracing-span-per-method" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a new trace span for each library method invocation. The easiest way to do so is by adding the distributed tracing decorator from <code class="language-plaintext highlighter-rouge">azure.core.tracing</code>.</p>
+
+<p><a href="#python-tracing-span-name" name="python-tracing-span-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <code class="language-plaintext highlighter-rouge">&lt;package name&gt;/&lt;method name&gt;</code> as the name of the span.</p>
+
+<p><a href="#python-tracing-span-per-call" name="python-tracing-span-per-call" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  create a new span for each outgoing network call. If using the HTTP pipeline, the new span is created for you.</p>
+
+<p><a href="#python-tracing-propagate" name="python-tracing-propagate" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  propagate tracing context on each outgoing service request.</p>
+
+<h4 id="telemetry">Telemetry</h4>
+
+<p>Client library usage telemetry is used by service teams (not consumers) to monitor what SDK language, client library version, and language/platform info a client is using to call into their service. Clients can prepend additional information indicating the name and version of the client application.</p>
+
+<p><a href="#python-http-telemetry-useragent" name="python-http-telemetry-useragent" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  send telemetry information in the [User-Agent header] using the following format:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[&lt;application_id&gt; ]azsdk-python-&lt;package_name&gt;/&lt;package_version&gt; &lt;platform_info&gt;
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;application_id&gt;</code>: optional application-specific string. May contain a slash, but must not contain a space. The string is supplied by the user of the client library, e.g. “AzCopy/10.0.4-Preview”</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;package_name&gt;</code>: client library (distribution) package name as it appears to the developer, replacing slashes with dashes and removing the Azure indicator.  For example, “azure-keyvault-secrets” would specify “azsdk-python-keyvault-secrets”.</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;package_version&gt;</code>: the version of the package. Note: this is not the version of the service</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;platform_info&gt;</code>: information about the currently executing language runtime and OS, e.g. “Python/3.8.4 (Windows-10-10.0.19041-SP0)”</li>
+</ul>
+
+<p>For example, if we re-wrote <code class="language-plaintext highlighter-rouge">AzCopy</code> in Python using the Azure Blob Storage client library, we may end up with the following user-agent strings:</p>
+
+<ul>
+  <li>(Python) <code class="language-plaintext highlighter-rouge">AzCopy/10.0.4-Preview azsdk-python-storage/4.0.0 Python/3.7.3 (Ubuntu; Linux x86_64; rv:34.0)</code></li>
+</ul>
+
+<p>The <code class="language-plaintext highlighter-rouge">azure.core.pipeline.policies.UserAgentPolicy</code> will provide this functionality if added to the HttpPipeline.</p>
+
+<p><a href="#python-azurecore-http-telemetry-dynamic" name="python-azurecore-http-telemetry-dynamic" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  send additional (dynamic) telemetry information as a semi-colon separated set of key-value types in the <code class="language-plaintext highlighter-rouge">X-MS-AZSDK-Telemetry</code> header.  For example:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">X-MS-AZSDK-Telemetry: class=BlobClient;method=DownloadFile;blobType=Block
+</span></code></pre></div></div>
+
+<p>The content of the header is a semi-colon key=value list.  The following keys have specific meaning:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">class</code> is the name of the type within the client library that the consumer called to trigger the network operation.</li>
+  <li><code class="language-plaintext highlighter-rouge">method</code> is the name of the method within the client library type that the consumer called to trigger the network operation.</li>
+</ul>
+
+<p>Any other keys that are used should be common across all client libraries for a specific service.  <strong>DO NOT</strong> include personally identifiable information (even encoded) in this header.  Services need to configure log gathering to capture the <code class="language-plaintext highlighter-rouge">X-MS-SDK-Telemetry</code> header in such a way that it can be queried through normal analytics systems.</p>
+
+<h5 id="considerations-for-clients-not-using-the-useragentpolicy-from-azure-core">Considerations for clients not using the UserAgentPolicy from azure-core</h5>
+
+<p><a href="#python-azurecore-http-telemetry-appid" name="python-azurecore-http-telemetry-appid" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer of the library to set the application ID by passing in an <code class="language-plaintext highlighter-rouge">application_id</code> parameter to the service client constructor.  This allows the consumer to obtain cross-service telemetry for their app.</p>
+
+<p><a href="#python-azurecore-http-telemetry-appid-length" name="python-azurecore-http-telemetry-appid-length" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  enforce that the application ID is no more than 24 characters in length.  Shorter application IDs allows service teams to include diagnostic information in the “platform information” section of the user agent, while still allowing the consumer to obtain telemetry information for their own application.</p>
+
+<h2 id="testing">Testing</h2>
+
+<p><a href="#python-testing-pytest" name="python-testing-pytest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://docs.pytest.org/en/latest/">pytest</a> as the test framework.</p>
+
+<p><a href="#python-testing-async" name="python-testing-async" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <a href="https://github.com/pytest-dev/pytest-asyncio">pytest-asyncio</a> for testing of async code.</p>
+
+<p><a href="#python-testing-live" name="python-testing-live" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make your scenario tests runnable against live services. Strongly consider using the <a href="https://github.com/Azure/azure-sdk-for-python/tree/main/tools/azure-devtools">Python Azure-DevTools</a> package for scenario tests.</p>
+
+<p><a href="#python-testing-record" name="python-testing-record" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide recordings to allow running tests offline/without an Azure subscription</p>
+
+<p><a href="#python-testing-parallel" name="python-testing-parallel" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support simultaneous test runs in the same subscription.</p>
+
+<p><a href="#python-testing-independent" name="python-testing-independent" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make each test case independent of other tests.</p>
+
+<h2 id="code-analysis-and-style-tools">Code Analysis and Style Tools</h2>
+
+<p><a href="#python-tooling-pylint" name="python-tooling-pylint" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://www.pylint.org/">pylint</a> for your code. Use the pylintrc file in the <a href="https://github.com/Azure/azure-sdk-for-python/blob/main/pylintrc">root of the repository</a>.</p>
+
+<p><a href="#python-tooling-flake8" name="python-tooling-flake8" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://gitlab.com/pycqa/flake8-docstrings">flake8-docstrings</a> to verify doc comments.</p>
+
+<p><a href="#python-tooling-black" name="python-tooling-black" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://black.readthedocs.io/en/stable/">Black</a> for formatting your code.</p>
+
+<p><a href="#python-tooling-mypy" name="python-tooling-mypy" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <a href="https://mypy.readthedocs.io/en/latest/">MyPy</a> to statically check the public surface area of your library.</p>
+
+<p>You don’t need to check non-shipping code such as tests.</p>
+
+<h2 id="making-use-of-azure-core">Making use of Azure Core</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">azure-core</code> package provides common functionality for client libraries. Documentation and usage examples can be found in the <a href="https://github.com/azure/azure-sdk-for-python">azure/azure-sdk-for-python</a> repository.</p>
+
+<h3 id="http-pipeline-1">HTTP pipeline</h3>
+
+<p>The HTTP pipeline is an HTTP transport that is wrapped by multiple policies. Each policy is a control point that can modify either the request or response. A default set of policies is provided to standardize how client libraries interact with Azure services.</p>
+
+<p>For more information on the Python implementation of the pipeline, see the <a href="https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core">documentation</a>.</p>
+
+<h3 id="protocols">Protocols</h3>
+
+<p>Many of the protocols mandated by the design guidelines have default implementations in <code class="language-plaintext highlighter-rouge">azure-core</code>.</p>
+
+<h4 id="lropoller">LROPoller</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s">"T"</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">LROPoller</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="s">""" Retrieve the final result of the long running operation.
+
+        :param timeout: How long to wait for operation to complete (in seconds). If not specified, there is no timeout.
+        :raises TimeoutException: If the operation has not completed before it timed out.
+        """</span>
+        <span class="p">...</span>
+
+    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">""" Wait for the operation to complete.
+
+        :param timeout: How long to wait for operation to complete (in seconds). If not specified, there is no timeout.
+        """</span>
+
+    <span class="k">def</span> <span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">boolean</span><span class="p">:</span>
+        <span class="s">""" Check if long running operation has completed.
+        """</span>
+
+    <span class="k">def</span> <span class="nf">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">""" Register callback to be invoked when operation completes.
+
+        :param func: Callable that will be called with the eventual result ('T') of the operation.
+        """</span>
+        <span class="p">...</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">azure.core.polling.LROPoller</code> implements the <code class="language-plaintext highlighter-rouge">LROPoller</code> protocol.</p>
+
+<h4 id="itempaged">ItemPaged</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s">"T"</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ByPagePaged</span><span class="p">(</span><span class="n">Protocol</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">]]):</span>
+    <span class="n">continuation_token</span><span class="p">:</span> <span class="s">"str"</span>
+
+<span class="k">class</span> <span class="nc">ItemPaged</span><span class="p">(</span><span class="n">Protocol</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="n">continuation_token</span><span class="p">:</span> <span class="s">"str"</span>
+
+    <span class="k">def</span> <span class="nf">by_page</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ByPagePaged</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="p">...</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">azure.core.ItemPaged</code> implements the <code class="language-plaintext highlighter-rouge">ItemPaged</code> protocol.</p>
+
+<p>See the <a href="#PythonPagingDesign">ItemPaged</a> protocol for additional information.</p>
+
+<h4 id="diagnosticsresponsehook">DiagnosticsResponseHook</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ResponseHook</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+
+    <span class="n">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">deserialized_response</span><span class="p">):</span> <span class="o">-&gt;</span> <span class="bp">None</span> <span class="p">...</span>
+
+</code></pre></div></div>
+
+<h2 id="python-language-and-code-style">Python language and code style</h2>
+
+<p><a href="#python-codestyle-pep8" name="python-codestyle-pep8" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the general guidelines in <a href="https://www.python.org/dev/peps/pep-0008/">PEP8</a> unless explicitly overridden in this document.</p>
+
+<p><a href="#python-codestyle-idiomatic" name="python-codestyle-idiomatic" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  “borrow” coding paradigms from other languages.</p>
+
+<p>For example, no matter how common Reactive programming is in the Java community, it’s still unfamiliar for most Python developers.</p>
+
+<p><a href="#python-codestyle-consistency" name="python-codestyle-consistency" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  favor consistency with other Python components over other libraries for the same service.</p>
+
+<p>It’s more likely that a developer will use many different libraries using the same language than a developer will use the same service from many different languages.</p>
+
+<h3 id="error-handling">Error handling</h3>
+
+<p><a href="#python-errors-use-chaining" name="python-errors-use-chaining" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use exception chaining to include the original source of the error when catching and raising new exceptions.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="c1"># do something
+</span>    <span class="n">something</span><span class="p">()</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="c1"># __context__ will be set correctly
+</span>    <span class="k">raise</span> <span class="n">MyOwnErrorWithNoContext</span><span class="p">()</span>
+
+<span class="c1"># No:
+</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># do something
+</span>    <span class="n">something</span><span class="p">()</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+    <span class="c1"># __context__ is lost...
+</span>    <span class="k">raise</span> <span class="n">MyOwnErrorWithNoContext</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="naming-conventions">Naming conventions</h3>
+
+<p><a href="#python-codestyle-vars-naming" name="python-codestyle-vars-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use snake_case for variable, function, and method names:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="n">service_client</span> <span class="o">=</span> <span class="n">ServiceClient</span><span class="p">()</span>
+
+<span class="n">service_client</span><span class="p">.</span><span class="n">list_things</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">do_something</span><span class="p">():</span>
+    <span class="p">...</span>
+
+<span class="c1"># No:
+</span><span class="n">serviceClient</span> <span class="o">=</span> <span class="n">ServiceClient</span><span class="p">()</span>
+
+<span class="n">service_client</span><span class="p">.</span><span class="n">listThings</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">DoSomething</span><span class="p">():</span>
+    <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-type-naming" name="python-codestyle-type-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use Pascal case for types:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="k">class</span> <span class="nc">ThisIsCorrect</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c1"># No:
+</span><span class="k">class</span> <span class="nc">this_is_not_correct</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c1"># No:
+</span><span class="k">class</span> <span class="nc">camelCasedTypeName</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-const-naming" name="python-codestyle-const-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use ALL CAPS for constants:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="n">MAX_SIZE</span> <span class="o">=</span> <span class="mi">4711</span>
+
+<span class="c1"># No:
+</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">4711</span>
+
+<span class="c1"># No:
+</span><span class="n">MaxSize</span> <span class="o">=</span> <span class="mi">4711</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-module-naming" name="python-codestyle-module-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use snake_case for module names.</p>
+
+<h3 id="method-signatures">Method signatures</h3>
+
+<p><a href="#python-codestyle-static-methods" name="python-codestyle-static-methods" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use static methods (<a href="https://docs.python.org/3/library/functions.html#staticmethod"><code class="language-plaintext highlighter-rouge">staticmethod</code></a>). Prefer module level functions instead.</p>
+
+<p>Static methods are rare and usually forced by other libraries.</p>
+
+<p><a href="#python-codestyle-properties" name="python-codestyle-properties" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use simple getter and setter functions. Use properties instead.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+</span><span class="k">class</span> <span class="nc">GoodThing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">something</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">""" Example of a good read-only property."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_something</span>
+
+<span class="c1"># No
+</span><span class="k">class</span> <span class="nc">BadThing</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">get_something</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">""" Example of a bad 'getter' style method."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_something</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-long-args" name="python-codestyle-long-args" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  have methods that require more than five positional parameters. Optional/flag parameters can be accepted using keyword-only arguments, or <code class="language-plaintext highlighter-rouge">**kwargs</code>.</p>
+
+<p>See TODO: insert link for general guidance on positional vs. optional parameters here.</p>
+
+<p><a href="#python-codestyle-optional-args" name="python-codestyle-optional-args" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use keyword-only arguments for optional or less-often-used arguments for modules that only need to support Python 3.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c1"># Note that I can even have required keyword-only arguments...
+</span>    <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-kwargs" name="python-codestyle-kwargs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use keyword-only arguments for arguments that have no obvious ordering.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes - `source` and `dest` have logical order, `recurse` and `overwrite` do not.
+</span><span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="p">...</span>
+
+
+<span class="c1"># No
+</span><span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="p">...</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-positional-params" name="python-codestyle-positional-params" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  specify the parameter name when calling methods with more than two required positional parameters.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="c1"># Yes:
+</span><span class="n">foo</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">bar</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">bar</span><span class="p">(</span><span class="n">e</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># No:
+</span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><a href="#python-codestyle-optional-param-calling" name="python-codestyle-optional-param-calling" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  specify the parameter name for optional parameters when calling functions.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="c1"># Yes:
+</span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># No:
+</span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="public-vs-private">Public vs “private”</h3>
+
+<p><a href="#python-codestyle-private-api" name="python-codestyle-private-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a single leading underscore to indicate that a name isn’t part of the public API.  Non-public APIs aren’t guaranteed to be stable.</p>
+
+<p><a href="#python-codestyle-double-underscore" name="python-codestyle-double-underscore" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use leading double underscore prefixed method names unless name clashes in the inheritance hierarchy are likely.  Name clashes are rare.</p>
+
+<p><a href="#python-codestyle-public-api" name="python-codestyle-public-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add public methods and types to the module’s <code class="language-plaintext highlighter-rouge">__all__</code> attribute.</p>
+
+<p><a href="#python-codestyle-interal-module" name="python-codestyle-interal-module" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a leading underscore for internal modules. You <strong>may</strong> omit a leading underscore if the module is a submodule of an internal module.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Yes:
+</span><span class="n">azure</span><span class="p">.</span><span class="n">exampleservice</span><span class="p">.</span><span class="n">_some_internal_module</span>
+
+<span class="c1"># Yes - some_internal_module is still considered internal since it is a submodule of an internal module:
+</span><span class="n">azure</span><span class="p">.</span><span class="n">exampleservice</span><span class="p">.</span><span class="n">_internal</span><span class="p">.</span><span class="n">some_internal_module</span>
+
+<span class="c1"># No - some_internal_module is considered public:
+</span><span class="n">azure</span><span class="p">.</span><span class="n">exampleservice</span><span class="p">.</span><span class="n">some_internal_module</span>
+</code></pre></div></div>
+
+<h3 id="types-or-not">Types (or not)</h3>
+
+<p><a href="#python-codestyle-structural-subtyping" name="python-codestyle-structural-subtyping" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefer structural subtyping and protocols over explicit type checks.</p>
+
+<p><a href="#python-codestyle-abstract-collections" name="python-codestyle-abstract-collections" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  derive from the abstract collections base classes <code class="language-plaintext highlighter-rouge">collections.abc</code> (or <code class="language-plaintext highlighter-rouge">collections</code> for Python 2.7) to provide custom mapping types.</p>
+
+<p><a href="#python-codestyle-pep484" name="python-codestyle-pep484" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide type hints <a href="https://www.python.org/dev/peps/pep-0484/">PEP484</a> for publicly documented classes and functions.</p>
+
+<ul>
+  <li>See the <a href="https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code">suggested syntax for Python 2.7 and 2.7-3.x straddling code</a> for guidance for Python 2.7 compatible code. Do not do this for code that is Python 3 specific (e.g. <code class="language-plaintext highlighter-rouge">async</code> clients.)</li>
+</ul>
+
+<h3 id="threading">Threading</h3>
+
+<p><a href="#python-codestyle-thread-affinity" name="python-codestyle-thread-affinity" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  maintain thread affinity for user-provided callbacks unless explicitly documented to not do so.</p>
+
+<p><a href="#python-codestyle-document-thread-safety" name="python-codestyle-document-thread-safety" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  explicitly include the fact that a method (function/class) is thread safe in its documentation.</p>
+
+<p>Examples: <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.call_soon_threadsafe"><code class="language-plaintext highlighter-rouge">asyncio.loop.call_soon_threadsafe</code></a>, <a href="https://docs.python.org/3/library/queue.html"><code class="language-plaintext highlighter-rouge">queue</code></a></p>
+
+<p><a href="#python-codestyle-use-executor" name="python-codestyle-use-executor" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  allow callers to pass in an <a href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Executor"><code class="language-plaintext highlighter-rouge">Executor</code></a> instance rather than defining your own thread or process management for parallelism.</p>
+
+<p>You may do your own thread management if the thread isn’t exposed to the caller in any way. For example, the <code class="language-plaintext highlighter-rouge">LROPoller</code> implementation uses a background poller thread.</p>
+
+<!-- Intra-document links -->
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Sep 20, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

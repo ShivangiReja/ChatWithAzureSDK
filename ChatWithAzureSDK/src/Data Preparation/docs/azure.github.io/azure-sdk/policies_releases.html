@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" ">
+<title>Policies: Releases | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">Policies: Releases</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <p>The release policy for the Azure SDK accommodates the need to release different SDK packages based on the ship cycle of the underlying service.</p>
+
+<h2 id="exit-criteria">Exit Criteria</h2>
+
+<p>The following are mandatory actions required when releasing a new version of any service SDK.</p>
+
+<h3 id="1-language-coverage">1) Language coverage</h3>
+
+<p>Market data and customer engagement studies clearly indicate that a cloud provider’s support of several programming languages and great developer experiences via SDK’s &amp; tools can heavily impact a customer’s decision in choosing a cloud provider over others. In the same way, bad experiences both in getting started scenarios as well as total cost of ownership can drive customers away. It is important that Azure provides a uniform story for language coverage in its primary languages in order to raise customer confidence that they will be able to use any of Azure’s services in their solutions if they are using one of these languages. Customers feel that their language choice limits the services that they can choose to use easily from that language. The intent is that this is not a service by service evaluation of customer demand and more of an Azure platform statement that all of Azure’s services are easily usable in these primary languages.</p>
+
+<p>We’re motivated to provide high quality SDKs to deliver a great experience for Azure developers leveraging and interacting with Azure services.</p>
+
+<p>At the moment we are committed to building and supporting an SDK for each of these primary languages SDKs for all azure services:</p>
+
+<ul>
+  <li>Java</li>
+  <li>.NET</li>
+  <li>Python</li>
+  <li>TS/JS</li>
+</ul>
+
+<p>We recommended supporting additional key languages depending on the business scenarios and critical customer demand. Non primary languages depend much more heavily on contributions from outside the Azure SDK team.</p>
+
+<h3 id="2-change-logs--migration-guides">2) Change logs &amp; Migration Guides</h3>
+
+<p>Facilitating a swift transition of the SDKs’ users to the new version being released requires clear clarification and documentation of the changes from the previous version. The type and granularity of the documentation depends on the type and scope of the release:</p>
+
+<h4 id="new-standards-upgrade-release">New standards upgrade release</h4>
+
+<p>This covers the case when we upgrade and existing Azure SDK to the new SDKs standards. Such a release usually contains major modifications to the structure, interfaces and behavioral aspects of the existing SDKs. Such an update requires a detailed and verbose porting guide to help the adopting users understand the benefits, changes and offerings of the new SDK version. The requirement here is to:</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  Create a Migration guide for each language SDK. Use the <a href="/azure-sdk/docs/policies/migration-guide-template.html">Migration guide template</a> as a reference.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  Include a “Benefits” section clearing explaining the advantages of migration to this version of the SDK.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  Place that guide in the SDK repository preferably in the root of the directory that contains the service.</p>
+
+<p>An example porting guide can be found <a href="https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/servicebus/Azure.Messaging.ServiceBus/MigrationGuide.md">here</a>.</p>
+
+<p>(Please Note) Migration guide creation will be required to obtain sign-off from the Archboard.</p>
+
+<h4 id="new-version-release">New version release</h4>
+
+<p>Ensuring that a <code class="language-plaintext highlighter-rouge">CHANGELOG.md</code> file is both available and formatted appropriately is mandatory and will be used in automatically generating formatted release notes on each GitHub release.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  maintain a changelog for every package.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  <code class="language-plaintext highlighter-rouge">CHANGELOG.md</code> file should be added in the root folder of the library.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name changelogs with all caps except for the extension, i.e. <code class="language-plaintext highlighter-rouge">CHANGELOG.md</code>.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the format in the guidelines section below <a href="#change-logs">Change Logs</a>.</p>
+
+<h3 id="3-blogs--samples">3) Blogs &amp; Samples</h3>
+
+<p>Advertising our SDKs is key to increasing their adoption and getting their latest and greatest features to the hands of their users. the following steps should be taken once the new version is live:</p>
+<ul>
+  <li>Adding a blog entry on the <a href="https://devblogs.microsoft.com/azure-sdk/">Azure SDK blog site</a> by contacting the <a href="mailto:azsdkblog@microsoft.com">admins</a>.</li>
+  <li>working with the Azure service team for which you’re building this version of the SDK to advertise the release through their official communication channels.</li>
+  <li>ensuring that you have Solid samples in the SDK repository demonstrating the use of this new version.</li>
+</ul>
+
+<h3 id="4-payload-backwards-compatibility">4) Payload Backwards Compatibility</h3>
+
+<p>A manual migration test should be developed to ensure that payloads and data fed into the previous version of the SDK are gracefully handled when fed to the new SDK.</p>
+
+<h3 id="5-updating-package-manager-references">5) Updating package manager references</h3>
+
+<p>Follow the best practices below to ensure that the visibility of the new release is elevated.</p>
+
+<p>Identify supported legacy libraries for the SDK you are releasing as early as possible <br /></p>
+<ul>
+  <li><strong>Note:</strong> we cannot deprecate GA libraries which were released less than 1 year ago per the <a href="https://www.microsoft.com/LICENSING/PRODUCT-LICENSING/PRODUCTS">current Azure SLA</a></li>
+  <li>Note,  We should direct users to the new library only if it is covering the legacy library specs. Make sure you confirm feature and performance parity at your arch board reviews.</li>
+  <li>For .NET, once a library has been identified as suitable for replacement, initiate a request to have NuGet search popularity for the legacy library forwarded to the new library. The SDK team engineering team will know how to do this or who to talk to.</li>
+</ul>
+
+<p>For each legacy package you plan to deprecate</p>
+<ul>
+  <li>Update the legacy library package README with a link to the new package.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please note, this package has been deprecated. A replacement package is available
+<span class="p">[</span><span class="nv">package name</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span> as of [date-MM/YY]. We strongly
+encourage you to upgrade to continue receiving updates. 
+See the <span class="p">[</span><span class="nv">Migration Guide</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span> for guidance on upgrading. 
+Refer to our <span class="p">[</span><span class="nv">deprecation policy</span><span class="p">](</span><span class="sx">https://azure.github.io/azure-sdk/policies_support.html</span><span class="p">)</span> for more details.
+</code></pre></div>    </div>
+    <p>For packages with the same name (e.g. Python, Java), use the following wording.</p>
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please note, versions of this package with version numbers [version number] and below have been deprecated
+as of [date-MM-YY]. We strongly encourage you to upgrade to the latest version to continue receiving updates.
+Refer to our <span class="p">[</span><span class="nv">deprecation policy</span><span class="p">](</span><span class="sx">https://azure.github.io/azure-sdk/policies_support.html</span><span class="p">)</span> for more details.
+</code></pre></div>    </div>
+  </li>
+  <li>Update the legacy Samples README with link to the new samples.
+Note, you can search for sample repositories under https://docs.microsoft.com/samples/browse/?products=azure.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Samples in this repository use deprecated packages [list legacy package here]. We recommend
+that you get started using the new package here instead: <span class="p">[</span><span class="nv">package name</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span>.
+</code></pre></div>    </div>
+  </li>
+  <li>Update the new package README with a link to the migration guides.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>This document covers <span class="p">[</span><span class="nv">library name] [package name</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span>.
+If you're using an older package, we recommend that you upgrade your code.
+See <span class="p">[</span><span class="nv">Migration Guide</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span> for more details.
+</code></pre></div>    </div>
+  </li>
+  <li>Update package index files to identify legacy packages replacement.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Go to https://github.com/Azure/azure-sdk/blob/master/_data/releases/latest/ and update [language]-packages.csv.
+Use Notes column to clarify what is being replaced by the new package.
+</code></pre></div>    </div>
+  </li>
+  <li>In the package managers that support updates to existing packages, update the legacy packages in the package manager to include a deprecation notice. Use the following message and follow programming language instructions.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please note, this package has been deprecated. A replacement package is available
+<span class="p">[</span><span class="nv">package name</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span> as of [date-MM/YY]. We strongly
+encourage you to upgrade to continue receiving updates. 
+See the <span class="p">[</span><span class="nv">Migration Guide</span><span class="p">](</span><span class="sx">https://aka.ms/azsdk</span><span class="p">)</span> for guidance on upgrading.
+Refer to our <span class="p">[</span><span class="nv">deprecation policy</span><span class="p">](</span><span class="sx">https://azure.github.io/azure-sdk/policies_support.html</span><span class="p">)</span> for more details.
+</code></pre></div>    </div>
+  </li>
+  <li>If you are deprecating a package version, but staying within the same package name, update the wording above to mention a specific version.
+    <div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please note, versions of this package with version numbers [version number] and below have been 
+deprecated as of [date-MM-YY]. We strongly encourage you to upgrade to the latest version to 
+continue receiving updates. 
+Refer to our <span class="p">[</span><span class="nv">deprecation policy</span><span class="p">](</span><span class="sx">https://azure.github.io/azure-sdk/policies_support.html</span><span class="p">)</span> for more details.
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>Language</th>
+      <th>Instructions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>.Net</td>
+      <td>Follow instructions at <a href="https://docs.microsoft.com/nuget/nuget-org/deprecate-packages">deprecating NuGet packages</a> to deprecate the package with the message above.<br />Select all versions of the package you are deprecating.<br />Choose deprecation reason as “Other” because “Legacy” is for packages that are no longer maintained.</td>
+    </tr>
+    <tr>
+      <td>Java</td>
+      <td>If the deprecated package is no longer in use (new version has a different name), publish an update to the deprecated package after updating the README</td>
+    </tr>
+    <tr>
+      <td>TS/JS</td>
+      <td>Run the relevant build pipeline.</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>If the deprecated package is no longer in use (new version has a different name), publish an update to the deprecated package after updating the README</td>
+    </tr>
+    <tr>
+      <td>Go</td>
+      <td>Add a deprecation comment in the go.mod so that users see a warning when downloading the deprecated package. <br />See example <a href="https://github.com/Azure/azure-sdk-for-go/blob/857695b0e8158bdf9b19bed23c33cf8a5333921d/sdk/to/go.mod#L1">here</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="legacy-packages-support-after-the-update">Legacy packages support after the update</h4>
+
+<ul>
+  <li>Ensure you have the infrastructure in place to build and ship fixes for the legacy libraries for the next 3 years.<br /> You will need to ship security and critical bug fixes for the first year.<br /> You don’t have to proactively fix anything else, but a customer calling for support should be able to get it. Refer to our <a href="https://azure.github.io/azure-sdk/policies_support.html">deprecation policy</a> for more details.</li>
+  <li>Encourage customers to migrate to the new library when possible, from this point on.</li>
+  <li>After one year, customers will need to provide a strong business need to justify and receive legacy library updates. Most of the customers are expected to migrate to the latest library at this point.</li>
+  <li>Monitor the deprecated library usage. If the number of customers is small, consider working with them individually to migrate to the latest version.<br /> At the point when there are no customers left, you can retire the library following the <a href="https://dev.azure.com/msazure/AzureWiki/_wiki/wikis/AzureWiki.wiki/37673/Retirements-and-Breaking-Changes">Azure Global Retirement Policy process</a>.</li>
+</ul>
+
+<h2 id="terms">Terms</h2>
+
+<p>The terms “SDK”, “SDK Component”, “library” and “package” are used throughout this document and are defined in the <a href="general_terminology.html">design guidelines</a>.</p>
+
+<h2 id="supported-registries">Supported registries</h2>
+
+<p>We release client libraries to the following registries:</p>
+
+<ul>
+  <li>NuGet (.NET)</li>
+  <li>PyPi (Python)</li>
+  <li>npm (TypeScript)</li>
+  <li>Maven (Android, Java)</li>
+</ul>
+
+<p>We recommend that you use a package manager that supports these registries.</p>
+
+<h2 id="git-tagging">Git Tagging</h2>
+
+<p>For language repositories which contain multiple packages, releases for each package are tagged in the format <code class="language-plaintext highlighter-rouge">&lt;package-name&gt;_&lt;package-version&gt;</code>.</p>
+
+<p>For language repositories where the repo is the primary shipping unit, the releases should be tagged in the format <code class="language-plaintext highlighter-rouge">&lt;release-version&gt;</code> (i.e. <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code>). If there are other secondary assets that also ship from the same repo then those assets should use an identifier for those assets and the version <code class="language-plaintext highlighter-rouge">&lt;identifier-name&gt;_&lt;release-version&gt;</code> (i.e. <code class="language-plaintext highlighter-rouge">tools_1.0.0-beta.1</code>).</p>
+
+<h2 id="github-releases">GitHub Releases</h2>
+
+<p>We use GitHub releases as a convenient place to put release notes. The change log and any additional notes will be available here. We automatically publish release notes to a GitHub release if the changelog guidance below is followed. No artifacts are published to the GitHub release. Instead, use a supported package registry.</p>
+
+<h2 id="change-logs">Change Logs</h2>
+
+<p>Every library should contain a file exactly named <code class="language-plaintext highlighter-rouge">CHANGELOG.md</code> in the folder for each library. Generally in <code class="language-plaintext highlighter-rouge">sdk/&lt;service&gt;/&lt;package&gt;</code> folder.</p>
+
+<p>In order for consistency across our SDKs and to enable automation to validate and parse these changelogs the files must use the following format.</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># Release History</span>
+
+<span class="gu">## &lt;version X.Y.Z[-beta.N]&gt; (&lt;Unreleased|YYYY-MM-DD&gt;)</span>
+<span class="gu">### Features Added</span>
+<span class="p">-</span> <span class="nt">&lt;for</span> <span class="na">new</span> <span class="na">features</span> <span class="na">to</span> <span class="na">be</span> <span class="na">called</span> <span class="na">out</span> <span class="na">in</span> <span class="na">release</span> <span class="na">notes</span><span class="nt">&gt;</span>
+
+<span class="gu">### Breaking Changes</span>
+<span class="p">-</span> <span class="nt">&lt;for</span> <span class="na">changes</span> <span class="na">to</span> <span class="na">be</span> <span class="na">called</span> <span class="na">out</span> <span class="na">in</span> <span class="na">release</span> <span class="na">notes</span> <span class="na">including</span><span class="nt">&gt;</span>
+<span class="p">-</span> <span class="nt">&lt;Changed:</span> <span class="na">for</span> <span class="na">changes</span> <span class="na">that</span> <span class="na">break</span> <span class="na">existing</span> <span class="na">functionality</span><span class="nt">&gt;</span>
+<span class="p">-</span> <span class="nt">&lt;Deprecated:</span> <span class="na">for</span> <span class="na">soon-to-be</span> <span class="na">removed</span> <span class="na">features</span><span class="nt">&gt;</span>
+<span class="p">-</span> <span class="nt">&lt;Removed:</span> <span class="na">for</span> <span class="na">now</span> <span class="na">removed</span> <span class="na">features</span><span class="nt">&gt;</span>
+
+<span class="gu">### Bugs Fixed</span>
+<span class="p">-</span> <span class="nt">&lt;for</span> <span class="na">important</span> <span class="na">bug</span> <span class="na">fixes</span> <span class="na">to</span> <span class="na">be</span> <span class="na">called</span> <span class="na">out</span> <span class="na">in</span> <span class="na">release</span> <span class="na">notes</span><span class="err">,</span> <span class="na">especially</span> <span class="na">for</span> <span class="na">fixes</span> <span class="na">that</span> <span class="na">the</span> <span class="na">developer</span> <span class="na">will</span> <span class="na">notice</span> <span class="na">or</span> <span class="na">need</span> <span class="na">to</span> <span class="na">react</span> <span class="na">to</span> <span class="na">in</span> <span class="na">some</span> <span class="na">way</span><span class="nt">&gt;</span>
+<span class="p">-</span> <span class="nt">&lt;Security:</span> <span class="na">for</span> <span class="na">any</span> <span class="na">security</span> <span class="na">fixes</span><span class="nt">&gt;</span>
+
+<span class="gu">### Other Changes</span>
+<span class="p">-</span> <span class="nt">&lt;for</span> <span class="na">any</span> <span class="na">bug</span> <span class="na">fixes</span> <span class="na">or</span> <span class="na">other</span> <span class="na">changes</span> <span class="na">that</span> <span class="na">are</span> <span class="na">not</span> <span class="na">important</span> <span class="na">enough</span> <span class="na">to</span> <span class="na">include</span> <span class="na">in</span> <span class="na">release</span> <span class="na">notes</span><span class="nt">&gt;</span>
+
+...
+<span class="gu">## &lt;older version&gt; (&lt;Release Date&gt;)</span>
+<span class="p">-</span> <span class="nt">&lt;content</span><span class="err">/</span><span class="na">changes</span> <span class="na">for</span> <span class="na">the</span> <span class="na">older</span> <span class="na">release</span><span class="nt">&gt;</span>
+
+... older release details trail off into history below
+</code></pre></div></div>
+<p>In order to automatically pull the relevant content (see mentions of release notes above) from the change log entries to produce our release notes the formatting of the headers needs to exactly match the format above (i.e. <code class="language-plaintext highlighter-rouge">### Features Added</code>, <code class="language-plaintext highlighter-rouge">### Breaking Changes</code>, <code class="language-plaintext highlighter-rouge">### Bugs Fixed</code>). For more details on the general release notes see the <a href="https://azure.github.io/azure-sdk/policies_releasenotes.html#whats-a-developer-impacting-change">Release Notes Guidance</a>.</p>
+
+<p>For more information on general change log guidelines see <a href="https://keepachangelog.com/en/1.0.0/">keep a changelog</a>.</p>
+
+<p>Example change log:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># Release History</span>
+
+<span class="gu">## 12.1.0 (Unreleased)</span>
+<span class="gu">### Features Added</span>
+<span class="p">-</span> check to enforce TokenCredential is used only over HTTPS
+
+<span class="gu">### Breaking Changes</span>
+<span class="p">-</span> Support using SAS token from connection string
+
+<span class="gu">### Bugs Fixed</span>
+<span class="p">-</span> Issue where AccountName on BlobUriBuilder would not be populated
+  for non-IP style Uris (<span class="p">[</span><span class="nv">#8638</span><span class="p">](</span><span class="sx">https://github.com/Azure/azure-sdk-for-net/issues/8638</span><span class="p">)</span>)
+
+<span class="gu">## 12.0.0 (2019-11-25)</span>
+<span class="gu">### Breaking Changes</span>
+<span class="p">-</span> Added support for the new low-priority node type.
+<span class="p">-</span> Number of operations and models to better align with other client
+  libraries and the .NET Framework Design Guidelines
+
+<span class="gu">### Other Changes</span>
+<span class="p">-</span> Parallel upload/download performance improvements
+</code></pre></div></div>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  link to GitHub issues (full URL) that were fixed in that release going forward (i.e. do not backfill older issues). See example above under the <code class="language-plaintext highlighter-rouge">### Bugs Fixed</code> heading.</p>
+
+<p>For clarity, a <code class="language-plaintext highlighter-rouge">change log entry</code> is simply the header + content up to the next release header OR EOF. During release, if there exists a changelog entry with a version specifier <em>matching</em> that of the currently releasing package, that changelog entry will be added as the body of the GitHub release.</p>
+
+<h3 id="changelog-entries-for-stable-releases">Changelog Entries for Stable releases</h3>
+
+<p>When doing a switch from a beta to a stable release there are often very few changes which can be misleading to customers, as they might not think there are many changes. Instead when doing a stable release it is recommended that we either squash all the beta notes into the stable changelog entry or add a comment similar to <code class="language-plaintext highlighter-rouge">Includes all changes from X.Y.Z-beta.A to X.Y.Z.beta.B</code> so that it is clear that all those changes are included.</p>
+
+<h2 id="release-cycle">Release Cycle</h2>
+
+<p>The release cycle of each SDK Component may vary based on the needs of the underlying service. The Azure SDK team recommends:</p>
+
+<ul>
+  <li>Avoiding breaking changes (major releases) under most circumstances</li>
+  <li>Minor releases quarterly or less</li>
+  <li>Patch releases as soon as bug fixes are available</li>
+  <li>Rev a minor release for each new Azure API version</li>
+</ul>
+
+<h2 id="package-versioning">Package Versioning</h2>
+
+<p>The team makes every effort to follow <a href="https://semver.org/">SemVer</a> for versioning. In a nutshell, SemVer is defined as <code class="language-plaintext highlighter-rouge">Major.Minor.Patch</code>, where:</p>
+
+<ul>
+  <li>Changes to the major digit (1.X.Y to 2.X.Y) indicate that breaking changes have been introduced. Breaking changes are exceptional and require review and approval by the architecture board.</li>
+  <li>Increments to the minor digit (1.1.X to 1.2.X) indicate the addition of new apis or features.</li>
+  <li>Increments to the patch number (1.1.1 to 1.1.2) indicate a set of new compatible fixes.</li>
+</ul>
+
+<p>In addition to the stable releases the team also has Alpha and Beta releases of a package to allow the community to try new features early and give feedback.</p>
+
+<ul>
+  <li>Alpha releases are sometimes referred to as dev releases and use a prerelease label that contains a date stamp similar to <code class="language-plaintext highlighter-rouge">-alpha-YYYYMMDD.r</code>. This ensures the versions are unique as they will often be published daily. These are often published to an isolated registry depending on the language ecosystem. These releases are based on the latest committed code changes and should not be used for production dependencies. They are very volatile and change from version-to-version. These are mostly useful for temporarily working around an issue or testing out the latest library changes.</li>
+  <li>Beta releases use a prerelease label like <code class="language-plaintext highlighter-rouge">-beta.X</code> and are published to the most common public registry for each language ecosystem. These releases are less volatile and released less often then alpha releases.  These are usually used before releasing a new minor or major stable release. Beta releases may have breaking changes from the previous beta but should not have breaking changes from the last stable release. Once a package has released to stable, any breaking changes require an exception and approval from the architecture board.</li>
+</ul>
+
+<p>While all the languages follow the general versioning scheme, they each have slight differences based on their ecosystem, for those differences see the individual language sections below.</p>
+
+<p>NOTE: Given that alpha releases have versions based on the day they will often times have newer changes then beta releases. This means that if you want to consume the latest changes from an alpha release you need to take care and avoid accidently consuming the latest beta release. Each language section gives an example of how to consume the latest alpha version for each language ecosystem.</p>
+
+<h3 id="incrementing-after-release">Incrementing after release</h3>
+
+<p>Immediately after a package ships the source definition of the package version should be incremented in source control. It’s safer to have <code class="language-plaintext highlighter-rouge">N+1</code> in <code class="language-plaintext highlighter-rouge">main</code> than <code class="language-plaintext highlighter-rouge">N</code>. Package increment after release happens automatically as part of the release pipelines.</p>
+
+<p><strong>Beta Release:</strong> Increment the beta number on the package (e.g. <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code>) appropriate to the versioning scheme for the language (see below for language-specific version formatting). Breaking changes are allowed between beta versions.</p>
+
+<p><strong>Stable Release:</strong> Some languages bump the minor and others bump the patch version please see specific guidelines below based on your language. Breaking changes (which might increment the major version number) are <em>not</em> allowed after a stable release without an exception and review by the architecture board.</p>
+
+<p><strong>Stable Hotfix Release:</strong> Some languages bump the patch version and others have specific conventions see guidelines below based on your language. See <a href="/azure-sdk/policies_repobranching.html#hotfix-branches">Hotfix Branches</a> for branching strategy of hotfixes.</p>
+
+<h3 id="consistent-dependency-versions">Consistent Dependency Versions</h3>
+
+<p>Before release for all languages ensure that all packages which depend on another package use the same version of the package on which they depend. Consistent dependency versioning is required for both internal and external dependencies.</p>
+
+<p>For example, if Packages B and C depend on Package A at <code class="language-plaintext highlighter-rouge">1.0.0</code> and then Package B upgrades to Package A at <code class="language-plaintext highlighter-rouge">2.0.0</code> and Package B is released, Package C should also be upgraded to use Package A at <code class="language-plaintext highlighter-rouge">2.0.0</code> before Package C is released. Once Package B’s dependency information is changed Package C’s dependency information should also change and if they cannot be changed together, an issue should be opened to track changing Package C’s dependencies.</p>
+
+<p>Packages should not upgrade dependencies immediately after every release. Packages should only upgrade if there is a need. That is, after a package releases (e.g. Package A), other packages which depend on that package (e.g. Package B and Package C) do not  immediately update to require the latest released version of the released package. Later, if either Package B or C needs features in a newer version of Package A then both Packages B and C should be modified to point to the same newer version of Package A.</p>
+
+<p>Each language repo uses a badge for analysis of dependencies on <code class="language-plaintext highlighter-rouge">main</code> including highlights for inconsistent dependencies.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Build Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Java</td>
+      <td><a href="https://azuresdkartifacts.blob.core.windows.net/azure-sdk-for-java/staging/dependencies.html"><img src="https://img.shields.io/badge/dependencies-analyzed-blue.svg" alt="Dependencies" /></a></td>
+    </tr>
+    <tr>
+      <td>JS</td>
+      <td><a href="https://azuresdkartifacts.blob.core.windows.net/azure-sdk-for-js/dependencies/dependencies.html"><img src="https://img.shields.io/badge/dependencies-analyzed-blue.svg" alt="Dependencies" /></a></td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td><a href="https://azuresdkartifacts.blob.core.windows.net/azure-sdk-for-python/dependencies/dependencies.html"><img src="https://img.shields.io/badge/dependencies-analyzed-blue.svg" alt="Dependencies" /></a></td>
+    </tr>
+    <tr>
+      <td>.NET</td>
+      <td><a href="https://azuresdkartifacts.blob.core.windows.net/azure-sdk-for-net/dependencies/dependencies.html"><img src="https://img.shields.io/badge/dependencies-analyzed-blue.svg" alt="Dependencies" /></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Packages which depend on beta versions should pin specifically to the beta version on which they depend because beta releases may contain breaking changes.</p>
+
+<p>Packages should try to avoid source level dependencies to other projects that don’t ship in the same pipeline and instead rely on binary/package dependencies. This is to help avoid accidently taking dependencies on new features in other libraries and enable each library to ship independent of the others in the repo. If new dependencies are required extra care should be taken to ship the lower level dependencies before shipping the higher level libraries to make sure the entire dependency chain is shipped. To help ensure we don’t end up with broken dependency versions we have enabled Min/Max testing in each repo to ensure we test the lower end and the upper end of our dependency range for the dependencies our packages say they support.</p>
+
+<h4 id="dependent-packages-in-a-unified-pipeline">Dependent packages in a Unified Pipeline</h4>
+
+<p>In cases where packages have dependencies and are built in the same pipeline, dependency versions can track the current version of the packages on which they depend.</p>
+
+<p>For example, if Package A and Package B are built in the same Unified Pipeline and Package A is at version <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code>, Package B’s dependency on Package A should track Package A’s version  (i.e. <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code>) such that both packages can be built and released from the same pipeline at the same time.</p>
+
+<h3 id="languages">Languages</h3>
+
+<h4 id="python">Python</h4>
+
+<p>Python version numbers follow the guidance in <a href="https://www.python.org/dev/peps/pep-0440/">PEP 440</a> for versioning Python packages. This means that regular releases follow the above specified SemVer format. Beta releases follow the <a href="https://www.python.org/dev/peps/pep-0440/#pre-releases">PEP 440 specification for pre-releases</a>:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.ZaYYYYMMDDrrr</code> (<code class="language-plaintext highlighter-rouge">rrr</code> is based on the number of builds performed on the given day and it is zero-padded with a valid range starting at 001 and ends at 999) used for daily alpha releases.</li>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.ZbN</code> used for beta releases.</li>
+</ul>
+
+<p>Beta packages will be published PyPi. Alpha packages will be published to the isolated <a href="https://dev.azure.com/azure-sdk/public/_packaging?_a=feed&amp;feed=azure-sdk-for-python">azure-sdk-for-python</a> DevOps feed. To consume an alpha package you should either pin to a specific version or use a version specifier like <code class="language-plaintext highlighter-rouge">"package-name"&gt;=X.Y.Za,&lt;X.Y.Zb</code> to get the latest alpha release while avoiding any potential beta versions which might contain older changes.</p>
+
+<h5 id="incrementing-after-release-python">Incrementing after release (Python)</h5>
+
+<p><strong>Beta Release:</strong>  <code class="language-plaintext highlighter-rouge">1.0.0b1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0b2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt;  <code class="language-plaintext highlighter-rouge">1.1.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt;  <code class="language-plaintext highlighter-rouge">1.1.0.1</code></p>
+
+<p><strong>Floating Stable dependencies:</strong> Use <code class="language-plaintext highlighter-rouge">&lt;X+1.0.0,&gt;=X.0.0</code> to float dependencies where <code class="language-plaintext highlighter-rouge">X</code> is the major release upon which the package depends and <code class="language-plaintext highlighter-rouge">X+1</code> is the next major version.</p>
+
+<p>In rare cases where a customer cannot take all the latest patch versions with all the bug fixes for a particular major/minor release, but there is a critical fix necessary, we will publish a hotfix package in the format X.Y.Z.N where N increments with each successive hotfix. In this case it is expected that the customer will pin the particular hotfix version they wish to use.</p>
+
+<h4 id="javascript">JavaScript</h4>
+
+<p>The JavaScript community generally follows <a href="https://semver.org/">SemVer</a>.
+When publishing an npm package, <a href="https://docs.npmjs.com/cli/dist-tag">npm distribution tags</a> are automatically set based on the version being published and current versions present on npm and there is no need to set tag manually when running a release pipeline.</p>
+
+<p>Below are the guidelines for versions to use:</p>
+
+<ul>
+  <li>Stable releases will follow <a href="https://semver.org/">SemVer</a> and the published package will get the tag <code class="language-plaintext highlighter-rouge">latest</code>.
+    <ul>
+      <li>If a hotfix is being shipped for a version older than the current GA version, then the hotfix version does not get any tags.</li>
+      <li>If a package has moved from beta to stable, then <code class="language-plaintext highlighter-rouge">next</code> tag is deleted from beta and latest tag will be set for stable version.</li>
+    </ul>
+  </li>
+  <li>Beta releases will use the format <code class="language-plaintext highlighter-rouge">X.Y.Z-beta.N</code> for version and the published package will get the tag <code class="language-plaintext highlighter-rouge">next</code>.
+    <ul>
+      <li>Package version will also get <code class="language-plaintext highlighter-rouge">latest</code> tag <strong>only</strong> if the package has never had a stable release.</li>
+    </ul>
+  </li>
+  <li>Daily alpha releases will use the format <code class="language-plaintext highlighter-rouge">X.Y.Z-alpha.YYYYMMDD.r</code> (<code class="language-plaintext highlighter-rouge">r</code> is based on the number of builds performed on the given day) and the latest published package will have the <code class="language-plaintext highlighter-rouge">dev</code> tag and published to npm. To consume a alpha package either pin to a specific version or use the <code class="language-plaintext highlighter-rouge">dev</code> tag as the version.</li>
+</ul>
+
+<h5 id="incrementing-after-release-js">Incrementing after release (JS)</h5>
+
+<p><strong>Beta Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.1.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-hotfix.1</code></p>
+
+<p><strong>Floating Stable dependencies:</strong> Use <code class="language-plaintext highlighter-rouge">^X.0.0</code> to float dependencies where <code class="language-plaintext highlighter-rouge">X</code> is the major release upon which the package depends.</p>
+
+<p>Generally, customers are expected to use caret or tilde ranges. Caret ranges (e.g. <code class="language-plaintext highlighter-rouge">^1.0.0</code>) allow them to take all non-breaking changes for a package and tilde ranges (<code class="language-plaintext highlighter-rouge">~1.0.0</code>) allow them to take all minor bugfixes for a particular major/minor release.</p>
+
+<p>In rare cases where a customer does not wish to take all bugfixes for a particular major/minor release (i.e. the tilde range <code class="language-plaintext highlighter-rouge">~X.Y.0</code> is not sufficient), but there is a critical fix necessary, we will publish a hotfix package in the format <code class="language-plaintext highlighter-rouge">X.Y.0-hotfix.N</code> where <code class="language-plaintext highlighter-rouge">N</code> increments with each successive hotfix. In this case it is expected that the customer will pin the particular hotfix version they wish to use in their <code class="language-plaintext highlighter-rouge">package.json</code>.</p>
+
+<p>In general, packages that have a stable release are not expected to have additional beta releases unless the underlying service releases preview functionality or the package undergoes significant churn as part of a major version change.</p>
+
+<p>Packages which depend on a released package should float to the latest compatible major version (e.g. <code class="language-plaintext highlighter-rouge">^1.0.0</code>). Because we’re using SemVer only breaking changes alter the major version number and all minor and patch changes should be compatible. The version number should only be updated for a major version change.</p>
+
+<p>Dependencies older than the latest published version can be listed by running the following commands:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rush <span class="nb">unlink
+</span>git clean <span class="nt">-xdf</span>
+rush update <span class="nt">--full</span>
+</code></pre></div></div>
+
+<h4 id="net">.NET</h4>
+
+<p>NuGet supports designating a package as ‘pre-release’. In this ecosystem, pre-release packages will have daily build numbers in the format:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-alpha.YYYYMMDD.r</code> (<code class="language-plaintext highlighter-rouge">r</code> is based on the number of builds done in a given day) for daily alpha releases.</li>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-beta.N</code> for beta releases.</li>
+</ul>
+
+<p>Beta packages will be published to NuGet with the pre-release designation. Alpha packages will be published to the isolated <a href="https://dev.azure.com/azure-sdk/public/_packaging?_a=feed&amp;feed=azure-sdk-for-net">azure-sdk-for-net</a> DevOps feed. To consume an alpha package you should either pin to a specific version or use a version specifier like <code class="language-plaintext highlighter-rouge">X.Y.Z-alpha*</code> to get the latest alpha release while avoiding any potential beta versions which might contain older changes.</p>
+
+<h4 id="incrementing-after-release-net">Incrementing after release (.NET)</h4>
+
+<p><strong>Beta Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<p><strong>Floating Stable dependencies:</strong> Use the exact version number to specify the lowest version of the package which contains the features upon which you depend.</p>
+
+<h4 id="java">Java</h4>
+
+<p>Maven supports the <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">convention</a> <code class="language-plaintext highlighter-rouge">MAJOR.MINOR.PATCH-QUALIFIER</code>, which doesn’t support SemVer 2 sorting for pre-releases so we have to use a special convention based on their <a href="https://github.com/apache/maven/blob/master/maven-artifact/src/main/java/org/apache/maven/artifact/versioning/ComparableVersion.java">versioning code</a>. The preferred format for version numbers is:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-alpha.YYYYMMDD.r</code> (<code class="language-plaintext highlighter-rouge">r</code> is based on the number of builds performed on the given day) for daily alpha releases.</li>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-beta.N</code> for beta releases.</li>
+</ul>
+
+<p>Beta packages are published directly to the Maven central registry. Alpha packages will be published to the isolated <a href="https://dev.azure.com/azure-sdk/public/_packaging?_a=feed&amp;feed=azure-sdk-for-java">azure-sdk-for-java</a> DevOps feed. To consume an alpha package you should either pin to a specific version or use a version specifier like <code class="language-plaintext highlighter-rouge">(X.Y.Z-alpha, X.Y.Z-beta)</code> to get the latest alpha release while avoiding any potential beta versions which might contain older changes.</p>
+
+<h4 id="incrementing-after-release-java">Incrementing after release (Java)</h4>
+
+<p><strong>Beta Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<p><strong>Floating Stable dependencies:</strong> Use the exact version number to specify the lowest version of the package which contains the features upon which you depend.</p>
+
+<h4 id="c">C++</h4>
+
+<p>C++ releases the source code of the package via releases on github. It currently does not ship packages to any package managers.</p>
+
+<p>A C++ release includes a Tag and Release (e.g. <a href="https://github.com/Azure/azure-sdk-for-cpp/releases/tag/azure-core_1.0.0-beta.1">azure-core_1.0.0-beta.1</a>) on GitHub and documentation as GitHub Pages (e.g. <a href="https://azuresdkdocs.blob.core.windows.net/$web/cpp/azure-core/1.0.0-beta.1/index.html">azure-core_1.0.0-beta.1</a>).</p>
+
+<h4 id="incrementing-after-release-c">Incrementing after release (C++)</h4>
+
+<p><strong>Preview release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<h4 id="embedded-c">Embedded C</h4>
+
+<p>C99 releases the source code of the repository in a single unit of source code. It does not ship packages to any package managers. Because the C repo ships from the <code class="language-plaintext highlighter-rouge">main</code> branch, code going into the <code class="language-plaintext highlighter-rouge">main</code> branch must be in a completed state and ready to ship.</p>
+
+<p>An Embedded C release includes a Tag and Release (e.g. <a href="https://github.com/Azure/azure-sdk-for-c/releases/tag/1.0.0-preview.5">1.0.0-preview.5</a>) on GitHub and documentation as GitHub Pages (e.g. <a href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_core/1.0.0-preview.5/index.html">1.0.0-preview.5</a>).</p>
+
+<h4 id="incrementing-after-release-embedded-c">Incrementing after release (Embedded C)</h4>
+
+<p><strong>Preview release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<h4 id="android">Android</h4>
+
+<p>Maven supports the <a href="https://cwiki.apache.org/confluence/display/MAVENOLD/Versioning">convention</a> <code class="language-plaintext highlighter-rouge">MAJOR.MINOR.PATCH-QUALIFIER</code>, which doesn’t support SemVer 2 sorting for pre-releases so we have to use a special convention based on their <a href="https://github.com/apache/maven/blob/master/maven-artifact/src/main/java/org/apache/maven/artifact/versioning/ComparableVersion.java">versioning code</a>. The preferred format for version numbers is:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-alpha.YYYYMMDD.r</code> (<code class="language-plaintext highlighter-rouge">r</code> is based on the number of builds performed on the given day) for daily alpha releases.</li>
+  <li><code class="language-plaintext highlighter-rouge">X.Y.Z-beta.N</code> for beta releases.</li>
+</ul>
+
+<p>Beta packages are published directly to the Maven central registry. Alpha packages will be published to the isolated <a href="https://dev.azure.com/azure-sdk/public/_packaging?_a=feed&amp;feed=azure-sdk-for-android">azure-sdk-for-android</a> DevOps feed. To consume an alpha package you should either pin to a specific version or use a version specifier like <code class="language-plaintext highlighter-rouge">(X.Y.Z-alpha, X.Y.Z-beta)</code> to get the latest alpha release while avoiding any potential beta versions which might contain older changes.</p>
+
+<h4 id="incrementing-after-release-android">Incrementing after release (Android)</h4>
+
+<p><strong>Beta Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<h4 id="ios">iOS</h4>
+
+<p>iOS releases the source code of the repository in a single unit of source code. It supports only the Swift Package Manager and does not ship packages to any package registry. Because the iOS repo ships from the <code class="language-plaintext highlighter-rouge">main</code> branch, code going into the <code class="language-plaintext highlighter-rouge">main</code> branch must be in a completed state and ready to ship.</p>
+
+<p>An iOS release includes a Tag and Release (e.g. <a href="https://github.com/Azure/azure-sdk-for-ios/releases/tag/1.0.0-beta.2">1.0.0-beta.2</a>) on GitHub and documentation as GitHub Pages.</p>
+
+<h4 id="incrementing-after-release-ios">Incrementing after release (iOS)</h4>
+
+<p><strong>Preview release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">1.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.2.0-beta.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">1.0.1</code></p>
+
+<h4 id="go">Go</h4>
+
+<p>Go releases the source code of the repository in a single unit of source code. It does not ship packages to any package managers. Because the Go repo ships from the <code class="language-plaintext highlighter-rouge">main</code> branch, code going into the <code class="language-plaintext highlighter-rouge">main</code> branch must be in a completed state and ready to ship.</p>
+
+<p>A Go release includes a Tag and Release (e.g. <a href="https://github.com/Azure/azure-sdk-for-go/releases/tag/sdk/azcore/v0.13.0">sdk/azcore/v0.13.0</a>) on GitHub and documentation in pkg.go.dev (e.g. <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azcore@v0.13.0">sdk/azcore</a>).</p>
+
+<p>Release tags for Go are made up of a <code class="language-plaintext highlighter-rouge">prefix</code> and a <code class="language-plaintext highlighter-rouge">version</code>. The <code class="language-plaintext highlighter-rouge">prefix</code> points to the module in the repository, while the <code class="language-plaintext highlighter-rouge">version</code> is the semantic import version for release. Read more about Go tags for release <a href="https://github.com/golang/go/wiki/Modules#publishing-a-release">here</a>.</p>
+
+<p>Initial Go package releases will be versioned will use <code class="language-plaintext highlighter-rouge">v0</code> versioning with <code class="language-plaintext highlighter-rouge">v0.1.0</code> as the initial version. See <a href="https://azure.github.io/azure-sdk/golang_introduction.html#package-versioning">versioning guidelines</a> for more details.</p>
+
+<h4 id="incrementing-after-release-go">Incrementing after release (Go)</h4>
+
+<p><strong>Beta Release for Initial Release:</strong> <code class="language-plaintext highlighter-rouge">v0.1.0</code> -&gt; <code class="language-plaintext highlighter-rouge">v0.1.1</code></p>
+
+<p><strong>Beta Release:</strong> <code class="language-plaintext highlighter-rouge">v2.0.0-beta.1</code> -&gt; <code class="language-plaintext highlighter-rouge">v2.0.0-beta.2</code></p>
+
+<p><strong>Stable Release:</strong> <code class="language-plaintext highlighter-rouge">v1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">v1.0.1</code></p>
+
+<p><strong>Stable Hotfix Release:</strong> <code class="language-plaintext highlighter-rouge">v1.0.0</code> -&gt; <code class="language-plaintext highlighter-rouge">v1.0.1</code></p>
+
+<h2 id="beta-releases-and-stable-graduation">Beta Releases and Stable Graduation</h2>
+
+<p>The Azure SDK team may choose to create a beta release for several reasons (beyond what is required for APEX Launch Requirements):</p>
+
+<ul>
+  <li>Service itself has features in preview and client library must be updated accordingly</li>
+  <li>Testing and receiving feedback on new API designs</li>
+  <li>Stress and performance testing for new SDK features is incomplete</li>
+</ul>
+
+<p>To create a beta, the release must:</p>
+
+<ul>
+  <li>Have initial documentation.
+    <ul>
+      <li>Full API documentation.</li>
+      <li>A quick start guide for using the SDK.</li>
+      <li>How to guides for champion scenarios.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Have a clear README file with guidelines for how the community can submit feedback.</p>
+  </li>
+  <li>
+    <p>Receive an initial <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> review.</p>
+  </li>
+  <li>
+    <p>Receive an initial design review from the service team (may be combined with architecture review).</p>
+  </li>
+  <li>Ratify shipping dependencies with the service team.
+    <ul>
+      <li>If the service must ship before the SDK can ship, establish timeline for preview and GA in the service.</li>
+      <li>If the SDK contains customer-critical features, establish which features these are and what customer expectations exist.</li>
+    </ul>
+  </li>
+  <li>
+    <p>If changes are substantial, refer to internal documentation for starting a release notification process in support.</p>
+  </li>
+  <li>
+    <p>All service features supported by the SDK must be publicly available.</p>
+  </li>
+  <li>Support for at least 2 languages.  Preferably, support one statically typed language (such as C# or Java) and one dynamically typed language (such as TypeScript or Python).</li>
+</ul>
+
+<p>To graduate to stable, a beta release must:</p>
+
+<ul>
+  <li>
+    <p>Support all four tier-1 languages (.NET, Java, Python, TypeScript) unless there is a good (and documented) reason to not include support for one of the languages.</p>
+  </li>
+  <li>Have final documentation.
+    <ul>
+      <li>Conceptual documentation for how the service works.</li>
+      <li>Samples of common uses cases for the service.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Have a beta release available for at least one month to allow for community feedback.</p>
+  </li>
+  <li>
+    <p>Have no known critical bugs.</p>
+  </li>
+  <li>
+    <p>Have three reference customers external to the Azure organization who have given feedback on the library.</p>
+  </li>
+  <li>
+    <p>Rely on non-preview API versions.</p>
+  </li>
+  <li>
+    <p>Pass stress and performance testing and have unit, functional, performance and stress tests meeting maturity stage 1 or higher.</p>
+  </li>
+  <li>
+    <p>Receive a final <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> review.</p>
+  </li>
+  <li>Receive final design sign-off from service team.</li>
+</ul>
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Sep 20, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

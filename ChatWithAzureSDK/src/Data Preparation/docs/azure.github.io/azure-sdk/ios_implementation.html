@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines ios">
+<title>iOS Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">iOS Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <h2 id="api-implementation">API Implementation</h2>
+
+<p>This section describes guidelines for implementing Azure SDK client libraries. Please note that some of these guidelines are automatically enforced by code generation tools.</p>
+
+<p><a href="#ios-implementation" name="ios-implementation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  allow implementation code (that is, code that doesn’t form part of the public API) to be mistaken as public API. Implementation code can be made internal or file-private and placed within the same source file as the consuming code.</p>
+
+<h3 id="service-client">Service Client</h3>
+
+<p>Service clients are the main starting points for developers calling Azure services with the Azure SDK. Each client library should have at least one client, so it’s easy to discover. The guidelines in this section describe patterns for the design of a service client. Because for iOS only asynchronous service clients are required, the sections below are organized into general service client guidance.</p>
+
+<h4 id="service-methods">Service Methods</h4>
+
+<p>Service methods are the methods on the client that invoke operations on the service.</p>
+
+<h5 id="using-the-http-pipeline">Using the HTTP Pipeline</h5>
+
+<p>The Azure SDK team has provided an <code class="language-plaintext highlighter-rouge">AzureCore</code> library that contains common mechanisms for cross cutting concerns such as configuration and doing HTTP requests.</p>
+
+<p><a href="#ios-requests-use-pipeline" name="ios-requests-use-pipeline" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the HTTP pipeline component within <code class="language-plaintext highlighter-rouge">AzureCore</code> for communicating to service REST endpoints.</p>
+
+<p>The HTTP pipeline consists of a HTTP transport that is wrapped by multiple policies. Each policy is a control point during which the pipeline can modify either the request and/or response. We prescribe a default set of policies to standardize how client libraries interact with Azure services.  The order in the list is the most sensible order for implementation.</p>
+
+<p><a href="#ios-requests-implement-policies" name="ios-requests-implement-policies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include the following policies provided by <code class="language-plaintext highlighter-rouge">AzureCore</code> when constructing the HTTP pipeline:</p>
+
+<ul>
+  <li>Telemetry</li>
+  <li>Unique Request ID</li>
+  <li>Retry</li>
+  <li>Authentication</li>
+  <li>Response downloader</li>
+  <li>Logging</li>
+</ul>
+
+<p><a href="#ios-requests-use-azurecore-impl" name="ios-requests-use-azurecore-impl" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the policy implementations in <code class="language-plaintext highlighter-rouge">AzureCore</code> whenever possible.  Do not try to “write your own” policy unless it is doing something unique to your service.  If you need another option to an existing policy, engage with the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> to add the option.</p>
+
+<h3 id="supporting-types">Supporting Types</h3>
+
+<h4 id="model-types">Model Types</h4>
+
+<h5 id="attributes">Attributes</h5>
+
+<p>The following guidance applies to Swift <a href="https://docs.swift.org/swift-book/ReferenceManual/Attributes.html">attributes</a> :</p>
+
+<p><a href="#ios-attr-objc" name="ios-attr-objc" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the <code class="language-plaintext highlighter-rouge">@objc</code> and <code class="language-plaintext highlighter-rouge">@objMembers</code> attributes ONLY when a Swift object must be exposed to ObjectiveC.</p>
+
+<p><a href="#ios-attr-available" name="ios-attr-available" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">@available</code> attribute when implementation is contingent upon differences in supported OS or Swift versions.</p>
+
+<p><a href="#ios-attr-available" name="ios-attr-available" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">@available</code> attribute to manage breaking changes and transition customers away from deprecated APIs. For example:</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// usable but will issue a warning</span>
+<span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Optional message here..."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">myFunction</span><span class="p">()</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="c1">// unusable -- will issue a compiler error</span>
+<span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">unavailable</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Optional message here..."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">myUnavailableFunc</span><span class="p">()</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="c1">// usable but will issue a warning</span>
+<span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"BetterProtocolName"</span><span class="p">)</span>
+<span class="kd">typealias</span> <span class="kt">BadProtocolName</span> <span class="o">=</span> <span class="kt">BetterProtocolName</span>
+</code></pre></div></div>
+<p><a href="#ios-attr-escaping" name="ios-attr-escaping" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <code class="language-plaintext highlighter-rouge">@escaping</code> on completion handler closures.</p>
+
+<p><a href="#ios-attr-unspecified" name="ios-attr-unspecified" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  contact the Azure SDK team if you are using an attribute not specified here.</p>
+
+<h2 id="sdk-feature-implementation">SDK Feature Implementation</h2>
+
+<h3 id="configuration">Configuration</h3>
+
+<p>When configuring your client library, particular care must be taken to ensure that the consumer of your client library can properly configure the connectivity to your Azure service both globally (along with other client libraries the consumer is using) and specifically with your client library.</p>
+
+<h4 id="client-configuration">Client configuration</h4>
+
+<p><a href="#ios-config-global-config" name="ios-config-global-config" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use relevant global configuration settings either by default or when explicitly requested to by the user, for example by passing in a configuration object to a client constructor.</p>
+
+<p><a href="#ios-config-for-different-clients" name="ios-config-for-different-clients" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow different clients of the same type to use different configurations.</p>
+
+<p><a href="#ios-config-optout" name="ios-config-optout" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow consumers of your service clients to opt out of all global configuration settings at once.</p>
+
+<p><a href="#ios-config-global-overrides" name="ios-config-global-overrides" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow all global configuration settings to be overridden by client-provided options. The names of these options should align with any user-facing global configuration keys.</p>
+
+<p><a href="#general-config-behaviour-changes" name="general-config-behaviour-changes" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  change behavior based on configuration changes that occur after the client is constructed. Hierarchies of clients inherit parent client configuration unless explicitly changed or overridden. Exceptions to this requirement are as follows:</p>
+
+<ol>
+  <li>Log level, which must take effect immediately across the Azure SDK.</li>
+  <li>Telemetry on/off, which must take effect immediately across the Azure SDK.</li>
+</ol>
+
+<blockquote>
+  <p>TODO: Update these guidelines to specify exactly how to do these things in Swift</p>
+</blockquote>
+
+<h4 id="service-specific-configuration">Service-specific configuration</h4>
+
+<p>For iOS applications, configuration is applied using <code class="language-plaintext highlighter-rouge">Info.plist</code> and directly mirrors the environment variables within a service written in other languages.</p>
+
+<p><a href="#ios-config-plist-key-prefix" name="ios-config-plist-key-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  prefix Azure-specific plist keys with <code class="language-plaintext highlighter-rouge">AZURE_</code>.</p>
+
+<p><a href="#ios-config-plist-key-use-client-specific" name="ios-config-plist-key-use-client-specific" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use client library-specific plist keys set in <code class="language-plaintext highlighter-rouge">Info.plist</code> for portal-configured settings which are provided as parameters to your client library. This generally includes credentials and connection details. For example, Service Bus could support the following environment variables:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_CONNECTION_STRING</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_NAMESPACE</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_ISSUER</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_SERVICEBUS_ACCESS_KEY</code></li>
+</ul>
+
+<p>Storage could support:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_ACCOUNT</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_ACCESS_KEY</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_DNS_SUFFIX</code></li>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_STORAGE_CONNECTION_STRING</code></li>
+</ul>
+
+<p><a href="#ios-config-plist-key-get-approval" name="ios-config-plist-key-get-approval" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  get approval from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> for every new plist key.  If an environment variable has been approved for the same client library within a different language, a key by the same name is approved for iOS.</p>
+
+<p><a href="#ios-config-plist-key-format" name="ios-config-plist-key-format" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use this syntax for <code class="language-plaintext highlighter-rouge">Info.plist</code> keys specific to a particular Azure service:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AZURE_&lt;ServiceName&gt;_&lt;ConfigurationKey&gt;</code></li>
+</ul>
+
+<p>where <em>ServiceName</em> is the canonical shortname without spaces, and <em>ConfigurationKey</em> refers to an unnested configuration key for that client library.</p>
+
+<p><a href="#ios-config-plist-key-posix-compatible" name="ios-config-plist-key-posix-compatible" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use non-alpha-numeric characters in your environment variable names with the exception of underscore. This ensures broad interoperability.</p>
+
+<h3 id="logging">Logging</h3>
+
+<p>Client libraries must support robust logging mechanisms so that the consumer can adequately diagnose issues with the method calls and quickly determine whether the issue is in the consumer code, client library code, or service.</p>
+
+<p><a href="#ios-logging-pluggable-logger" name="ios-logging-pluggable-logger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support pluggable log handlers.  This should be provided by allowing the consumer to specify a <code class="language-plaintext highlighter-rouge">logger</code> parameter in the client options.  The <code class="language-plaintext highlighter-rouge">logger</code> parameter points to an instance of the <code class="language-plaintext highlighter-rouge">AzureCoreLogger</code> protocol.</p>
+
+<p><a href="#ios-logging-console-logger" name="ios-logging-console-logger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make it easy for a consumer to enable logging output to the console. This is done by setting the <code class="language-plaintext highlighter-rouge">logger</code> client option to a new instance of the <code class="language-plaintext highlighter-rouge">AzureCoreOSLogger</code>.</p>
+
+<p><a href="#ios-logging-levels" name="ios-logging-levels" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use one of the following log levels when emitting logs: <code class="language-plaintext highlighter-rouge">Verbose</code> (details), <code class="language-plaintext highlighter-rouge">Informational</code> (things happened), <code class="language-plaintext highlighter-rouge">Warning</code> (might be a problem or not), and <code class="language-plaintext highlighter-rouge">Error</code>.  This are provided by the enum <code class="language-plaintext highlighter-rouge">AzureCoreLogLevels</code>.</p>
+
+<p><a href="#ios-logging-failure" name="ios-logging-failure" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Error</code> logging level for failures that the application is unlikely to recover from (out of memory, etc.).</p>
+
+<p><a href="#ios-logging-warning" name="ios-logging-warning" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Warning</code> logging level when a function fails to perform its intended task. This generally means that the function will raise an exception.  Do not include occurrences of self-healing events (for example, when a request will be automatically retried).</p>
+
+<p><a href="#ios-logging-info" name="ios-logging-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Informational</code> logging level when a function operates normally.</p>
+
+<p><a href="#ios-logging-verbose" name="ios-logging-verbose" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Verbose</code> logging level for detailed troubleshooting scenarios. This is primarily intended for developers or system administrators to diagnose specific failures.</p>
+
+<p>The client library can log using the following:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">logger</span><span class="o">.</span><span class="nf">writeLog</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="s">"MyClient"</span><span class="p">,</span> <span class="nv">withLevel</span><span class="p">:</span> <span class="kt">AzureCoreLogLevels</span><span class="o">.</span><span class="kt">Verbose</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"A message"</span><span class="p">)</span></code></pre></figure>
+
+<p><a href="#ios-logging-no-sensitive-info" name="ios-logging-no-sensitive-info" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  send sensitive information in log levels other than <code class="language-plaintext highlighter-rouge">Verbose</code>. For example, remove account keys when logging headers.  Headers and query parameters must be redacted using the <code class="language-plaintext highlighter-rouge">loggingAllowedHeaders</code> array and <code class="language-plaintext highlighter-rouge">loggingAllowedQueryParams</code> array specified within the client options</p>
+
+<p><a href="#ios-logging-default-allowedlist" name="ios-logging-default-allowedlist" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  set reasonable defaults for the <code class="language-plaintext highlighter-rouge">loggingAllowedHeaders</code> and <code class="language-plaintext highlighter-rouge">loggingAllowedQueryParams</code> properties in the client options.</p>
+
+<p><a href="#ios-logging-requests" name="ios-logging-requests" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log request line, response line, and headers, as <code class="language-plaintext highlighter-rouge">Informational</code> message.</p>
+
+<p><a href="#ios-logging-cancellations" name="ios-logging-cancellations" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log an <code class="language-plaintext highlighter-rouge">Informational</code> message if a service call is cancelled.</p>
+
+<p><a href="#ios-logging-exceptions" name="ios-logging-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log exceptions thrown as a <code class="language-plaintext highlighter-rouge">Warning</code> level message. If the log level set to <code class="language-plaintext highlighter-rouge">Verbose</code>, append stack trace information to the message.</p>
+
+<blockquote>
+  <p>TODO: Logging (see general guidelines)</p>
+  <ul>
+    <li>Provide abstracted logger in AzureCore</li>
+    <li>Use os_logger unless over-ridden</li>
+    <li>allowHeaders &amp; allowQueryParams</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <p>TBD:</p>
+  <ul>
+    <li>Hook in to HockeyApp</li>
+  </ul>
+</blockquote>
+
+<h3 id="distributed-tracing">Distributed tracing</h3>
+
+<p>Distributed tracing is uncommon in a mobile context. If you feel like you need to support distributed tracing, contact the <a href="mailto:azuresdkmobileteam@microsoft.com">Azure SDK mobile team</a> for advice.</p>
+
+<h3 id="testing">Testing</h3>
+
+<p><a href="#ios-testing-unit-xctest" name="ios-testing-unit-xctest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the built-in <code class="language-plaintext highlighter-rouge">XCTest</code> framework for unit testing.
+<a href="#ios-testing-e2e-azuretest" name="ios-testing-e2e-azuretest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the AzureTest static framework for end-to-end testing.
+<a href="#ios-testing-nomocks" name="ios-testing-nomocks" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  mock service calls for end-to-end tests due to the inherent complexity. Instead, AzureTest should be used for most end-to-end scenario tests.
+<a href="#ios-testing-ohhttpstubs" name="ios-testing-ohhttpstubs" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  use <code class="language-plaintext highlighter-rouge">OHHTTPStubs</code> to perform mocking for abnormal network conditions such as dropped connectivity.</p>
+
+<!-- Project Links -->
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Sep 20, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

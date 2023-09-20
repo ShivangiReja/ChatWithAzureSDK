@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines clang">
+<title>Embedded C Guidelines: Implementation | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li class="active"><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">Embedded C Guidelines: Implementation</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>DRAFT:</b> The C Language guidelines are in DRAFT status</div>
+
+<h2 id="api-implementation">API Implementation</h2>
+
+<h3 id="service-client">Service Client</h3>
+
+<h4 id="service-methods">Service Methods</h4>
+
+<p>C doesn’t have object oriented programming built in, but most programs end up implementing some kind of ad-hoc object model.</p>
+
+<p>Let’s consider the object used to represent a widget in the fictional Azure Widgets service. Such a structure could be defined like this:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_widget</span> <span class="p">{</span>
+  <span class="kt">uint16_t</span> <span class="n">num_sides</span><span class="p">;</span>
+  <span class="n">az_widget_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">;</span>
+  <span class="n">bool</span> <span class="n">was_frobnicated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_widgets_widget</span><span class="p">;</span></code></pre></figure>
+
+<p>If you are defining an opaque type then the definition is placed in a <code class="language-plaintext highlighter-rouge">.c</code> file and the header file contains the following:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_widget</span> <span class="n">az_widgets_widget</span><span class="p">;</span></code></pre></figure>
+
+<p>If you need to expose the type (for stack allocation), but would like to make it clear that some fields are private and should not be modified, place the type in the header file as follows::</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_widget</span> <span class="p">{</span>
+  <span class="k">struct</span> <span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">num_sides</span><span class="p">;</span>
+    <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">;</span>
+    <span class="n">bool</span> <span class="n">was_frobnicated</span><span class="p">;</span>
+  <span class="p">}</span> <span class="n">_internal</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_widgets_widget</span><span class="p">;</span></code></pre></figure>
+
+<p><a href="#clang-objmodel-nohiding" name="clang-objmodel-nohiding" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  hide the members of a struct that supports stack allocation, except in the above way.  This can result in alignment problems and missed optimization opportunities.</p>
+
+<h5 id="initialization-and-destruction">Initialization and destruction</h5>
+
+<p>You must always have an initialization function. This function will take a block of allocated memory of the correct size and alignment and turn it into a valid object instance, setting fields to default values and processing initialization parameters.</p>
+
+<p><a href="#clang-objmodel-init" name="clang-objmodel-init" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name initialization functions with the form <code class="language-plaintext highlighter-rouge">az_&lt;libname&gt;_init_...</code>.</p>
+
+<p><a href="#clang-objmodel-ready" name="clang-objmodel-ready" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that the object is “ready to use” after a call to the init function for the object.</p>
+
+<p>If there is more than one way to initialize an object, you should define multiple initialization functions with different names. For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">az_widgets_client_init</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">az_kwidgets_client_init_with_sides</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num_sides</span><span class="p">,</span> <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">);</span></code></pre></figure>
+
+<p>If initialization could fail (for example, during parameter validation), ensure the init function returns an <code class="language-plaintext highlighter-rouge">az_result</code> to indicate error conditions.</p>
+
+<p>A possible implementation of these initialization functions would be:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">az_widgets_client_init</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">memset</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="p">));</span>
+<span class="p">}</span>
+
+
+<span class="kt">void</span> <span class="nf">az_widgets_client_init_with_sides</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span>
+				       <span class="kt">int</span> <span class="n">num_sides</span><span class="p">,</span> <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">az_widgets_client_init</span><span class="p">(</span><span class="n">herd</span><span class="p">);</span>
+  <span class="n">herd</span><span class="o">-&gt;</span><span class="n">sides</span> <span class="o">=</span> <span class="n">sides</span><span class="p">;</span>
+  <span class="n">herd</span><span class="o">-&gt;</span><span class="n">num_sides</span> <span class="o">=</span> <span class="n">num_sides</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Similarly to allocation, a type can have a destruction function. However only types that own a resource (such as memory), or require special cleanup (like securely zeroing their memory) need a destruction function.</p>
+
+<p><a href="#clang-objmodel-prefer-nonalloc" name="clang-objmodel-prefer-nonalloc" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  prefer non-allocating types and methods.</p>
+
+<h5 id="allocation-and-deallocation">Allocation and deallocation</h5>
+
+<p>Your library should not allocate memory if possible.  It should be possible to use the client library without any allocations, deferring all allocations to the client program.</p>
+
+<p>Allocation should be separated from initialization, unless there’s an extremely good reason to tie them together. In general we want to let the user allocate their own memory. You only need an allocation function if you intend to hide the size and alignment of the object from the user.</p>
+
+<p><a href="#clang-objmodel-alloc1" name="clang-objmodel-alloc1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name the allocation and deallocation functions as <code class="language-plaintext highlighter-rouge">az_&lt;libname&gt;_(de)allocate_&lt;objtype&gt;</code>.</p>
+
+<p>Note that this is the opposite of the pattern for other methods.  Allocation functions do not operate on a value of <code class="language-plaintext highlighter-rouge">&lt;objtype&gt;</code>.  Rather they create and destroy such values.</p>
+
+<p><a href="#clang-objmodel-alloc2" name="clang-objmodel-alloc2" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an allocation and deallocation function for opaque types.</p>
+
+<p><a href="#clang-objmodel-alloc3" name="clang-objmodel-alloc3" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  take a set of allocation callbacks as a parameter to the allocation and deallocation functions for an opaque type.  Use the library default allocation functions if the allocation callback parameter is NULL.</p>
+
+<p><a href="#clang-objmodel-alloc4" name="clang-objmodel-alloc4" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  store a pointer to the allocation callbacks inside the memory returned by the allocation function.  You may store such a pointer for debugging purposes.</p>
+
+<p>The intent is to allow storing a pointer to the allocation callbacks to ensure the same set of callbacks is used for allocation and deallocation.  However, it is not allowed to change the ABI of the returned object to do this.  You need to store the callbacks before or after the pointer returned to the caller.</p>
+
+<blockquote>
+  <p>TODO: Rationalize this - do we store or not store?</p>
+</blockquote>
+
+<p><a href="#clang-objmodel-alloc5" name="clang-objmodel-alloc5" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  return any errors from the deallocation function.  It is impossible to write leak-free programs if deallocation and cleanup functions can fail.</p>
+
+<p>For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#include &lt;stdint.h&gt;
+</span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widget_client</span> <span class="n">az_widget_client</span><span class="p">;</span>
+
+<span class="n">az_result</span> <span class="nf">az_widgets_allocate_client</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">**</span> <span class="n">herd</span><span class="p">,</span> <span class="n">az_allocation_callbacks</span><span class="o">*</span> <span class="n">alloc</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">az_widgets_deallocate_client</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">herd</span><span class="p">,</span> <span class="n">az_allocation_callbacks</span><span class="o">*</span> <span class="n">alloc</span><span class="p">);</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#include "herd.h"
+</span><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_client</span> <span class="p">{</span>
+  <span class="kt">uint16_t</span> <span class="n">num_sides</span><span class="p">;</span>
+  <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">;</span>
+  <span class="n">bool</span> <span class="n">was_frobnicated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_widgets_client</span><span class="p">;</span>
+
+
+<span class="n">az_result</span> <span class="nf">az_widgets_allocate_client</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">**</span> <span class="n">client</span><span class="p">,</span> <span class="n">az_allocation_callbacks</span><span class="o">*</span> <span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">*</span><span class="n">client</span> <span class="o">=</span> <span class="n">az_default_alloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="p">));</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="o">*</span><span class="n">client</span> <span class="o">=</span> <span class="n">alloc</span><span class="o">-&gt;</span><span class="n">allocate</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">az_widgets_herd</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="k">if</span><span class="p">(</span><span class="o">!*</span><span class="n">client</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">AZ_ERROR_ALLOCATION_ERROR</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="n">AZ_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">az_widgets_deallocate_client</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span> <span class="n">az_allocation_callbacks</span><span class="o">*</span> <span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">az_default_deallocate</span><span class="p">(</span><span class="n">client</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">alloc</span><span class="o">-&gt;</span><span class="n">deallocate</span><span class="p">(</span><span class="n">client</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<h5 id="initialization-for-objects-that-allocate">Initialization for objects that allocate</h5>
+
+<p>The initialization function should take a set of allocation callbacks and store them inside the object instance.</p>
+
+<p><a href="#clang-objmodel-initalloc1" name="clang-objmodel-initalloc1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  take a set of allocation / deallocation callbacks in the <code class="language-plaintext highlighter-rouge">init</code> function of objects owning inner pointers.</p>
+
+<p><a href="#clang-objmodel-initalloc2" name="clang-objmodel-initalloc2" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  allocate different inner pointers with different sets of allocation callbacks.  Use a single allocation callback.</p>
+
+<h5 id="destruction-for-objects-that-allocate">Destruction for objects that allocate</h5>
+
+<p><a href="#clang-objmodel-destroyalloc1" name="clang-objmodel-destroyalloc1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name destruction functions <code class="language-plaintext highlighter-rouge">az_&lt;libname&gt;_&lt;objtype&gt;_destroy</code>.</p>
+
+<p><a href="#clang-objmodel-destroyalloc2" name="clang-objmodel-destroyalloc2" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  take allocation callbacks in the destruction function.</p>
+
+<p>The reason one would take an allocation callback parameter in the destruction function is to save space by not storing it in the object instance. The reason we prohibit this is that it means an object that owns a pointer to another object must then take <em>two</em> allocation parameters in its destroy function.</p>
+
+<p><a href="#clang-objmodel-destroyalloc3" name="clang-objmodel-destroyalloc3" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  return any errors in the destruction function.  It’s impossible to write leak-free programs if deallocation / cleanup functions can fail.</p>
+
+<p>The destruction function should follow this pattern:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">az_widgets_client_destroy</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">);</span></code></pre></figure>
+
+<p>The following is a possible implementation of a destruction function for the widgets client object:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">az_widgets_client_destroy</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span><span class="n">client</span><span class="o">-&gt;</span><span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">client</span><span class="o">-&gt;</span><span class="n">alloc</span><span class="o">-&gt;</span><span class="n">deallocate</span><span class="p">(</span><span class="n">sides</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">az_string_destroy</span><span class="p">(</span><span class="n">client</span><span class="o">-&gt;</span><span class="n">str</span><span class="p">);</span>
+<span class="n">client</span><span class="o">-&gt;</span><span class="n">num_sides</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">client</span><span class="o">-&gt;</span><span class="n">alloc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<h5 id="methods-on-objects">Methods on objects</h5>
+
+<p>To define a method on an object simply define a function taking a pointer to that object as its first parameter. For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/**
+ * @brief add a side to the widget
+ * @memberof az_widgets_client
+ *
+ * @param[in] herd - the herd
+ * @param[in] __[transfer none]__ side - the side to add
+ * @return Any errors
+ * @retval AZ_OK on success
+ * @retval AZ_ERROR_NO_MEMORY if a reallocation of the internal
+ *                            array failed
+ */</span>
+<span class="n">az_result</span> <span class="nf">az_widgets_client_add_side</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span> <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">side</span><span class="p">);</span></code></pre></figure>
+
+<p><a href="#clang-objmodel-memberof" name="clang-objmodel-memberof" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <code class="language-plaintext highlighter-rouge">@memberof</code> to indicate a function is associated with a class.</p>
+
+<p><a href="#clang-objmodel-firstparam" name="clang-objmodel-firstparam" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide the class object as the first parameter to a function associated with the class.</p>
+
+<h5 id="functions-with-many-parameters">Functions with many parameters</h5>
+
+<p>Sometimes a function will take a large number of parameters, many of which have sane defaults.  In this case you should pass them via a struct. Default arguments should be represented by “zero”. If the function is a method then the first parameter should still be a pointer to the object type the method is associated with.</p>
+
+<p>For example the previous <code class="language-plaintext highlighter-rouge">az_widgets_client_init_with_sides</code> function could be defined instead as:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_client_init_with_sides_options</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_sides</span><span class="p">;</span>
+  <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">;</span>
+  <span class="n">bool</span> <span class="n">was_frobnicated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_widgets_client_init_with_sides_options</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">az_widgets_client_init_with_sides</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span> <span class="k">const</span> <span class="n">az_widgets_client_init_with_sides_options</span><span class="o">*</span> <span class="n">options</span><span class="p">);</span></code></pre></figure>
+
+<p>and would be called from user code like:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">az_widgets_client</span> <span class="n">client</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+  <span class="n">az_widgets_client_init_with_sides_options</span> <span class="n">options</span> <span class="o">=</span> 
+    <span class="n">az_widgets_client_init_with_sides_default_options</span><span class="p">();</span>
+  <span class="n">az_widgets_client_init_with_sides</span><span class="p">(</span><span class="o">&amp;</span><span class="n">client</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Note that the <code class="language-plaintext highlighter-rouge">num_sides</code> and <code class="language-plaintext highlighter-rouge">sides</code> parameters are left as default.</p>
+
+<p>If the <code class="language-plaintext highlighter-rouge">params</code> parameter is <code class="language-plaintext highlighter-rouge">NULL</code> then the <code class="language-plaintext highlighter-rouge">az_widgets_client_init_with_sides</code> function should assume the defaults for all parameters.</p>
+
+<p>If a function takes both optional and non-optional parameters then prefer passing the non-optional ones as parameters and the optional ones by struct.</p>
+
+<p><a href="#clang-objmodel-manyparams" name="clang-objmodel-manyparams" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a struct to encapsulate parameters if the number of parameters is greater than 5.</p>
+
+<p><a href="#clang-objmodel-manyparams2" name="clang-objmodel-manyparams2" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include the class object in the encapsulating paramter struct.</p>
+
+<h5 id="methods-requiring-allocation">Methods requiring allocation</h5>
+
+<p>If a method could require allocating memory then it should use the most relevant set of allocation callbacks. For example the <code class="language-plaintext highlighter-rouge">az_widgets_client_add_side</code> method may need to allocate or re-allocate the array of sides.  It should use the <code class="language-plaintext highlighter-rouge">az_widgets_client</code> allocators.  On the other hand the method:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">az_widgets_client_set_str</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">herd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">str</span><span class="p">);</span></code></pre></figure>
+
+<p>would likely use the allocation callbacks inside the <code class="language-plaintext highlighter-rouge">client-&gt;str</code> structure.</p>
+
+<blockquote>
+  <p>TODO: Rationalize advice here.  Earlier, we said don’t include allocators inside the structure.</p>
+</blockquote>
+
+<h5 id="callbacks">Callbacks</h5>
+
+<p>Callback functions should be defined to take a pointer to the “sender” object as the first argument and a void pointer to user data as the last argument. Any additional arguments, if any, should be contextual data needed by the callback. For example say we had an object <code class="language-plaintext highlighter-rouge">az_widgets_client</code> that could make requests to be handled in a callback and we represent the response as an object <code class="language-plaintext highlighter-rouge">az_response</code>. We might define the following:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="nf">bool</span> <span class="p">(</span><span class="o">*</span><span class="n">az_widgets_response_callback</span><span class="p">)(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span>
+						<span class="n">az_response</span><span class="o">*</span> <span class="n">resp</span><span class="p">,</span>
+						<span class="kt">void</span><span class="o">*</span> <span class="n">user_data</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">az_widgets_client_set_response_callback</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span>
+						<span class="n">az_widgets_response_callback</span> <span class="n">callback</span><span class="p">,</span>
+						<span class="kt">void</span><span class="o">*</span> <span class="n">user_data</span><span class="p">);</span></code></pre></figure>
+
+<p>Client code would use this in the following manner:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">user_data</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">some_int</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">user_data</span><span class="p">;</span>
+
+
+<span class="n">bool</span> <span class="nf">handle_resp</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span>
+		 <span class="n">az_response</span><span class="o">*</span> <span class="n">resp</span><span class="p">,</span>
+		 <span class="kt">void</span><span class="o">*</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">user_data</span><span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="n">user</span><span class="p">;</span>
+  <span class="cm">/* do things with parameters */</span>
+  <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">user_data</span> <span class="n">d</span> <span class="o">=</span> <span class="p">{.</span><span class="n">some_int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">};</span>
+  <span class="n">az_widgets_client</span> <span class="n">client</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+  <span class="n">az_widgets_client_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">client</span><span class="p">);</span>
+  <span class="n">az_widgets_client_set_response_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">client</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">handle_resp</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">);</span>
+  <span class="cm">/* do something that triggers the callback */</span>
+
+  <span class="cm">/* unset the callback if we don't want to handle it anymore */</span>
+  <span class="n">az_widgets_client_set_response_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">client</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#clang-objmodel-callback-userdata" name="clang-objmodel-callback-userdata" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a <code class="language-plaintext highlighter-rouge">user_data</code> parameter on all callbacks.</p>
+
+<p><a href="#clang-objmodel-callback-deref" name="clang-objmodel-callback-deref" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  de-reference the user data pointer from inside the library.</p>
+
+<h5 id="discriminated-unions">Discriminated Unions</h5>
+
+<p>Discriminated unions can be useful for grouping information in a struct. However, C does not provide a standard way of defining discriminated unions.  Use the following:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">discriminated_union</span> <span class="p">{</span>
+  <span class="k">enum</span> <span class="p">{</span>
+	<span class="n">discriminated_union_tag_int</span><span class="p">,</span>
+	<span class="n">discriminated_union_tag_float</span><span class="p">,</span>
+	<span class="n">discriminated_union_tag_double</span>
+  <span class="p">}</span> <span class="n">tag</span><span class="p">;</span>
+  <span class="k">union</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">the_int</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">the_float</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">the_double</span><span class="p">;</span>
+  <span class="p">}</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">discriminated_union</span><span class="p">;</span></code></pre></figure>
+
+<p>This syntax is supported on all C99 compilers as it adheres to strict C99 syntax. Access the inner member using <code class="language-plaintext highlighter-rouge">union_value.value.the_int</code> (as an example).</p>
+
+<p>The nested enum and union should never have a <code class="language-plaintext highlighter-rouge">tag name</code> as this is <em>always</em> an extension.  It is a user error to access the union without checking its tag first.</p>
+
+<h4 id="service-method-parameters">Service Method Parameters</h4>
+
+<h5 id="parameter-validation">Parameter Validation</h5>
+
+<blockquote>
+  <p>TODO: This is duplicated from the design.md.</p>
+</blockquote>
+
+<p>The service client will have several methods that perform requests on the service.  <em>Service parameters</em> are directly passed across the wire to an Azure service.  <em>Client parameters</em> are not passed directly to the service, but used within the client library to fulfill the request.  Examples of client parameters include values that are used to construct a URI, or a file that needs to be uploaded to storage.</p>
+
+<p><a href="#clang-params-client-validation" name="clang-params-client-validation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate client parameters.</p>
+
+<p><a href="#clang-params-server-validation" name="clang-params-server-validation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  validate service parameters.  This includes null checks, empty strings, and other common validating conditions. Let the service validate any request parameters.</p>
+
+<p><a href="#clang-params-check-devex" name="clang-params-check-devex" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate the developer experience when the service parameters are invalid to ensure appropriate error messages are generated by the service.  If the developer experience is compromised due to service-side error messages, work with the service team to correct prior to release.</p>
+
+<h5 id="functions-with-many-parameters-1">Functions with many parameters</h5>
+
+<p>Sometimes a function will take a large number of parameters, many of which have sane defaults.  In this case you should pass them via a struct. Default arguments should be represented by “zero”. If the function is a method then the first parameter should still be a pointer to the object type the method is associated with.</p>
+
+<p>For example the previous <code class="language-plaintext highlighter-rouge">az_widgets_client_init_with_sides</code> function could be defined instead as:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_widgets_client_init_with_sides_options</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_sides</span><span class="p">;</span>
+  <span class="n">az_widgets_side</span><span class="o">*</span> <span class="n">sides</span><span class="p">;</span>
+  <span class="n">bool</span> <span class="n">was_frobnicated</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_widgets_client_init_with_sides_options</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">az_widgets_client_init_with_sides</span><span class="p">(</span><span class="n">az_widgets_client</span><span class="o">*</span> <span class="n">client</span><span class="p">,</span> <span class="k">const</span> <span class="n">az_widgets_client_init_with_sides_options</span><span class="o">*</span> <span class="n">options</span><span class="p">);</span></code></pre></figure>
+
+<p>and would be called from user code like:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">az_widgets_client</span> <span class="n">client</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+  <span class="n">az_widgets_client_init_with_sides_options</span> <span class="n">options</span> <span class="o">=</span> 
+    <span class="n">az_widgets_client_init_with_sides_default_options</span><span class="p">();</span>
+  <span class="n">az_widgets_client_init_with_sides</span><span class="p">(</span><span class="o">&amp;</span><span class="n">client</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Note that the <code class="language-plaintext highlighter-rouge">num_sides</code> and <code class="language-plaintext highlighter-rouge">sides</code> parameters are left as default.</p>
+
+<p>If the <code class="language-plaintext highlighter-rouge">params</code> parameter is <code class="language-plaintext highlighter-rouge">NULL</code> then the <code class="language-plaintext highlighter-rouge">az_widgets_client_init_with_sides</code> function should assume the defaults for all parameters.</p>
+
+<p>If a function takes both optional and non-optional parameters then prefer passing the non-optional ones as parameters and the optional ones by struct.</p>
+
+<p><a href="#clang-objmodel-manyparams" name="clang-objmodel-manyparams" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a struct to encapsulate parameters if the number of parameters is greater than 5.</p>
+
+<p><a href="#clang-objmodel-manyparams2" name="clang-objmodel-manyparams2" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include the class object in the encapsulating paramter struct.</p>
+
+<h3 id="supporting-types">Supporting Types</h3>
+
+<h4 id="serialization">Serialization</h4>
+
+<p>Requests to the service fall into two basic groups - methods that make a single logical request, or a deterministic sequence of requests.  An example of a <em>single logical request</em> is a request that may be retried inside the operation.  An example of a <em>deterministic sequence of requests</em> is a paged operation.</p>
+
+<p>The <em>logical entity</em> is a protocol neutral representation of a response. For HTTP, the logical entity may combine data from headers, body and the status line. A common example is exposing an ETag header as a property on the logical entity in addition to any deserialized content from the body.</p>
+
+<p><a href="#clang-return-logical-entities" name="clang-return-logical-entities" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  optimize for returning the logical entity for a given request. The logical entity MUST represent the information needed in the 99%+ case.</p>
+
+<p><a href="#clang-return-expose-raw" name="clang-return-expose-raw" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  <em>make it possible</em> for a developer to get access to the complete response, including the status line, headers and body. The client library MUST follow the language specific guidance for accomplishing this.</p>
+
+<p>For example, you may choose to do something similar to the following:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_json_short_item</span> <span class="p">{</span>
+    <span class="c1">// JSON decoded structure.</span>
+<span class="p">}</span> <span class="n">az_json_short_item</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_json_short_paged_results</span> <span class="p">{</span>
+    <span class="n">uint32</span> <span class="n">size</span><span class="p">;</span>
+    <span class="n">az_json_short_item</span> <span class="o">*</span><span class="n">items</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_json_short_paged_results</span><span class="p">;</span>
+
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">az_json_short_raw_paged_results</span> <span class="p">{</span>
+    <span class="n">http_headers</span> <span class="o">*</span><span class="n">headers</span><span class="p">;</span>
+    <span class="n">uint16</span> <span class="n">status_code</span><span class="p">;</span>
+    <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">raw_body</span><span class="p">;</span>
+    <span class="n">az_json_short_paged_results</span><span class="o">*</span> <span class="n">results</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">az_json_short_raw_paged_results</span><span class="p">;</span>
+
+<span class="n">az_json_short_paged_results</span><span class="o">*</span> <span class="nf">az_json_get_short_list_items</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="cm">/* extra params */</span><span class="p">);</span>
+<span class="n">az_json_short_raw_paged_results</span><span class="o">*</span> <span class="nf">az_json_get_short_list_items_with_response</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="cm">/* extra params */</span><span class="p">);</span></code></pre></figure>
+
+<p><a href="#clang-return-document-raw-stream" name="clang-return-document-raw-stream" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document and provide examples on how to access the raw and streamed response for a given request, where exposed by the client library.  We do not expect all methods to expose a streamed response.</p>
+
+<p>For methods that combine multiple requests into a single call:</p>
+
+<p><a href="#clang-return-no-headers-if-confusing" name="clang-return-no-headers-if-confusing" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  return headers and other per-request metadata unless it is obvious as to which specific HTTP request the methods return value corresponds to.</p>
+
+<p><a href="#clang-expose-data-for-composite-failures" name="clang-expose-data-for-composite-failures" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide enough information in failure cases for an application to take appropriate corrective action.</p>
+
+<h4 id="enumeration-like-structures">Enumeration-like Structures</h4>
+
+<blockquote>
+  <p>TODO: This section is not applicable for the Embedded C SDK.</p>
+</blockquote>
+
+<h2 id="sdk-feature-implementation">SDK Feature Implementation</h2>
+
+<h3 id="configuration">Configuration</h3>
+
+<blockquote>
+  <p>TODO: Add discussion on configuration environment variables to parallel that of other languages</p>
+</blockquote>
+
+<h3 id="logging">Logging</h3>
+
+<p>Client libraries must support robust logging mechanisms so that the consumer can adequately diagnose issues and quickly determine whether the issue is in the consumer code, client library code, or service.</p>
+
+<p>In general, our advice to consumers of these libraries is to establish logging in their preferred manner at the <code class="language-plaintext highlighter-rouge">WARNING</code> level or above in production to capture problems with the application, and this level should be enough for customer support situations.  Informational or verbose logging can be enabled on a case-by-case basis to assist with issue resolution.</p>
+
+<p><a href="#clang-logging-use-azurecore" name="clang-logging-use-azurecore" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the Azure Core library for logging.</p>
+
+<blockquote>
+  <p>TODO: The Azure Core logging library does not exist yet.</p>
+</blockquote>
+
+<p><a href="#clang-logging-pluggable-logger" name="clang-logging-pluggable-logger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support pluggable log handlers.</p>
+
+<p><a href="#clang-logging-console-logger" name="clang-logging-console-logger" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make it easy for a consumer to enable logging output to the console. The specific steps required to enable logging to the console must be documented.</p>
+
+<p><a href="#clang-logging-levels" name="clang-logging-levels" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use one of the following log levels when emitting logs: <code class="language-plaintext highlighter-rouge">Verbose</code> (details), <code class="language-plaintext highlighter-rouge">Informational</code> (things happened), <code class="language-plaintext highlighter-rouge">Warning</code> (might be a problem or not), and <code class="language-plaintext highlighter-rouge">Error</code>.</p>
+
+<p><a href="#clang-logging-failure" name="clang-logging-failure" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Error</code> logging level for failures that the application is unlikely to recover from (out of memory, etc.).</p>
+
+<p><a href="#clang-logging-warning" name="clang-logging-warning" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Warning</code> logging level when a function fails to perform its intended task. This generally means that the function will raise an exception.  Do not include occurrences of self-healing events (for example, when a request will be automatically retried).</p>
+
+<p><a href="#clang-logging-slowlinks" name="clang-logging-slowlinks" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  log the request and response (see below) at the <code class="language-plaintext highlighter-rouge">Warning</code> when a request/response cycle (to the start of the response body) exceeds a service-defined threshold.  The threshold should be chosen to minimize false-positives and identify service issues.</p>
+
+<p><a href="#clang-logging-info" name="clang-logging-info" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Informational</code> logging level when a function operates normally.</p>
+
+<p><a href="#clang-logging-verbose" name="clang-logging-verbose" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">Verbose</code> logging level for detailed troubleshooting scenarios. This is primarily intended for developers or system administrators to diagnose specific failures.</p>
+
+<p><a href="#clang-logging-exclude" name="clang-logging-exclude" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  log payloads or HTTP header/query parameter values that aren’t on the service provided allow list.  For header/query parameters not on the allow list use the value <code class="language-plaintext highlighter-rouge">&lt;REDACTED&gt;</code> in place of the real value.</p>
+
+<p><a href="#clang-logging-requests" name="clang-logging-requests" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log request line and headers as an <code class="language-plaintext highlighter-rouge">Informational</code> message. The log should include the following information:</p>
+
+<ul>
+  <li>The HTTP method.</li>
+  <li>The URL.</li>
+  <li>The query parameters (redacted if not in the allow-list).</li>
+  <li>The request headers (redacted if not in the allow-list).</li>
+  <li>An SDK provided request ID for correlation purposes.</li>
+  <li>The number of times this request has been attempted.</li>
+</ul>
+
+<p><a href="#clang-logging-responses" name="clang-logging-responses" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log response line and headers as an <code class="language-plaintext highlighter-rouge">Informational</code> message.  The format of the log should be the following:</p>
+
+<ul>
+  <li>The SDK provided request ID (see above).</li>
+  <li>The status code.</li>
+  <li>Any message provided with the status code.</li>
+  <li>The response headers (redacted if not in the allow-list).</li>
+  <li>The time period between the first attempt of the request and the first byte of the body.</li>
+</ul>
+
+<p><a href="#clang-logging-cancellations" name="clang-logging-cancellations" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log an <code class="language-plaintext highlighter-rouge">Informational</code> message if a service call is cancelled.  The log should include:</p>
+
+<ul>
+  <li>The SDK provided request ID (see above).</li>
+  <li>The reason for the cancellation (if available).</li>
+</ul>
+
+<p><a href="#clang-logging-exceptions" name="clang-logging-exceptions" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  log exceptions thrown as a <code class="language-plaintext highlighter-rouge">Warning</code> level message. If the log level set to <code class="language-plaintext highlighter-rouge">Verbose</code>, append stack trace information to the message.</p>
+
+<h3 id="distributed-tracing">Distributed Tracing</h3>
+
+<blockquote>
+  <p>TODO: Implement the spirit of the general guidelines for distributed tracing.</p>
+</blockquote>
+
+<blockquote>
+  <p>TODO: Distributed Tracing is explicitly removed?</p>
+</blockquote>
+
+<h3 id="telemetry">Telemetry</h3>
+
+<blockquote>
+  <p>TODO: Add details about how telemetry is not supported in the Embedded C SDK.</p>
+</blockquote>
+
+<h2 id="testing">Testing</h2>
+
+<p>We believe testing is a part of the development process, so we expect unit and integration tests to be a part of the source code.  All components must be covered by automated testing, and developers should strive to test corner cases and main flows for every use case.</p>
+
+<p>All code should contain, at least, requirements, unit tests, end-to-end tests, and samples. The requirements description should be placed in the unit test file, on top of the test function that verifies the requirement. The unit test name should be placed in the code as a comment, together with the code that implements that functionality. For example:</p>
+
+<p><em>*API source code file:*</em></p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">foo_tcp_manager_destroy</span><span class="p">(</span><span class="n">TCP_HANDLE</span> <span class="n">handle</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">handle</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="cm">/*[foo_tcp_manager_destroy_does_nothing_on_null_handle]*/</span>
+        <span class="n">LogError</span><span class="p">(</span><span class="s">"handle cannot be NULL"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="n">TCP_INSTANCE</span><span class="o">*</span> <span class="n">instance</span> <span class="o">=</span> <span class="p">(</span><span class="n">TCP_INSTANCE</span><span class="o">*</span><span class="p">)</span><span class="n">handle</span><span class="p">;</span>
+
+        <span class="cm">/*[foo_tcp_manager_destroy_succeed_on_free_all_resources]*/</span>
+        <span class="n">netif_remove</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">instance</span><span class="o">-&gt;</span><span class="n">lpc_netif</span><span class="p">));</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">instance</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><em>*Unit test file:*</em></p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* If the provided TCP_HANDLE is NULL, the foo_tcp_manager_destroy shall do nothing. */</span>
+<span class="n">TEST_FUNCTION</span><span class="p">(</span><span class="n">foo_tcp_manager_destroy_does_nothing_on_null_handle</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">///arrange</span>
+
+    <span class="c1">///act</span>
+    <span class="n">foo_tcp_manager_destroy</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="c1">///assert</span>
+
+    <span class="c1">///cleanup</span>
+<span class="p">}</span>
+
+<span class="cm">/* The foo_tcp_manager_destroy shall free all resources allocated by the tcpip. */</span>
+<span class="n">TEST_FUNCTION</span><span class="p">(</span><span class="n">foo_tcp_manager_destroy_succeed_on_free_all_resources</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">///arrange</span>
+    <span class="n">TCP_HANDLE</span> <span class="n">handle</span> <span class="o">=</span> <span class="n">foo_tcp_manager_create</span><span class="p">();</span>
+    <span class="n">umock_c_reset_all_calls</span><span class="p">();</span>
+    <span class="n">STRICT_EXPECTED_CALL</span><span class="p">(</span><span class="n">netif_remove</span><span class="p">(</span><span class="n">IGNORED_PTR_ARG</span><span class="p">));</span>
+    <span class="n">STRICT_EXPECTED_CALL</span><span class="p">(</span><span class="n">free</span><span class="p">(</span><span class="n">handle</span><span class="p">));</span>
+
+    <span class="c1">///act</span>
+    <span class="n">foo_tcp_manager_destroy</span><span class="p">(</span><span class="n">handle</span><span class="p">);</span>
+
+    <span class="c1">///assert</span>
+    <span class="n">ASSERT_ARE_EQUAL</span><span class="p">(</span><span class="n">char_ptr</span><span class="p">,</span> <span class="n">umock_c_get_expected_calls</span><span class="p">(),</span> <span class="n">umock_c_get_actual_calls</span><span class="p">());</span>
+
+    <span class="c1">///cleanup</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>If a single unit test tests more than one requirement, it should be sequentially enumerated in the unit test file, and the same number should be added to the test name in the code comment. For example:</p>
+
+<p><em>*API source code file:*</em></p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c">    <span class="cm">/*[foo_tcp_manager_create_createAndReturnInstanceSucceed_1]*/</span>
+    <span class="n">TCP_INSTANCE</span><span class="o">*</span> <span class="n">instance</span> <span class="o">=</span> <span class="p">(</span><span class="n">TCP_INSTANCE</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">TCP_INSTANCE</span><span class="p">));</span></code></pre></figure>
+
+<p><em>*Unit test file:*</em></p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/*[1]The foo_tcp_manager_create shall create a new instance of the TCP_INSTANCE 
+        and return it as TCP_HANDLE.*/</span>
+<span class="cm">/*[2]The foo_tcp_manager_create shall initialize the tcpip thread.*/</span>
+<span class="cm">/*[3]The foo_tcp_manager_create shall initialize the netif with default 
+        gateway, ip address, and net mask by calling netif_add.*/</span>
+<span class="cm">/*[4]The foo_tcp_manager_create shall set the netif defaults by calling 
+        netif_set_default and netif_set_up.*/</span>
+<span class="cm">/*[5]If dhcp is enabled, the foo_tcp_manager_create shall start it by calling dhcp_start.*/</span>
+<span class="n">TEST_FUNCTION</span><span class="p">(</span><span class="n">foo_tcp_manager_create_createAndReturnInstanceSucceed</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="p">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#clang-testing-valgrind" name="clang-testing-valgrind" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  have any memory leaks. Run samples and unit tests with <a href="http://www.valgrind.org/downloads/current.html">valgrind</a>. Unit tests and e2e tests are valgrind verified at the gate.</p>
+
+<p><a href="#clang-testing-unittests" name="clang-testing-unittests" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  unit test your API with <a href="https://cpputest.github.io/">ccputest</a>, a unit testing and mocking framework for C and C++.</p>
+
+<p><a href="#clang-testing-cmake-unit-tests" name="clang-testing-cmake-unit-tests" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  automatically run unit tests when building your client library; i.e. make unit tests part of your continuous integration (CI)</p>
+
+<p><a href="#clang-testing-code-coverage" name="clang-testing-code-coverage" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  maintain a minimum 80% code coverage with unit tests.</p>
+
+<h2 id="tooling">Tooling</h2>
+
+<p>We use a common build and test pipeline to provide for automatic distribution of client libraries.  To support this, we need common tooling.</p>
+
+<p><a href="#clang-tooling-cmake" name="clang-tooling-cmake" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://CMake.org/">CMake</a> v3.7 for your project build system.</p>
+
+<p>Version 3.7 is the minimum version installed on the Azure Pipelines Microsoft hosted agents 
+(https://docs.microsoft.com/azure/devops/pipelines/agents/hosted)</p>
+
+<p><a href="#clang-tooling-cmake-targets" name="clang-tooling-cmake-targets" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include the following standard targets:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">build</code> to build the library</li>
+  <li><code class="language-plaintext highlighter-rouge">test</code> to run the unit test suite</li>
+  <li><code class="language-plaintext highlighter-rouge">docs</code> to generate reference documentation</li>
+  <li><code class="language-plaintext highlighter-rouge">all</code> to run all three targets</li>
+</ul>
+
+<p>Include other targets as they appear useful during the development process.</p>
+
+<p><a href="#clang-tooling-minimize-variants" name="clang-tooling-minimize-variants" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  Minimize build variants.
+In particular do not add build options that change the client library ABI or API.</p>
+
+<blockquote>
+  <p>TODO: Should we advise using valgrind, cppcheck, or other analysis tools (static or dynamic)?</p>
+</blockquote>
+
+<p><a href="#clang-tooling-cmake-settings1" name="clang-tooling-cmake-settings1" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use hidden visibility when building dynamic libraries. For CMake:</p>
+
+<figure class="highlight"><pre><code class="language-cmake" data-lang="cmake"><span class="nb">set</span><span class="p">(</span>CMAKE_C_VISIBILITY_PRESET hidden<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>CMAKE_VISIBILITY_INLINES_HIDDEN ON<span class="p">)</span></code></pre></figure>
+
+<p>This allows you to use an export macro to export symbols. For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#ifndef APPCONF_EXPORT_H
+#define APPCONF_EXPORT_H
+</span>
+<span class="cp">#ifdef APPCONF_STATIC_DEFINE
+#  define APPCONF_EXPORT
+#  define APPCONF_NO_EXPORT
+#else
+#  ifndef APPCONF_EXPORT
+#    ifdef appconf_EXPORTS
+</span>        <span class="cm">/* We are building this library */</span>
+<span class="cp">#      define APPCONF_EXPORT __declspec(dllexport)
+#    else
+</span>        <span class="cm">/* We are using this library */</span>
+<span class="cp">#      define APPCONF_EXPORT __declspec(dllimport)
+#    endif
+#  endif
+</span>
+<span class="cp">#  ifndef APPCONF_NO_EXPORT
+#    define APPCONF_NO_EXPORT 
+#  endif
+#endif
+</span>
+<span class="cp">#ifndef APPCONF_DEPRECATED
+#  define APPCONF_DEPRECATED __declspec(deprecated)
+#endif
+</span>
+<span class="cp">#ifndef APPCONF_DEPRECATED_EXPORT
+#  define APPCONF_DEPRECATED_EXPORT APPCONF_EXPORT APPCONF_DEPRECATED
+#endif
+</span>
+<span class="cp">#ifndef APPCONF_DEPRECATED_NO_EXPORT
+#  define APPCONF_DEPRECATED_NO_EXPORT APPCONF_NO_EXPORT APPCONF_DEPRECATED
+#endif
+</span>
+<span class="c">#if 0 /* DEFINE_NO_DEPRECATED */
+#  ifndef APPCONF_NO_DEPRECATED
+#    define APPCONF_NO_DEPRECATED
+#  endif
+</span><span class="cp">#endif
+</span>
+<span class="cp">#endif </span><span class="cm">/* APPCONF_EXPORT_H */</span></code></pre></figure>
+
+<p>CMake will automatically generate an appropriate export header:</p>
+
+<figure class="highlight"><pre><code class="language-cmake" data-lang="cmake"><span class="nb">include</span><span class="p">(</span>GenerateExportHeader<span class="p">)</span>
+<span class="nf">generate_export_header</span><span class="p">(</span>appconf
+    EXPORT_FILE_NAME az/appconf_export.h<span class="p">)</span></code></pre></figure>
+
+<p><a href="#clang-tooling-clang-format" name="clang-tooling-clang-format" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="http://clang.llvm.org/docs/ClangFormat.html">clang-format</a> for formatting, with the following command-line options:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">clang-format <span class="nt">-style</span><span class="o">=</span>file <span class="nt">-i</span> &lt;file&gt; ...</code></pre></figure>
+
+<p>Using <code class="language-plaintext highlighter-rouge">-i</code> does an in-place edit of the files for style.  There is <a href="https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain">a Visual Studio extension</a> that binds Ctrl-R Ctrl-F to this operation. Visual Studio 2019 includes this functionality by default.</p>
+
+<blockquote>
+  <p>TODO: Decide on exact formatting standards to use and include here.</p>
+</blockquote>
+
+<p><a href="#clang-tooling-cmake-docs" name="clang-tooling-cmake-docs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  generate API documentation with <code class="language-plaintext highlighter-rouge">doxygen</code>. 
+For example in CMake:</p>
+
+<figure class="highlight"><pre><code class="language-cmake" data-lang="cmake"><span class="nb">find_package</span><span class="p">(</span>Doxygen REQUIRED doxygen<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_GENERATE_HTML YES<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_GENERATE_XML YES<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_EXTRACT_PACKAGE YES<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_SIMPLE_STRUCTS YES<span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span>DOXYGEN_TYPEDEF_HIDES_STRUCT NO<span class="p">)</span>
+
+<span class="nf">doxygen_add_docs</span><span class="p">(</span>doxygen
+	<span class="si">${</span><span class="nv">PROJECT_SOURCE_DIR</span><span class="si">}</span>/inc
+	<span class="si">${</span><span class="nv">PROJECT_SOURCE_DIR</span><span class="si">}</span>/src
+	<span class="si">${</span><span class="nv">PROJECT_SOURCE_DIR</span><span class="si">}</span>/doc
+	COMMENT <span class="s2">"generate docs"</span><span class="p">)</span></code></pre></figure>
+
+<p>Notice that:</p>
+<ul>
+  <li>We use <code class="language-plaintext highlighter-rouge">find_package()</code> to find doxygen</li>
+  <li>We use the <code class="language-plaintext highlighter-rouge">DOXYGEN_&lt;PREF&gt;</code> CMake variables instead of writing your own <code class="language-plaintext highlighter-rouge">doxyfile</code>.</li>
+  <li>We set <code class="language-plaintext highlighter-rouge">OPTIMIZE_OUTPUT_FOR_C</code> in order to get more C appropriate output.</li>
+  <li>We use <code class="language-plaintext highlighter-rouge">doxygen_add_docs</code> to add the target, this will generate a <code class="language-plaintext highlighter-rouge">doxyfile</code> for you.</li>
+</ul>
+
+<p><a href="#clang-tooling-cmake-samples" name="clang-tooling-cmake-samples" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a CMake option of the form <code class="language-plaintext highlighter-rouge">&lt;SDK_NAME&gt;_BUILD_SAMPLES</code> that includes all samples in the build.  For example:</p>
+
+<figure class="highlight"><pre><code class="language-cmake" data-lang="cmake"><span class="nb">if</span><span class="p">(</span>AZURE_APPCONF_BUILD_SAMPLES<span class="p">)</span>
+    <span class="nb">add_subdirectory</span><span class="p">(</span>samples<span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span></code></pre></figure>
+
+<p><a href="#clang-tooling-cmake-no-samples-by-default" name="clang-tooling-cmake-no-samples-by-default" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  install samples by default.</p>
+
+<h2 id="formatting">Formatting</h2>
+
+<p><a href="#clang-format-clang" name="clang-format-clang" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="http://clang.llvm.org/docs/ClangFormat.html">clang-format</a> for formatting your code. Use the common <code class="language-plaintext highlighter-rouge">clang-format</code> options from Engineering Systems.</p>
+
+<p>In general, clang-format will format your code correctly and ensure consistency. However, these are few additional  rules to keep in mind.</p>
+
+<p><a href="#clang-format-clang-loops" name="clang-format-clang-loops" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place all conditional or loop statements on one line, or add braces to identify the conditional/looping block.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="n">meow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">purr</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// OK</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">meow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">purr</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// OK</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">meow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="n">purr</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span> <span class="c1">// OK (although will probably be changed by clang-format)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">meow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">purr</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// NOT OK</span></code></pre></figure>
+
+<p><a href="#clang-format-clang-closing-braces" name="clang-format-clang-closing-braces" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add comments to closing braces.  Adding a comment to closing braces can help when you are reading code because you don’t have to find the begin brace to know what is going on.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">valid</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">...</span>
+    <span class="p">}</span> <span class="cm">/* if valid */</span>
+    <span class="k">else</span> <span class="p">{</span>
+
+    <span class="p">}</span> <span class="cm">/* not valid */</span>
+<span class="p">}</span> <span class="cm">/* end forever */</span></code></pre></figure>
+
+<p><a href="#clang-format-clang-closing-endif" name="clang-format-clang-closing-endif" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  add comments to closing preprocessor directives to make them easier to understand.  For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#if _BEGIN_CODE_
+</span>
+<span class="cp">#ifndef _INTERNAL_CODE_
+</span>
+<span class="cp">#endif </span><span class="cm">/* _INTERNAL_CODE_ */</span><span class="cp">
+</span>
+<span class="cp">#endif </span><span class="cm">/* _BEGIN_CODE_ */</span></code></pre></figure>
+
+<p><a href="#clang-format-clang-space-return" name="clang-format-clang-space-return" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use parens in return statements when it isn’t necessary.</p>
+
+<p><a href="#clang-format-clang-no-yoda" name="clang-format-clang-no-yoda" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  place constants on the right of comparisons. For example <code class="language-plaintext highlighter-rouge">if (a == 0)</code> and not <code class="language-plaintext highlighter-rouge">if (0 == a)</code></p>
+
+<p><a href="#clang-format-clang-comment-fallthru" name="clang-format-clang-comment-fallthru" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a comment for falling through a non-empty <code class="language-plaintext highlighter-rouge">case</code> statement.  For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">switch</span> <span class="p">(...)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">do_something</span><span class="p">();</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">do_something_else</span><span class="p">();</span>
+        <span class="cm">/* fall through */</span>
+    <span class="k">case</span> <span class="mi">3</span><span class="p">:</span> 
+        <span class="p">{</span>
+            <span class="kt">int</span> <span class="n">v</span><span class="p">;</span>
+
+            <span class="n">do_something_more</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="nl">default:</span>
+        <span class="n">log</span><span class="p">(</span><span class="n">LOG_DEBUG</span><span class="p">,</span> <span class="s">"default case reached"</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#clang-format-clang-no-goto" name="clang-format-clang-no-goto" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use <code class="language-plaintext highlighter-rouge">goto</code> statements.  The main place where <code class="language-plaintext highlighter-rouge">goto</code> statements can be usefully employed is to break out of several levels of <code class="language-plaintext highlighter-rouge">switch</code>, <code class="language-plaintext highlighter-rouge">for</code>, or <code class="language-plaintext highlighter-rouge">while</code> nesting, although the need to do such a thing may indicate that the inner constructs should be broken out into a separate function with a success/failure return code.  When a <code class="language-plaintext highlighter-rouge">goto</code> is necessary, the accompanying label should be alone on a line and to the left of the code that follows.  The <code class="language-plaintext highlighter-rouge">goto</code> should be commented as to its utility and purpose.</p>
+
+<h2 id="complexity-management">Complexity Management</h2>
+
+<p><a href="#clang-init-all-vars" name="clang-init-all-vars" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  Initialize all variables. Only leave them
+uninitialized if there is a real performance reason to do so. Use static and dynamic analysis tools to
+check for uninitialized access. You may leave “result” variables uninitialized so long as they clearly do
+not escape from the innermost lexical scope.</p>
+
+<p><a href="#clang-function-size" name="clang-function-size" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  limit function bodies to one page of code (40 lines, approximately).</p>
+
+<p><a href="#clang-document-null-bodies" name="clang-document-null-bodies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  document null statements.  Always document a null body for a <code class="language-plaintext highlighter-rouge">for</code> or <code class="language-plaintext highlighter-rouge">while</code> statement so that it is clear the null body is intentional.</p>
+
+<p><a href="#clang-use-explicit-compares" name="clang-use-explicit-compares" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use explicit comparisons when testing for failure.  Use <code class="language-plaintext highlighter-rouge">if (FAIL != f())</code> rather than <code class="language-plaintext highlighter-rouge">if (f())</code>, even though FAIL may have the value 0 which C considers to be false.  An explicit test will help you out later when somebody decides that a failure return should be -1 instead of 0.</p>
+
+<p>Explicit comparison should be used even if the comparison value will never change.  e.g. <code class="language-plaintext highlighter-rouge">if (!(bufsize % sizeof(int)))</code> should be written as <code class="language-plaintext highlighter-rouge">if (0 == (bufsize % sizeof(int))</code> to reflect the numeric (not boolean) nature of the test.</p>
+
+<p>A frequent trouble spot is using <code class="language-plaintext highlighter-rouge">strcmp</code> to test for string equality.  You should <strong>never</strong> use a default action.  The preferred approach is to use an inline function:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kr">inline</span> <span class="n">bool</span> <span class="nf">string_equal</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">strcmp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">));</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>~ Should
+<a href="#clang-embedded-assign" name="clang-embedded-assign" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use embedded assignments.  There is a time and a place for embedded assignment statements.  In some constructs, there is no better way to accomplish the results without making the code bulkier and less readable.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">while</span> <span class="p">(</span><span class="n">EOF</span> <span class="o">!=</span> <span class="p">(</span><span class="n">c</span> <span class="o">=</span> <span class="n">getchar</span><span class="p">()))</span> <span class="p">{</span>
+    <span class="cm">/* process the character */</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>However, one should consider the tradeoff between increased speed and decreased maintainability that results when embedded assignments are used in artificial places.</p>
+
+<h2 id="memory-management">Memory management</h2>
+
+<p><a href="#clang-design-mm-allocation" name="clang-design-mm-allocation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  let the caller allocate memory, then pass a pointer to it to the functions; e.g. <code class="language-plaintext highlighter-rouge">int az_iot_create_client(az_iot_client* client);</code>.</p>
+
+<p>The developer could then write code similar to:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="n">az_iot_client</span> <span class="n">client</span><span class="p">;</span> <span class="cm">/* or allocate dynamically with malloc() if needed */</span>
+
+<span class="cm">/* init client, if needed */</span>
+<span class="n">client</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+<span class="n">client</span><span class="p">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">az_iot_create_client</span><span class="p">(</span><span class="o">*</span><span class="n">client</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* handle error */</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#clang-design-mm-allocation2" name="clang-design-mm-allocation2" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  If you must allocate memory within the client library,
+do so using user-overridable functions.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/**
+ * @brief   uLib malloc
+ *
+ *  Defines the malloc function that the ulib shall use as its own way to dynamically allocate
+ *      memory from the HEAP. For simplicity, it can be defined as the malloc(size) from the `stdlib.h`.
+ */</span>
+<span class="cp">#define AZ_IOT_MALLOC(size)    malloc(size)
+</span>
+<span class="cm">/**
+ * @brief   uLib free
+ *
+ *  Defines the free function that the ulib shall use as its own way to release memory dynamic 
+ *      allocated in the HEAP. For simplicity, it can be defined as the free(ptr) from the `stdlib.h`.
+ */</span>
+<span class="cp">#define AZ_IOT_FREE(ptr)       free(ptr)</span></code></pre></figure>
+
+<blockquote>
+  <p>TODO: Should this be in azure core, or specific to a library?</p>
+</blockquote>
+
+<h2 id="secure-functions">Secure functions</h2>
+
+<p><a href="#clang-no-ms-secure-functions" name="clang-no-ms-secure-functions" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use <a href="https://docs.microsoft.com/cpp/c-runtime-library/security-enhanced-versions-of-crt-functions">Microsoft security enhanced versions of CRT functions</a> to implement APIs that need to be portable across many platforms. Such code is not portable and is not C99 compatible. Adding that code to your API will complicate the implementation with little to no gain from the security side. See <a href="http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1967.htm">arguments against</a>.</p>
+
+<blockquote>
+  <p>TODO: Verify with the security team, and what are the alternatives?</p>
+</blockquote>
+
+<h2 id="miscellaneous">Miscellaneous</h2>
+
+<p><a href="#clang-test-implicit-assign" name="clang-test-implicit-assign" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use implicit assignment inside a test.  This is generally an accidental omission of the second <code class="language-plaintext highlighter-rouge">=</code> of the logical compare. The following is confusing and prone to error.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span></code></pre></figure>
+
+<p>Does the programmer really mean assignment here? Sometimes yes, but usually no. Instead use explicit tests and avoid assignment with an implicit test. The recommended form is to do the assignment before doing the test:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="n">a</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span> </code></pre></figure>
+
+<p><a href="#clang-no-register" name="clang-no-register" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the register sparingly to indicate the variables that you think are most critical.  Modern compilers will put variables in registers automatically.  In extreme cases, mark the 2-4 most critical values as <code class="language-plaintext highlighter-rouge">register</code> and mark the rest as <code class="language-plaintext highlighter-rouge">REGISTER</code>. The latter can be <code class="language-plaintext highlighter-rouge">#defined</code> to register on those machines with many registers.</p>
+
+<p><a href="#clang-be-const-correct" name="clang-be-const-correct" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be <code class="language-plaintext highlighter-rouge">const</code> correct.  C provides the <code class="language-plaintext highlighter-rouge">const</code> keyword to allow passing as parameters objects that cannot change to indicate when a method doesn’t modify its object. Using <code class="language-plaintext highlighter-rouge">const</code> in all the right places is called “const correctness.”</p>
+
+<p><a href="#clang-use-hashif" name="clang-use-hashif" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <code class="language-plaintext highlighter-rouge">#if</code> instead of <code class="language-plaintext highlighter-rouge">#ifdef</code>.  For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="c1">// Bad example</span>
+<span class="cp">#ifdef DEBUG
+</span>    <span class="n">temporary_debugger_break</span><span class="p">();</span>
+<span class="cp">#endif</span></code></pre></figure>
+
+<p>Someone else might compile the code with turned-of debug info like:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="n">cc</span> <span class="o">-</span><span class="n">c</span> <span class="n">lurker</span><span class="p">.</span><span class="n">cc</span> <span class="o">-</span><span class="n">DDEBUG</span><span class="o">=</span><span class="mi">0</span></code></pre></figure>
+
+<p>Alway use <code class="language-plaintext highlighter-rouge">#if</code> if you have to use the preprocessor. This works fine, and does the right thing, even if <code class="language-plaintext highlighter-rouge">DEBUG</code> is not defined at all (!)</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="c1">// Good example</span>
+<span class="cp">#if DEBUG
+</span>    <span class="n">temporary_debugger_break</span><span class="p">();</span>
+<span class="cp">#endif</span></code></pre></figure>
+
+<p>If you really need to test whether a symbol is defined or not, test it with the <code class="language-plaintext highlighter-rouge">defined()</code> construct, which allows you to add more things later to the conditional without editing text that’s already in the program:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#if !defined(USER_NAME)
+</span> <span class="cp">#define USER_NAME "john smith"
+#endif</span></code></pre></figure>
+
+<p><a href="#clang-large-comments" name="clang-large-comments" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong> 
+Use <code class="language-plaintext highlighter-rouge">#if</code> to comment out large code blocks.</p>
+
+<p>Sometimes large blocks of code need to be commented out for testing.  The easiest way to do this is with an <code class="language-plaintext highlighter-rouge">#if 0</code> block:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">example</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">great</span> <span class="n">looking</span> <span class="n">code</span>
+
+    <span class="c">#if 0
+      many lines  of code
+    #endif
+</span>
+    <span class="n">more</span> <span class="n">code</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>You can’t use <code class="language-plaintext highlighter-rouge">/**/</code> style comments because comments can’t contain comments and a large block of your code will probably contain connects.</p>
+
+<p>Do not use <code class="language-plaintext highlighter-rouge">#if 0</code> directly.  Instead, use descriptive macro names:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#if NOT_YET_IMPLEMENTED  
+#if OBSOLETE
+#if TEMP_DISABLED</span></code></pre></figure>
+
+<p>Always add a short comment explaining why it is commented out.</p>
+
+<p><a href="#clang-" name="clang-" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  put data definitions in header files.  For example, this should be avoided:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cm">/* aheader.h */</span>
+<span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span></code></pre></figure>
+
+<p>It’s bad magic to have space consuming code silently inserted through the innocent use of header files.  It’s not common practice to define variables in the header file, so it will not occur to developers to look for this when there are problems.  Instead, define the variable once in a source file and then use an <code class="language-plaintext highlighter-rouge">extern</code> statement to reference it in the header file.</p>
+
+<p><a href="#clang-no-magic-numbers" name="clang-no-magic-numbers" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use magic numbers. A magic number is a bare naked number used in source code. It’s magic because no-one will know what it means after a while.  This significantly reduces maintainability. For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="c1">// Don't write this.</span>
+<span class="k">if</span>      <span class="p">(</span><span class="mi">22</span> <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">start_thermo_nuclear_war</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="mi">19</span> <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">refund_lots_money</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="mi">16</span> <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">infinite_loop</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span>                <span class="p">{</span> <span class="n">cry_cause_im_lost</span><span class="p">();</span> <span class="p">}</span></code></pre></figure>
+
+<p>Instead of magic numbers, use a real name that means something. You can use <code class="language-plaintext highlighter-rouge">#define</code>, constants, or enums as names. For example:</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="c1">// These are good ideas.</span>
+<span class="cp">#define   PRESIDENT_WENT_CRAZY  (22)
+</span><span class="k">const</span> <span class="kt">int</span> <span class="n">WE_GOOFED</span><span class="o">=</span> <span class="mi">19</span><span class="p">;</span>
+<span class="k">enum</span>  <span class="p">{</span>
+   <span class="n">THEY_DIDNT_PAY</span><span class="o">=</span> <span class="mi">16</span>
+<span class="p">};</span>
+
+<span class="k">if</span>      <span class="p">(</span><span class="n">PRESIDENT_WENT_CRAZY</span> <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">start_thermo_nuclear_war</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">WE_GOOFED</span>            <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">refund_lots_money</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">THEY_DIDNT_PAY</span>       <span class="o">==</span> <span class="n">foo</span><span class="p">)</span> <span class="p">{</span> <span class="n">infinite_loop</span><span class="p">();</span> <span class="p">}</span>
+<span class="k">else</span>                                  <span class="p">{</span> <span class="n">happy_days_i_know_why_im_here</span><span class="p">();</span> <span class="p">}</span></code></pre></figure>
+
+<p>Prefer <code class="language-plaintext highlighter-rouge">enum</code> values since the debugger can display the label and value and no memory is allocated.  If you use <code class="language-plaintext highlighter-rouge">const</code>, memory is allocated.  If you use <code class="language-plaintext highlighter-rouge">#define</code>, the debugger cannot display the label.</p>
+
+<p><a href="#clang-check-syscall-errors" name="clang-check-syscall-errors" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  check every system call for an error return, unless you know you wish to ignore errors. For example, <code class="language-plaintext highlighter-rouge">printf</code> returns an error code but it is rarely relevant. Cast the return to (void) if you do not care about the error code.</p>
+
+<figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">printf</span><span class="p">(</span><span class="s">"The return type is ignored"</span><span class="p">);</span></code></pre></figure>
+
+<p>~</p>
+
+<p><a href="#clang-include-errorstr" name="clang-include-errorstr" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include the system error text when reporting system error messages.</p>
+
+<p><a href="#clang-check-malloc" name="clang-check-malloc" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  check every call to <code class="language-plaintext highlighter-rouge">malloc</code> or <code class="language-plaintext highlighter-rouge">realloc</code>.</p>
+
+<p>We recommend that you use a library-specific wrapper for memory allocation calls that always do the right thing.</p>
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Sep 20, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>

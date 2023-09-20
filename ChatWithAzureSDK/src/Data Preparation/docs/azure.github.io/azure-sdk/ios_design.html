@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content=" guidelines ios">
+<title>iOS Azure SDK Design Guidelines | Azure SDKs</title>
+<link rel="stylesheet" href="/azure-sdk/css/syntax.css" />
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/azure-sdk/css/modern-business.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="/azure-sdk/css/boxshadowproperties.css" />
+<link rel="stylesheet" href="/azure-sdk/css/theme-azure.css" />
+<link rel="stylesheet" href="/azure-sdk/css/customstyles.css" />
+<link rel="stylesheet" href="/azure-sdk/css/normalize.css">
+<link rel="stylesheet" href="/azure-sdk/css/tipuesearch.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="/azure-sdk/js/jquery.navgoco.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.0/anchor.min.js"></script>
+<script src="/azure-sdk/js/toc.js"></script>
+<script src="/azure-sdk/js/customscripts.js"></script>
+
+<link rel="shortcut icon" href="/azure-sdk/images/azure-sdk-glyph.svg"/>
+<link rel="alternate" type="application/rss+xml" title="Azure SDKs" href="/azure-sdk/feed.xml" />
+
+    <script>
+        $(document).ready(function () {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
+
+            $("#collapseAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
+
+            $("#expandAll").click(function (e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
+
+        });
+
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#tg-sb-link").click(function () {
+                $("#tg-sb-sidebar").toggle();
+                $("#tg-sb-content").toggleClass('col-md-9');
+                $("#tg-sb-content").toggleClass('col-md-12');
+                $("#tg-sb-icon").toggleClass('fa-toggle-on');
+                $("#tg-sb-icon").toggleClass('fa-toggle-off');
+            });
+        });
+    </script>
+    
+    <!-- Due to the page header height, all anchors uses top padding to offset the top possion and appear below the main header.
+        If one requirement icon is just below another, the padding of the icon overlaps the one on top of it and block the clicking surface.
+        The script below finds all requirements icons and adds z-index decrementally to place any previous icon on top of the next ones.
+        The script runs after the page is completelly load (all content is downloaded).
+      -->
+    <script>
+        $(window).bind("load", function () {
+            let requeriments = $('.requirement');
+            requeriments.each(function (index, element) {
+                $(element).css("z-index", requeriments.length - index);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/azure-sdk/releases/latest/index.html"/>
+                <span class="projectTitle"><img style="margin-top: -8px;" class="d-inline-block align-top" src="/azure-sdk/images/azure-sdk-glyph.svg" width="35" height="35" alt=""/> Azure SDKs</span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <!-- toggle sidebar button -->
+                <!-- <li><a id="tg-sb-link" href="#"><i id="tg-sb-icon" class="fa fa-toggle-on"></i> Nav</a></li> -->
+                <!-- entries without drop-downs appear here -->
+
+
+
+
+
+                
+                
+                
+                <li><a href="https://aka.ms/azsdk/blog" rel="noopener">Blog</a></li>
+                
+                
+                
+                <li><a href="/azure-sdk/releases/latest/">Releases</a></li>
+                
+                
+                
+                <!-- entries with drop-downs appear here -->
+                <!-- conditional logic to control which topnav appears for the audience defined in the configuration file.-->
+                
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guidelines<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        <li><a href="/azure-sdk/general_introduction.html" rel="noopener">General Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/dotnet_introduction.html" rel="noopener">.NET Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/java_introduction.html" rel="noopener">Java Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/python_design.html" rel="noopener">Python Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/typescript_introduction.html" rel="noopener">TypeScript Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/android_design.html" rel="noopener">Android Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/ios_design.html" rel="noopener">iOS Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/clang_design.html" rel="noopener">C Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/cpp_introduction.html" rel="noopener">C++ Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/golang_introduction.html" rel="noopener">Go Guidelines</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_adoption.html" rel="noopener">GitHub Repos</a></li>
+                        
+                        <li><a href="/azure-sdk/policies_reviewprocess.html" rel="noopener">Policies</a></li>
+                        
+                        
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">API References<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/net-docs" rel="noopener">.NET</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/java-docs" rel="noopener">Java</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/python-docs" rel="noopener">Python</a></li>
+                        
+                        
+                        
+                        <li><a href="https://aka.ms/js-docs" rel="noopener">TypeScript</a></li>
+                        
+                        
+                        
+                    </ul>
+                </li>
+                
+                
+                
+                <li>
+                    
+                        <a style="font-size: 1.666em !important" class="fa fa-github fa-2x" title="GitHub Link" href="https://github.com/azure/azure-sdk"></a>
+                    
+                </li>
+                <li>
+                    <a style="font-size: 1.666em !important" class="fa fa-twitter fa-2x" title="Twitter Link" href="https://twitter.com/AzureSDK"></a>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <!-- /.container -->
+</nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" style="margin-top: 60px; min-height: calc(100vh - 50px);">
+        <div id="main">
+            <!-- Content Row -->
+            <div class="row">
+                
+                
+                <!-- Sidebar Column -->
+                <div class="col-md-2 col-xs-12" id="tg-sb-sidebar">
+                    
+
+<div id="mysidebar" class="nav">
+
+  <script src="/azure-sdk/js/tipuesearch_content.js"></script>
+  <script src="/azure-sdk/js/tipuesearch_set.js"></script>
+  <script src="/azure-sdk/js/tipuesearch.min.js"></script>
+
+<p>
+<form action="/azure-sdk/search.html" >
+    <div class=" tipue_search_left"><img src="/azure-sdk/images/search.png" alt="Search Icon" class="tipue_search_icon"></div>
+    <input type="text" class="form-control tipue_search_right" name="q" id="tipue_search_input" pattern=".{3,}" title="At least 3 characters" required placeholder="Search website">
+</form>
+</p>
+<div style="clear: both;"></div>
+  <ol>
+    <li class="sidebarTitle"> </li>
+    
+      
+        
+        <li>
+        
+          
+          <a title="General Guidelines" href="#">General Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/general_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="Terminology" href="/azure-sdk/general_terminology.html">Terminology</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/general_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/general_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/general_documentation.html">Documentation</a></li>
+              
+              
+            
+              
+                <li><a title="Azure Core" href="/azure-sdk/general_azurecore.html">Azure Core</a></li>
+              
+              
+            
+              
+                <li><a title="Contribution Guidelines" href="/azure-sdk/policies_opensource.html">Contribution Guidelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title=".NET Guidelines" href="#">.NET Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/dotnet_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/dotnet_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="Microsoft.Azure.Cosmos" href="https://docs.microsoft.com/dotnet/api/microsoft.azure.cosmos" target="_blank" rel="noopener">Microsoft.Azure.Cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Messaging.EventHubs" href="https://azure.github.io/azure-sdk-for-net/eventhubs.html#azuremessagingeventhubs" target="_blank" rel="noopener">Azure.Messaging.EventHubs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Keys" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultkeys" target="_blank" rel="noopener">Azure.Security.KeyVault.Keys</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Security.KeyVault.Secrets" href="https://azure.github.io/azure-sdk-for-net/keyvault.html#azuresecuritykeyvaultsecrets" target="_blank" rel="noopener">Azure.Security.KeyVault.Secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Blobs" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestorageblobs" target="_blank" rel="noopener">Azure.Storage.Blobs</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Files.Shares" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragefilesshares" target="_blank" rel="noopener">Azure.Storage.Files.Shares</a></li>
+                      
+                    
+                      
+                        <li><a title="Azure.Storage.Queues" href="https://azure.github.io/azure-sdk-for-net/storage.html#azurestoragequeues" target="_blank" rel="noopener">Azure.Storage.Queues</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Java Guidelines" href="#">Java Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/java_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/java_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Spring Guidelines" href="/azure-sdk/java_spring.html">Spring Guidelines</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-data-appconfiguration" href="https://azure.github.io/azure-sdk-for-java/appconfiguration.html#azure-data-appconfiguration" target="_blank" rel="noopener">azure-data-appconfiguration</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-java/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-messaging-eventhubs" href="https://azure.github.io/azure-sdk-for-java/eventhubs.html#azure-messaging-eventhubs" target="_blank" rel="noopener">azure-messaging-eventhubs</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-java/keyvault.html#azure-security-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-java/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Python Guidelines" href="#">Python Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/python_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/python_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/python_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-cosmos" href="https://azure.github.io/azure-sdk-for-python/cosmosdb.html#azure-cosmos" target="_blank" rel="noopener">azure-cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-eventhub" href="https://azure.github.io/azure-sdk-for-python/eventhubs.html#azure-eventhub" target="_blank" rel="noopener">azure-eventhub</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-keys" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">azure-keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-keyvault-secrets" href="https://azure.github.io/azure-sdk-for-python/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">azure-keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-file-share" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-queue" href="https://azure.github.io/azure-sdk-for-python/storage.html#azure-storage-queue" target="_blank" rel="noopener">azure-storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="TypeScript Guidelines" href="#">TypeScript Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Introduction" href="/azure-sdk/typescript_introduction.html">Introduction</a></li>
+              
+              
+            
+              
+                <li><a title="API Design" href="/azure-sdk/typescript_design.html">API Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/typescript_implementation.html">Implementation</a></li>
+              
+              
+            
+              
+                <li><a title="Documentation" href="/azure-sdk/typescript_documentation.html">Documentation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="@azure/cosmos" href="https://azure.github.io/azure-cosmos-js/" target="_blank" rel="noopener">@azure/cosmos</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/event-hubs" href="https://azure.github.io/azure-sdk-for-js/eventhubs.html#azure-event-hubs" target="_blank" rel="noopener">@azure/event-hubs</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-keys" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-keys" target="_blank" rel="noopener">@azure/keyvault-keys</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/keyvault-secrets" href="https://azure.github.io/azure-sdk-for-js/keyvault.html#azure-keyvault-secrets" target="_blank" rel="noopener">@azure/keyvault-secrets</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-blob" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-blob" target="_blank" rel="noopener">@azure/storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-file-share" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-file-share" target="_blank" rel="noopener">@azure/storage-file-share</a></li>
+                      
+                    
+                      
+                        <li><a title="@azure/storage-queue" href="https://azure.github.io/azure-sdk-for-js/storage.html#azure-storage-queue" target="_blank" rel="noopener">@azure/storage-queue</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Android Guidelines" href="#">Android Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/android_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/android_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="iOS Guidelines" href="#">iOS Guidelines</a>
+          
+          <ul>
+            
+              
+                <li class="active"><a title="Design" href="/azure-sdk/ios_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/ios_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C Guidelines" href="#">C Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/clang_design.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/clang_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="az_iot" href="https://azuresdkdocs.blob.core.windows.net/$web/c/az_iot/latest/index.html" target="_blank" rel="noopener">az_iot</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="C++ Guidelines" href="#">C++ Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/cpp_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/cpp_implementation.html">Implementation</a></li>
+              
+              
+                <li class="subfolders">
+                  <a title="API Documentation" href="#">API Documentation</a>
+                  <ul>
+                    
+                      
+                        <li><a title="azure-storage-blob" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-blob" target="_blank" rel="noopener">azure-storage-blob</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-datalake" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-datalake" target="_blank" rel="noopener">azure-storage-file-datalake</a></li>
+                      
+                    
+                      
+                        <li><a title="azure-storage-file-share" href="https://azure.github.io/azure-sdk-for-cpp/storage.html#azure-storage-file-shares" target="_blank" rel="noopener">azure-storage-file-share</a></li>
+                      
+                    
+                  </ul>
+                </li>
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Go Guidelines" href="#">Go Guidelines</a>
+          
+          <ul>
+            
+              
+                <li><a title="Design" href="/azure-sdk/golang_introduction.html">Design</a></li>
+              
+              
+            
+              
+                <li><a title="Implementation" href="/azure-sdk/golang_implementation.html">Implementation</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="GitHub Repos" href="#">GitHub Repos</a>
+          
+          <ul>
+            
+              
+                <li><a title="Guidelines Contributions" href="/azure-sdk/policies_adoption.html">Guidelines Contributions</a></li>
+              
+              
+            
+              
+                <li><a title="Repository structure" href="/azure-sdk/policies_repostructure.html">Repository structure</a></li>
+              
+              
+            
+              
+                <li><a title="Repository branching" href="/azure-sdk/policies_repobranching.html">Repository branching</a></li>
+              
+              
+            
+              
+                <li><a title="Pipelines" href="/azure-sdk/policies_pipelines.html">Pipelines</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+        
+        <li>
+        
+          
+          <a title="Policies" href="#">Policies</a>
+          
+          <ul>
+            
+              
+                <li><a title="Review Process" href="/azure-sdk/policies_reviewprocess.html">Review Process</a></li>
+              
+              
+            
+              
+                <li><a title="Releases" href="/azure-sdk/policies_releases.html">Releases</a></li>
+              
+              
+            
+              
+                <li><a title="Release notes" href="/azure-sdk/policies_releasenotes.html">Release notes</a></li>
+              
+              
+            
+              
+                <li><a title="Support" href="/azure-sdk/policies_support.html">Support</a></li>
+              
+              
+            
+          </ul>
+        </li>
+      
+    
+  </ol>
+</div>
+
+<script>$("li.active").parents('li').toggleClass("active");</script>
+
+                </div>
+                
+                
+
+                <!-- Content Column -->
+                <div class="col-md-10 col-xs-12" id="tg-sb-content">
+                    <div class="row">
+    
+    <div class="col-md-2 col-xs-12 content-right pull-right">
+        
+<!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+$( document ).ready(function() {
+  // Handler for .ready() called.
+
+$('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+
+/* this offset helps account for the space taken up by the floating toolbar. */
+$('#toc').on('click', 'a', function() {
+  var target = $(this.getAttribute('href'))
+    , scroll_target = target.offset().top
+
+  $(window).scrollTop(scroll_target - 60);
+  return false
+})
+  
+});
+</script>
+
+<div id="toc"></div>
+
+    </div>
+    
+
+    <div class="col-md-10  col-xs-12 content-center pull-left">
+        <div class="post-header">
+        <h1 class="post-title-main">iOS Azure SDK Design Guidelines</h1>
+        </div>
+        
+        
+        
+        <div class="post-content">
+            
+        
+            
+        
+            <div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>DRAFT:</b> The iOS guidelines are in DRAFT status</div>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>The following document describes iOS specific guidelines for designing Azure SDK client libraries. These guidelines also expand on and simplify language-independent <a href="/azure-sdk/general_introduction.html">General Azure SDK Guidelines</a>. More specific guidelines take precedence over more general guidelines.</p>
+
+<p>The iOS guidelines are for the benefit of client library designers targeting service applications written for the native iOS ecosystem. You do not have to write a client library for iOS if your service is not normally accessed from mobile apps.</p>
+
+<h3 id="design-principles">Design Principles</h3>
+
+<p>The main value of the Azure SDK is productivity. Other qualities, such as completeness, extensibility, and performance are important but secondary.  We ensure our customers can be highly productive when using our libraries by ensuring these libraries are:</p>
+
+<p><strong>Idiomatic</strong></p>
+
+<ul>
+  <li>The SDK should follow the general design guidelines and conventions for iOS libraries written in Swift, as described in the <a href="https://swift.org/documentation/">Swift API design guidelines</a>. It should feel natural to a Swift developer.</li>
+  <li>We embrace the ecosystem with its strengths and its flaws.</li>
+  <li>We use industry-standard tooling like SwiftLint and SwiftFormat to ensure our code follows a consistent style with the rest of the ecosystem and to avoid bikeshedding about stylistic choices.</li>
+</ul>
+
+<p><strong>Consistent</strong></p>
+
+<ul>
+  <li>The Azure SDK feels like a single product of a single team, not simply a collection of libraries for Azure services.</li>
+  <li>Users learn common concepts once; apply the knowledge across all SDK components.</li>
+  <li>All differences from the guidelines must have good reasons.</li>
+</ul>
+
+<p><strong>Approachable</strong></p>
+
+<ul>
+  <li>Small number of steps to get started; power knobs for advanced users.</li>
+  <li>Small number of concepts; small number of types; small number of members.</li>
+  <li>Approachable by our users, not by engineers designing the SDK components.</li>
+  <li>Easy to find great <em>getting started</em> guides and samples.</li>
+  <li>Easy to acquire.</li>
+</ul>
+
+<p><strong>Dependable</strong></p>
+
+<ul>
+  <li>100% backward compatible.</li>
+  <li>Great logging and error messages.</li>
+  <li>Predictable support lifecycle, feature coverage, and quality.</li>
+</ul>
+
+<h3 id="general-guidelines">General Guidelines</h3>
+
+<p><a href="#ios-general-follow-general-guidelines" name="ios-general-follow-general-guidelines" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the <a href="/azure-sdk/general_introduction.html">General Azure SDK Guidelines</a>.</p>
+
+<p><a href="#ios-language-swift" name="ios-language-swift" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  write the client library in Swift 5.</p>
+
+<p><a href="#ios-language-swift-idiomatic" name="ios-language-swift-idiomatic" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure the library is idiomatic in its Swift usage.</p>
+
+<p><a href="#ios-language-objc" name="ios-language-objc" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  write the client library in Objective-C. A library written in Objective-C must prioritize being idiomatic in its Swift usage. It need not be idiomatic in its Objective-C usage.</p>
+
+<p><a href="#ios-language-objc-compatibility" name="ios-language-objc-compatibility" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  make specific accommodations to support Objective-C applications, unless a business case exists.</p>
+
+<h3 id="support-for-non-http-protocols">Support for non-HTTP Protocols</h3>
+
+<p>Currently, this document describes guidelines for client libraries exposing HTTP services. If your service is not HTTP-based, please contact the <a href="https://azure.github.io/azure-sdk/policies_reviewprocess.html">Azure SDK Architecture Board</a> for guidance.</p>
+
+<h2 id="azure-sdk-api-design">Azure SDK API Design</h2>
+
+<p>Azure services are exposed to iOS developers as one or more <em>service client</em> types and a set of <em>supporting types</em>.</p>
+
+<h3 id="service-client">Service Client</h3>
+
+<p>Service clients are the main starting points for developers calling Azure services with the Azure SDK. Each client library should have at least one client, so it’s easy to discover. The guidelines in this section describe patterns for the design of a service client.</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">import</span> <span class="kt">AzureCore</span>
+<span class="kd">import</span> <span class="kt">Foundation</span>
+
+<span class="c1">// A client always inherits from `PipelineClient`. It may also conform to the</span>
+<span class="c1">// `PageableClient` protocol if it provides any methods that return collections</span>
+<span class="c1">// from paginated APIs.</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">ConfigurationClient</span><span class="p">:</span> <span class="kt">PipelineClient</span><span class="p">,</span> <span class="kt">PageableClient</span> <span class="p">{</span>
+
+    <span class="c1">// Properties are defined as immutable, and are set in initializers</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ConfigurationClientOptions</span>
+
+    <span class="c1">// MARK: Initializers</span>
+
+    <span class="c1">// A common private initializer to assign immutable properties and call</span>
+    <span class="c1">// `super.init()`</span>
+    <span class="kd">private</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">endpoint</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span>
+        <span class="nv">authPolicy</span><span class="p">:</span> <span class="kt">Authenticating</span><span class="p">,</span>
+        <span class="n">withOptions</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ConfigurationClientOptions</span>
+    <span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// One or more public convenience initializers make it easy for consumers to</span>
+    <span class="c1">// create client instances</span>
+    <span class="kd">public</span> <span class="kd">convenience</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">endpoint</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span>
+        <span class="nv">credential</span><span class="p">:</span> <span class="kt">TokenCredential</span><span class="p">,</span>
+        <span class="n">withOptions</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ConfigurationClientOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">authPolicy</span> <span class="o">=</span> <span class="kt">BearerTokenCredentialPolicy</span><span class="p">(</span><span class="nv">credential</span><span class="p">:</span> <span class="n">credential</span><span class="p">)</span>
+        <span class="k">try</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span>
+            <span class="nv">endpoint</span><span class="p">:</span> <span class="n">endpoint</span><span class="p">,</span>
+            <span class="nv">authPolicy</span><span class="p">:</span> <span class="n">authPolicy</span><span class="p">,</span>
+            <span class="nv">withOptions</span><span class="p">:</span> <span class="n">options</span> <span class="p">??</span> <span class="kt">ConfigurationClientOptions</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+
+    <span class="c1">// MARK: Public Client Methods</span>
+
+    <span class="o">...</span>
+
+    <span class="c1">// MARK: PageableClient Protocol</span>
+
+    <span class="c1">// Always group methods that are used to conform with a protocol together</span>
+    <span class="o">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-service-client-name" name="ios-service-client-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name service client types with the <em>Client</em> suffix (for example, <code class="language-plaintext highlighter-rouge">ConfigurationClient</code>).</p>
+
+<p><a href="#ios-service-client-immutable" name="ios-service-client-immutable" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that all service client classes are immutable upon instantiation.</p>
+
+<p><a href="#ios-service-client-feature-support" name="ios-service-client-feature-support" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  support only those features provided by the Azure service that would make sense for a mobile app to access. Mobile apps are inherently consumer applications, and only a subset of Azure services and features are intended for use by consumer applications. While completeness is valuable and gaps in functionality can cause frustration, a smaller binary size and an opinionated stance of only providing consumer-facing functionality will make our libraries easier and more desirable for app developers to use.</p>
+
+<p><a href="#ios-service-client-mobile-consistency" name="ios-service-client-mobile-consistency" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide a public API whose shape matches the public API shape provided in the equivalent Android library as closely as possible. Clients should have the same names and provide the same functionality as their public APIs, and while method naming should be idiomatic to each platform, consistency in naming between the two platforms is the next most important consideration.</p>
+
+<h4 id="service-client-creation">Service Client Creation</h4>
+
+<p><a href="#ios-client-initializer-minimal" name="ios-client-initializer-minimal" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to initialize a service client with the minimal information needed to connect and authenticate to the service.</p>
+
+<p><a href="#ios-client-options-parameter" name="ios-client-options-parameter" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept all optional initializer arguments via an <a href="#option-parameters">options struct</a> provided as a single, final parameter labeled <code class="language-plaintext highlighter-rouge">withOptions</code>. Do not accept individual initializer options as separate parameters.</p>
+
+<p><a href="#ios-client-multiple-inits" name="ios-client-multiple-inits" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide unambiguous initializers and parameter labels for all client initialization scenarios. Do not use the <code class="language-plaintext highlighter-rouge">_</code> syntax to avoid requiring parameter labels. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">convenience</span> <span class="nf">init</span><span class="p">(</span>
+    <span class="nv">endpoint</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span>
+    <span class="nv">credential</span><span class="p">:</span> <span class="kt">TokenCredential</span><span class="p">,</span>
+    <span class="n">withOptions</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ConfigurationClientOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">convenience</span> <span class="nf">init</span><span class="p">(</span>
+    <span class="nv">connectionString</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">withOptions</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ConfigurationClientOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-client-no-static-initializers" name="ios-client-no-static-initializers" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  provide static methods to initialize a client.</p>
+
+<h5 id="using-clientoptions">Using ClientOptions</h5>
+
+<p><a href="#ios-client-options" name="ios-client-options" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  accept options used for customization of the client as individual optional parameters in client initializers.</p>
+
+<p><a href="#ios-client-options-single" name="ios-client-options-single" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept a single <code class="language-plaintext highlighter-rouge">Options</code> struct as an optional parameter for all client initializers.</p>
+
+<p><a href="#ios-client-options-object" name="ios-client-options-object" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an immutable struct named with the suffix <code class="language-plaintext highlighter-rouge">Options</code> to allow for customization of the client during initialization. This struct must have an initializer that accepts all possible options for the client initializer as optional parameters, with defaults for each parameter. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ConfigurationClientOptions</span><span class="p">:</span> <span class="kt">ClientOptions</span> <span class="p">{</span>
+    <span class="c1">// MARK: ClientOptions Protocol</span>
+
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">apiVersion</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">logger</span><span class="p">:</span> <span class="kt">ClientLogger</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">telemetryOptions</span><span class="p">:</span> <span class="kt">TelemetryOptions</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">transportOptions</span><span class="p">:</span> <span class="kt">TransportOptions</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">dispatchQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">?</span>
+
+    <span class="c1">// MARK: ConfigurationClient Options</span>
+
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">configurationSettingEncryptionKey</span><span class="p">:</span> <span class="kt">EncryptionKey</span><span class="p">?</span>
+
+    <span class="c1">// MARK: Initializer</span>
+
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">apiVersion</span><span class="p">:</span> <span class="kt">ConfigurationClient</span><span class="o">.</span><span class="kt">ApiVersion</span> <span class="o">=</span> <span class="o">.</span><span class="n">latest</span><span class="p">,</span>
+        <span class="nv">logger</span><span class="p">:</span> <span class="kt">ClientLogger</span> <span class="o">=</span> <span class="kt">ClientLoggers</span><span class="o">.</span><span class="nf">default</span><span class="p">(</span><span class="nv">tag</span><span class="p">:</span> <span class="s">"ConfigurationClient"</span><span class="p">),</span>
+        <span class="nv">telemetryOptions</span><span class="p">:</span> <span class="kt">TelemetryOptions</span> <span class="o">=</span> <span class="kt">TelemetryOptions</span><span class="p">(),</span>
+        <span class="nv">transportOptions</span><span class="p">:</span> <span class="kt">TransportOptions</span> <span class="o">=</span> <span class="kt">TransportOptions</span><span class="p">(),</span>
+        <span class="nv">dispatchQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">configurationSettingEncryptionKey</span><span class="p">:</span> <span class="kt">EncryptionKey</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">apiVersion</span> <span class="o">=</span> <span class="n">apiVersion</span><span class="o">.</span><span class="n">rawValue</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">telemetryOptions</span> <span class="o">=</span> <span class="n">telemetryOptions</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">transportOptions</span> <span class="o">=</span> <span class="n">transportOptions</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">dispatchQueue</span> <span class="o">=</span> <span class="n">dispatchQueue</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">configurationSettingEncryptionKey</span> <span class="o">=</span> <span class="n">configurationSettingEncryptionKey</span>
+    <span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-client-options-conformance" name="ios-client-options-conformance" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  conform to the <code class="language-plaintext highlighter-rouge">ClientOptions</code> protocol for structures that define options passed when initializing a service client.</p>
+
+<p><a href="#ios-client-options-types" name="ios-client-options-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use rich types where possible for options. For example, use the <code class="language-plaintext highlighter-rouge">Date</code> type for dates and the <code class="language-plaintext highlighter-rouge">URL</code> type for URIs. When not possible, name the option with a suffix to express the expected type. If the expected type is a unit, the suffix should follow the format <code class="language-plaintext highlighter-rouge">In&lt;Unit&gt;</code> (e.g. <code class="language-plaintext highlighter-rouge">lengthInMeters</code>).</p>
+
+<p><a href="#ios-client-options-location" name="ios-client-options-location" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  store options structures (and supporting enumerations / structures referenced by such models) within the <code class="language-plaintext highlighter-rouge">Source/Options</code> directory inside the library’s root directory.</p>
+
+<h5 id="service-versions">Service Versions</h5>
+
+<p><a href="#ios-versioning-latest-service-api" name="ios-versioning-latest-service-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  call the highest supported service API version by default, and ensure this is clearly documented.</p>
+
+<p><a href="#ios-versioning-no-previews-in-stable" name="ios-versioning-no-previews-in-stable" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include preview API versions in a stable SDK release’s API version enum.</p>
+
+<p><a href="#ios-versioning-no-previews-in-stable" name="ios-versioning-no-previews-in-stable" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose preview API versions only in beta SDKs.</p>
+
+<p><a href="#ios-versioning-select-service-api" name="ios-versioning-select-service-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an enum of supported service API versions that can be supplied via the <a href="#option-parameters">options struct</a> when initializing the service client, as shown below:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">ConfigurationClient</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ApiVersion</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="c1">/// API version "2018-01-02"</span>
+        <span class="k">case</span> <span class="n">v20180102</span> <span class="o">=</span> <span class="s">"2018-01-02"</span>
+        <span class="c1">/// API version "2019-05-06"</span>
+        <span class="k">case</span> <span class="n">v20190506</span> <span class="o">=</span> <span class="s">"2019-05-06"</span>
+
+        <span class="c1">/// The most recent API version of the service</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">latest</span><span class="p">:</span> <span class="kt">ApiVersion</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="o">.</span><span class="n">v20190506</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ConfigurationClientOptions</span><span class="p">:</span> <span class="kt">ClientOptions</span> <span class="p">{</span>
+    <span class="c1">/// The API version of the service to invoke</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">apiVersion</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="o">...</span>
+
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">apiVersion</span><span class="p">:</span> <span class="kt">ConfigurationClient</span><span class="o">.</span><span class="kt">ApiVersion</span> <span class="o">=</span> <span class="o">.</span><span class="n">latest</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-versioning-latest-service-property" name="ios-versioning-latest-service-property" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a <code class="language-plaintext highlighter-rouge">latest</code> property from the client’s API version enum which returns the latest preview API version for beta SDKs and the latest GA API version for stable SDKs.</p>
+
+<h4 id="service-methods">Service Methods</h4>
+
+<p>Service methods are the methods on the client that invoke operations on the service.</p>
+
+<p><a href="#ios-async-service-methods" name="ios-async-service-methods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide only async service methods, as async is the most common paradigm on iOS.</p>
+
+<p><a href="#ios-async-no-blocking" name="ios-async-no-blocking" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include blocking calls inside service methods or any code called by a service method.</p>
+
+<p><a href="#ios-async-framework" name="ios-async-framework" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use a third-party library to provide an async API. Use only one of the approved methods described below.</p>
+
+<p><a href="#ios-async-use-azure-core" name="ios-async-use-azure-core" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  write custom APIs for streaming or async operations. Make use of the existing functionality offered in the Azure Core library. Discuss proposed changes to the Azure Core library with the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.</p>
+
+<h5 id="closures">Closures</h5>
+
+<p><a href="#ios-network-closure-final" name="ios-network-closure-final" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept a closure as the final parameter for service methods, allowing developers to take advantage of Swift’s trailing closure syntax. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Library code</span>
+
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">ConfigurationClient</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">get</span><span class="p">(</span>
+        <span class="nv">configurationSetting</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt">HTTPResultHandler</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Consumer code</span>
+
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="kt">ConfigurationClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="nv">configurationSetting</span><span class="p">:</span> <span class="s">"FooSetting"</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">httpResponse</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">result</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="c1">// operate on the value</span>
+    <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+        <span class="c1">// handle error</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-network-closure-single" name="ios-network-closure-single" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept only a single closure for any given service method.</p>
+
+<p>Providing a method that accepts multiple closure leads to unnecessarily cluttered code, and only the final callback parameter can make use of the trailing closure syntax.</p>
+
+<p><a href="#ios-network-closure-suffix" name="ios-network-closure-suffix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the suffix <code class="language-plaintext highlighter-rouge">Handler</code> for all closure parameter names, e.g. <code class="language-plaintext highlighter-rouge">completionHandler</code>, <code class="language-plaintext highlighter-rouge">progressHandler</code>.</p>
+
+<p><a href="#ios-network-closure-type" name="ios-network-closure-type" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use <code class="language-plaintext highlighter-rouge">HTTPResultHandler</code> as the type of the closure to expose both the result (or error) and the raw response data.</p>
+
+<h4 id="event-handling">Event Handling</h4>
+
+<p>iOS applications commonly need to react to events from the UI or service. The following guidelines apply to SDKs that expose events to the customer.</p>
+
+<h5 id="closures-1">Closures</h5>
+
+<p><a href="#ios-event-closures-required" name="ios-event-closures-required" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose event handlers as closures.</p>
+
+<p><a href="#ios-event-properties" name="ios-event-properties" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  group related events together in a <code class="language-plaintext highlighter-rouge">struct</code> whose definition is enclosed within the client. This struct should be named <code class="language-plaintext highlighter-rouge">Events</code> (if there is only one collection) or end with the <code class="language-plaintext highlighter-rouge">Events</code> suffix and should contain no other properties or methods besides the event handlers themselves. Event collections must be exposed directly on the client as a property that is either named <code class="language-plaintext highlighter-rouge">events</code> (if there is only one collection) or ends with the <code class="language-plaintext highlighter-rouge">Events</code> suffix. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">class</span> <span class="kt">CatClient</span><span class="p">:</span> <span class="kt">PipelineClient</span> <span class="p">{</span>
+
+    <span class="kd">public</span> <span class="kd">struct</span> <span class="kt">UnicastEvents</span> <span class="p">{</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatMeow</span><span class="p">:</span> <span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatSleep</span><span class="p">:</span> <span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)?</span> <span class="o">=</span> <span class="kc">nil</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MulticastEvents</span> <span class="p">{</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatMeow</span><span class="p">:</span> <span class="kt">MulticastEventsCollection</span><span class="o">&lt;</span><span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span><span class="o">&gt;</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatSleep</span><span class="p">:</span> <span class="kt">MulticastEventsCollection</span><span class="o">&lt;</span><span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span><span class="o">&gt;</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">unicastEvents</span> <span class="o">=</span> <span class="kt">Events</span><span class="p">()</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">multicastEvents</span> <span class="o">=</span> <span class="kt">MulticastEvents</span><span class="p">()</span>
+    <span class="o">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-event-mutable" name="ios-event-mutable" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  mutate individual event handlers after client instantiation, unlike most client configuration which is required to be immutable.</p>
+
+<p><a href="#ios-closure-typealias" name="ios-closure-typealias" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  provide a public typealias event signatures because they do not aid in Intellisense and pollute the public API surface area. If you feel you need to expose a public typealias, contact the SDK team.</p>
+
+<p><a href="#ios-closure-naming-convention" name="ios-closure-naming-convention" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name event properties using the Swift UI naming convention. For example, a delegate method called “cat(didMeow:)” would translate to an closure-based event named “onCatMeow”.</p>
+
+<p><a href="#ios-event-multicast" name="ios-event-multicast" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  expose multicast event handlers using the <code class="language-plaintext highlighter-rouge">MulticastEventCollection</code> generic type from <code class="language-plaintext highlighter-rouge">Azure.Core</code>. This type contains a <code class="language-plaintext highlighter-rouge">register</code> method which accepts the event as a trailing closure and returns a UUID string identifier which can be used to unregister the handler. SDKs which cannot use <code class="language-plaintext highlighter-rouge">Azure.Core</code> (for example, ObjC-based SDKs) should work with the Azure SDK team to ensure their multicast solution projects to the same Swift interface.</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// SDK code</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="kt">CatClient</span><span class="p">:</span> <span class="kt">PipelineClient</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Events</span> <span class="p">{</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatMeow</span><span class="p">:</span> <span class="kt">MulticastEventsCollection</span><span class="o">&lt;</span><span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span><span class="o">&gt;</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">onCatSleep</span><span class="p">:</span> <span class="kt">MulticastEventsCollection</span><span class="o">&lt;</span><span class="p">((</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span><span class="o">&gt;</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">events</span> <span class="o">=</span> <span class="kt">MulticastEvents</span><span class="p">()</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+<span class="c1">// Customer Code</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="kt">CatClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">event1</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">onCatMeow</span><span class="o">.</span><span class="n">register</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="k">let</span> <span class="nv">event</span> <span class="mi">2</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">onCatMeow</span><span class="o">.</span><span class="n">register</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="n">client</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="nf">unregister</span><span class="p">(</span><span class="n">event1</span><span class="p">)</span></code></pre></figure>
+
+<h5 id="delegates">Delegates</h5>
+
+<p><a href="#ios-network-delegate" name="ios-network-delegate" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  expose events as one or more delegate protocols that the developer can conform to. This pattern may be more familiar to Objective-C developers.</p>
+
+<p><a href="#ios-delegate-property" name="ios-delegate-property" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include an optional weak <code class="language-plaintext highlighter-rouge">delegate</code> property on the client if delegates are implemented. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Library code</span>
+
+<span class="c1">// Delegate protocols define multiple methods which will be called asynchronously</span>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ConfigurationSettingDelegate</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">configurationSetting</span><span class="p">(</span>
+        <span class="n">_</span> <span class="nv">configurationSetting</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="n">didChangeFrom</span> <span class="nv">oldValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="n">to</span> <span class="nv">newValue</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="p">)</span>
+
+    <span class="kd">func</span> <span class="nf">configurationSettingDidClear</span><span class="p">(</span><span class="n">_</span> <span class="nv">configurationSetting</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Provide a default do-nothing implementation of all delegate methods</span>
+<span class="kd">public</span> <span class="kd">extension</span> <span class="kt">ConfigurationSettingDelegate</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">configurationSetting</span><span class="p">(</span>
+        <span class="n">_</span> <span class="nv">configurationSetting</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="n">didChangeFrom</span> <span class="nv">oldValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="n">to</span> <span class="nv">newValue</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">configurationSettingDidClear</span><span class="p">(</span><span class="n">_</span> <span class="nv">configurationSetting</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">ConfigurationClient</span> <span class="p">{</span>
+    <span class="c1">// Provide a property on the client to which a delegate can be attached</span>
+    <span class="kd">public</span> <span class="k">weak</span> <span class="k">var</span> <span class="nv">delegate</span><span class="p">:</span> <span class="kt">ConfigurationSettingDelegate</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">getChanges</span><span class="p">(</span><span class="n">forConfigurationSettingsWithPrefix</span> <span class="nv">prefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Consumer Code</span>
+
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">registerForChanges</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="kt">ConfigurationClient</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="c1">// Attach delegate to the client</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">configurationSettingDelegate</span> <span class="o">=</span> <span class="k">self</span>
+    <span class="n">client</span><span class="o">.</span><span class="nf">getChanges</span><span class="p">(</span><span class="nv">forConfigurationSettingsWithPrefix</span><span class="p">:</span> <span class="s">"Foo"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// MARK: ConfigurationSettingDelegate Protocol</span>
+
+<span class="c1">// The consumer need not implement all delegate methods since the library</span>
+<span class="c1">// declares default do-nothing implementations for each</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">configurationSetting</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">setting</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">didChangeFrom</span> <span class="nv">oldValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">to</span> <span class="nv">newValue</span><span class="p">:</span> <span class="kt">String</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-network-delegate-name" name="ios-network-delegate-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the <a href="https://swift.org/documentation/">Swift naming conventions</a> when providing a delegate protocol.</p>
+
+<p>Protocols that describe what something is should read as nouns (e.g. <code class="language-plaintext highlighter-rouge">Collection</code>), protocols that describe a capability should be named using the suffixes <code class="language-plaintext highlighter-rouge">able</code>, <code class="language-plaintext highlighter-rouge">ible</code>, or <code class="language-plaintext highlighter-rouge">ing</code> (e.g. <code class="language-plaintext highlighter-rouge">Equatable</code>, <code class="language-plaintext highlighter-rouge">ProgressReporting</code>). In most cases, a delegate protocol should be named after the delegating object, with the suffix <code class="language-plaintext highlighter-rouge">Delegate</code> (e.g. <code class="language-plaintext highlighter-rouge">ConfigurationSettingDelegate</code>).</p>
+
+<p><a href="#ios-network-delegate-method-names" name="ios-network-delegate-method-names" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use a consistent prefix for each method defined by the delegate so that the developer can easily locate the delegate methods via code completion.</p>
+
+<p>The name of the delegating object is commonly used as as the prefix. For example, a <code class="language-plaintext highlighter-rouge">ConfigurationSettingDelegate</code> protocol used to notify about events coming from <code class="language-plaintext highlighter-rouge">ConfigurationSetting</code> objects might define delegate methods that start with <code class="language-plaintext highlighter-rouge">configurationSetting</code>, e.g. <code class="language-plaintext highlighter-rouge">configurationSetting(_:didChangeFrom:to:)</code>, <code class="language-plaintext highlighter-rouge">configurationSettingDidClear(_:)</code>.</p>
+
+<p><a href="#ios-network-delegate-method-param" name="ios-network-delegate-method-param" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept the delegating object as the first unnamed parameter to delegate methods when using the delegating object’s name as the prefix for the delegate method. This parameter should use the <code class="language-plaintext highlighter-rouge">_</code> syntax for its external label.</p>
+
+<p><a href="#ios-network-delegate-method-impls" name="ios-network-delegate-method-impls" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide empty (do-nothing) default implementations for all delegate methods.</p>
+
+<p><a href="#ios-delegate-closure-parity" name="ios-delegate-closure-parity" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  expose the same level of functionality through delegates as through event closures if delegates are implemented; however, there does not need to be a one-to-one match between delegate methods and event closures. Delegate methods are often verbose and it is acceptable to use fewer closures to represent the same set of delegate methods.</p>
+
+<h5 id="naming">Naming</h5>
+
+<p><a href="#ios-client-verb-prefix" name="ios-client-verb-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name service methods using a standardized set of verbs or verb prefixes within a set of client libraries for a service. Prefer the use of the following terms for CRUD operations:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Verb</th>
+      <th>Parameters</th>
+      <th>Returns</th>
+      <th>Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">upsert</code></td>
+      <td>key, item</td>
+      <td>Updated or created item</td>
+      <td>Create new item or update existing item. Verb is primarily used in database-like services.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">set</code></td>
+      <td>key, item</td>
+      <td>Updated or created item</td>
+      <td>Create new item or update existing item. Verb is primarily used for dictionary-like properties of a service.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">create</code></td>
+      <td>key, item</td>
+      <td>Created item</td>
+      <td>Create new item. Fails if item already exists.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">update</code></td>
+      <td>key, partial item</td>
+      <td>Updated item</td>
+      <td>Fails if item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">replace</code></td>
+      <td>key, item</td>
+      <td>Replace existing item</td>
+      <td>Completely replaces an existing item. Fails if the item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">delete</code></td>
+      <td>key</td>
+      <td>Deleted item or <code class="language-plaintext highlighter-rouge">nil</code></td>
+      <td>Delete an existing item. Will succeed even if item didn’t exist. Deleted item may be returned, if service supports it.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">add</code></td>
+      <td>index, item</td>
+      <td>Added item</td>
+      <td>Add item to a collection. Item will be added last, or into the index position specified.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">get</code></td>
+      <td>key</td>
+      <td>Item or <code class="language-plaintext highlighter-rouge">nil</code></td>
+      <td>Will return <code class="language-plaintext highlighter-rouge">nil</code> if item doesn’t exist.</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">list</code></td>
+      <td> </td>
+      <td>Items</td>
+      <td>Return list of items. Returns empty list if no items exist.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="#ios-service-client-verb" name="ios-service-client-verb" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the verb by itself as the method name when the name of the first parameter makes it obvious what object the action will apply to. For example, prefer <code class="language-plaintext highlighter-rouge">configurationClient.get(configurationSetting: 'FooSetting', completionHandler: ...)</code> rather than <code class="language-plaintext highlighter-rouge">configurationClient.getConfigurationSetting(name: 'FooSetting', completionHandler: ...)</code> or <code class="language-plaintext highlighter-rouge">configurationClient.getConfigurationSetting('FooSetting', completionHandler: ...)</code>.</p>
+
+<p><a href="#ios-service-client-verb-prefix" name="ios-service-client-verb-prefix" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the verb as as prefix for the method name when object(s) the action will apply to or return is unclear. For example, prefer <code class="language-plaintext highlighter-rouge">configurationClient.listConfigurationSettings()</code> rather than <code class="language-plaintext highlighter-rouge">configurationClient.list()</code>.</p>
+
+<p><a href="#ios-service-client-method-parameter-name" name="ios-service-client-method-parameter-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide unambiguous parameter labels for all client methods. Avoid using the <code class="language-plaintext highlighter-rouge">_</code> syntax to avoid requiring parameter labels for client methods.</p>
+
+<p><a href="#ios-service-client-method-parameter-unnamed" name="ios-service-client-method-parameter-unnamed" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the <code class="language-plaintext highlighter-rouge">_</code> syntax to avoid requiring a parameter label for the first parameter of delegate methods and other scenarios where doing so is idiomatic to Swift naming conventions.</p>
+
+<p><a href="#ios-service-client-flexibility" name="ios-service-client-flexibility" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  remain flexible and use names best suited for developer experience. Don’t let the naming rules result in non-idiomatic naming patterns. For example, naming methods <code class="language-plaintext highlighter-rouge">download(blob:)</code> and <code class="language-plaintext highlighter-rouge">upload(blob:)</code> provides more semantic meaning and would be more idiomatic than naming them <code class="language-plaintext highlighter-rouge">get(blob:)</code> and <code class="language-plaintext highlighter-rouge">put(blob:)</code>.</p>
+
+<p><a href="#ios-async-suffix" name="ios-async-suffix" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  use the suffix <code class="language-plaintext highlighter-rouge">Async</code> for service methods or other methods that do operations asynchronously, since async is the default and expected mode of operation within the SDK.</p>
+
+<h5 id="cancellation">Cancellation</h5>
+
+<p><a href="#ios-async-cancellation" name="ios-async-cancellation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support an optional <code class="language-plaintext highlighter-rouge">CancellationToken</code> object in conformance with the <a href="#option-parameters"><code class="language-plaintext highlighter-rouge">RequestOptions</code> protocol</a>. This object allows the developer to call <code class="language-plaintext highlighter-rouge">.cancel()</code> on the token or set a timeout, after which a best-effort attempt is made to cancel the request.</p>
+
+<p><a href="#ios-async-cancellation-implementation" name="ios-async-cancellation-implementation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  cancel any in-flight requests when a developer calls <code class="language-plaintext highlighter-rouge">cancel()</code> on the <code class="language-plaintext highlighter-rouge">CancellationToken</code>. If the body of the client method includes multiple, sequential operations, you must check for cancellation before executing any operations after the first. Since the underlying iOS network APIs do not permit cancellation of in-flight requests, you must also check for cancellation immediately after receiving any response. If cancellation has been requested, indicate that the call has been cancelled and do not return or otherwise further process the response.</p>
+
+<p><a href="#ios-async-cancellation-triggers-error" name="ios-async-cancellation-triggers-error" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return an <code class="language-plaintext highlighter-rouge">AzureError.client</code> error when cancellation is requested stating that the request was canceled, even if the request was successful.</p>
+
+<h4 id="service-method-return-types">Service Method Return Types</h4>
+
+<p>Requests to the service fall into two basic groups: methods that make a single logical request, and methods that make a deterministic sequence of requests.  An example of a <em>single logical request</em> is a request that may be retried inside the operation. An example of a <em>deterministic sequence of requests</em> is a paged operation.</p>
+
+<p>The <em>logical entity</em> is a protocol neutral representation of a response. The logical entity may be a simple Swift type where appropriate, or a <a href="#model-types">model type</a> defined within the client library in which case it may combine data from headers, body, and/or the status line. For example, you may expose an <code class="language-plaintext highlighter-rouge">ETag</code> header as a property on a model type if it’s relevent to the service or to the operation with which the model type is used. In contrast, the <code class="language-plaintext highlighter-rouge">HTTPResponse</code> type defined in the Azure Core library represents the ‘raw response’. It contains HTTP headers, status code, and the response body.</p>
+
+<p><a href="#ios-response-return-logical-entity" name="ios-response-return-logical-entity" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return the logical entity for the normal form of a service method. The logical entity MUST represent the information needed in the 99%+ case.</p>
+
+<p><a href="#ios-response-access-response" name="ios-response-access-response" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  <em>make it possible</em> for a developer to access the complete response, including the status line, headers, and body. The callback type <code class="language-plaintext highlighter-rouge">HTTPResultHandler&lt;T&gt;</code> encodes this requirement and is the recommended type for callbacks passed to async client methods. The <code class="language-plaintext highlighter-rouge">T</code> parameter is the type of the logical entity.</p>
+
+<p><a href="#ios-response-provide-examples" name="ios-response-provide-examples" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide examples on how to access the raw and streamed response for a request, where exposed by the client library. We don’t expect all methods to expose a streamed response.</p>
+
+<p><a href="#ios-response-pagination" name="ios-response-pagination" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return an instance of the <code class="language-plaintext highlighter-rouge">PagedCollection</code> class for all paged operations. For more information on what to return for <code class="language-plaintext highlighter-rouge">list</code> operations, refer to <a href="#pagination">Pagination</a>.</p>
+
+<p>For methods that combine multiple requests into a single call:</p>
+
+<p><a href="#ios-response-return-headers" name="ios-response-return-headers" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  return headers and other per-request metadata unless it’s obvious as to which specific HTTP request the methods return value corresponds to.</p>
+
+<p><a href="#ios-response-failure-cases" name="ios-response-failure-cases" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide enough information in failure cases for an application to take appropriate corrective action.</p>
+
+<p><a href="#ios-response-reserved-words" name="ios-response-reserved-words" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  use reserved words (such as <code class="language-plaintext highlighter-rouge">object</code> and <code class="language-plaintext highlighter-rouge">value</code>) as a property name within the logical entity.  Avoid reserved words in other supported languages.</p>
+
+<h4 id="service-method-parameters">Service Method Parameters</h4>
+
+<h5 id="option-parameters">Option Parameters</h5>
+
+<p><a href="#ios-request-options" name="ios-request-options" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  accept options used for customization of a service client method call as individual optional parameters.</p>
+
+<p><a href="#ios-request-options-single" name="ios-request-options-single" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  accept a single <code class="language-plaintext highlighter-rouge">Options</code> struct as an optional parameter for all service client methods. This parameter should be labeled <code class="language-plaintext highlighter-rouge">withOptions</code>.</p>
+
+<p><a href="#ios-request-options-object" name="ios-request-options-object" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an immutable struct named with the suffix <code class="language-plaintext highlighter-rouge">Options</code> to allow for customization of each service client method call. This struct must have an initializer that accepts all possible options for the method call as optional parameters, with defaults for each parameter. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ListConfigurationSettingsOptions</span><span class="p">:</span> <span class="kt">RequestOptions</span> <span class="p">{</span>
+    <span class="c1">// MARK: RequestOptions Protocol</span>
+
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">clientRequestId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">cancellationToken</span><span class="p">:</span> <span class="kt">CancellationToken</span><span class="p">?</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">dispatchQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">?</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">context</span><span class="p">:</span> <span class="kt">PipelineContext</span><span class="p">?</span>
+
+    <span class="c1">// MARK: ListConfigurationSettings Options</span>
+
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">configurationSettingPrefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">maxResults</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">timeout</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">?</span>
+
+    <span class="c1">// MARK: Initializer</span>
+
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">clientRequestId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">cancellationToken</span><span class="p">:</span> <span class="kt">CancellationToken</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">dispatchQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">configurationSettingPrefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">maxResults</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+        <span class="nv">timeout</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">clientRequestId</span> <span class="o">=</span> <span class="n">clientRequestId</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">cancellationToken</span> <span class="o">=</span> <span class="n">cancellationToken</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">dispatchQueue</span> <span class="o">=</span> <span class="n">dispatchQueue</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">configurationSettingPrefix</span> <span class="o">=</span> <span class="n">configurationSettingPrefix</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">maxResults</span> <span class="o">=</span> <span class="n">maxResults</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-request-options-conformance" name="ios-request-options-conformance" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  conform to the <code class="language-plaintext highlighter-rouge">RequestOptions</code> protocol for structures that define options passed to a service client API method.</p>
+
+<p><a href="#ios-request-options-types" name="ios-request-options-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use rich types where possible for options. For example, use the <code class="language-plaintext highlighter-rouge">Date</code> type for dates and the <code class="language-plaintext highlighter-rouge">URL</code> type for URIs. When not possible, name the option with a suffix to express the expected type. If the expected type is a unit, the suffix should follow the format <code class="language-plaintext highlighter-rouge">In&lt;Unit&gt;</code> (e.g. <code class="language-plaintext highlighter-rouge">lengthInMeters</code>).</p>
+
+<p><a href="#ios-request-options-location" name="ios-request-options-location" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  store options structures (and supporting enumerations / structures referenced by such models) within the <code class="language-plaintext highlighter-rouge">Source/Options</code> directory inside the library’s root directory.</p>
+
+<h5 id="parameter-validation">Parameter Validation</h5>
+
+<p>The service client will have several methods that perform requests on the service.  <em>Service parameters</em> are directly passed across the wire to an Azure service.  <em>Client parameters</em> are not passed directly to the service, but used within the client library to fulfill the request.  Examples of client parameters include values that are used to construct a URI, or a file that needs to be uploaded to storage.</p>
+
+<p><a href="#general-params-client-validation" name="general-params-client-validation" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate client parameters.</p>
+
+<p><a href="#general-params-server-validation" name="general-params-server-validation" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  validate service parameters.  This includes null checks, empty strings, and other common validating conditions. Let the service validate any request parameters.</p>
+
+<p><a href="#general-params-check-devex" name="general-params-check-devex" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate the developer experience when the service parameters are invalid to ensure appropriate error messages are generated by the service. If the developer experience is compromised due to service-side error messages, work with the service team to correct prior to release.</p>
+
+<h4 id="methods-returning-collections-paging">Methods Returning Collections (Paging)</h4>
+
+<p>The Azure SDK for iOS contains the <code class="language-plaintext highlighter-rouge">PagedCollection</code> type, which provides Swift-idiomatic ways to iterate through all results of a paged operation. The developer can asynchronously iterate through the <code class="language-plaintext highlighter-rouge">PagedCollection</code> in a page-by-page or item-by-item fashion by calling the <code class="language-plaintext highlighter-rouge">forEachPage</code> and <code class="language-plaintext highlighter-rouge">forEachItem</code> methods:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Automatic asynchronous iteration of a `PagedCollection` page-by-page</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">listConfigurationSettings</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="k">in</span>
+    <span class="k">if</span> <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">pagedCollection</span><span class="p">)</span> <span class="o">=</span> <span class="n">result</span> <span class="p">{</span>
+        <span class="n">pagedCollection</span><span class="o">.</span><span class="n">forEachPage</span> <span class="p">{</span> <span class="n">settings</span> <span class="k">in</span>
+            <span class="k">for</span> <span class="n">setting</span> <span class="k">in</span> <span class="n">settings</span> <span class="p">{</span>
+                <span class="nf">print</span><span class="p">(</span><span class="n">setting</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="c1">// `return false` to interrupt iteration</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Automatic asynchronous iteration of a `PagedCollection` item-by-item</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">listConfigurationSettings</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="k">in</span>
+    <span class="k">if</span> <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">pagedCollection</span><span class="p">)</span> <span class="o">=</span> <span class="n">result</span> <span class="p">{</span>
+        <span class="n">pagedCollection</span><span class="o">.</span><span class="n">forEachItem</span> <span class="p">{</span> <span class="n">setting</span> <span class="k">in</span>
+            <span class="nf">print</span><span class="p">(</span><span class="n">setting</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+            <span class="c1">// `return false` to interrupt iteration</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>The developer can also choose to directly access the <code class="language-plaintext highlighter-rouge">PagedCollection</code>’s <code class="language-plaintext highlighter-rouge">items</code> and <code class="language-plaintext highlighter-rouge">pageItems</code> properties, manually advancing the collection by calling the asynchronous <code class="language-plaintext highlighter-rouge">nextPage</code> method as needed:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Explicit asynchronous iteration of a `PagedCollection` page-by-page</span>
+<span class="k">override</span> <span class="kd">func</span> <span class="nf">viewDidAppear</span><span class="p">(</span><span class="n">_</span> <span class="nv">animated</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="c1">// Execute the asynchronous method and use the resulting paged collection as the data source</span>
+    <span class="n">client</span><span class="o">.</span><span class="nf">listConfigurationSettings</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="k">in</span>
+        <span class="k">if</span> <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">pagedCollection</span><span class="p">)</span> <span class="o">=</span> <span class="n">result</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">dataSource</span> <span class="o">=</span> <span class="n">pagedCollection</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+<span class="kd">internal</span> <span class="kd">func</span> <span class="nf">tableView</span><span class="p">(</span><span class="n">_</span> <span class="nv">tableView</span><span class="p">:</span> <span class="kt">UITableView</span><span class="p">,</span> <span class="n">cellForRowAt</span> <span class="nv">indexPath</span><span class="p">:</span> <span class="kt">IndexPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UITableViewCell</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="c1">// Get the corresponding item from the pagedCollection</span>
+    <span class="k">let</span> <span class="nv">item</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">dataSource</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">indexPath</span><span class="o">.</span><span class="n">row</span><span class="p">]</span>
+    <span class="o">...</span>
+    <span class="c1">// Load the next page if the user is at the end of the current page</span>
+    <span class="k">if</span> <span class="n">indexPath</span><span class="o">.</span><span class="n">row</span> <span class="o">==</span> <span class="k">self</span><span class="o">.</span><span class="n">dataSource</span><span class="o">.</span><span class="n">count</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="c1">// nextPage automatically stops when exhausted, no need to handle that case separately</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">dataSource</span><span class="o">.</span><span class="n">nextPage</span> <span class="p">{</span> <span class="n">result</span>
+            <span class="k">if</span> <span class="k">case</span> <span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">result</span> <span class="p">{</span>
+                <span class="o">...</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="o">...</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Finally, <code class="language-plaintext highlighter-rouge">PagedCollection</code> also provides an iterator property that conforms to the <code class="language-plaintext highlighter-rouge">Sequence</code> protocol, providing a way for the developer to synchronously consume all results of a paged operation using a standard <code class="language-plaintext highlighter-rouge">for ... in</code> loop:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Automatic synchronous iteration of a `PagedCollection` item-by-item</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">listConfigurationSettings</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="k">in</span>
+    <span class="k">if</span> <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">pagedCollection</span><span class="p">)</span> <span class="o">=</span> <span class="n">result</span> <span class="p">{</span>
+        <span class="c1">// Synchronous iteration will block the UI thread as more pages are fetched</span>
+        <span class="kt">DispatchQueue</span><span class="o">.</span><span class="nf">global</span><span class="p">(</span><span class="nv">qos</span><span class="p">:</span> <span class="o">.</span><span class="n">background</span><span class="p">)</span><span class="o">.</span><span class="n">async</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">setting</span> <span class="k">in</span> <span class="n">pagedCollection</span><span class="o">.</span><span class="n">syncIterator</span> <span class="p">{</span>
+                <span class="nf">print</span><span class="p">(</span><span class="n">setting</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+                <span class="c1">// `break` to interrupt iteration</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-pagination-client" name="ios-pagination-client" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  conform clients to the <code class="language-plaintext highlighter-rouge">PageableClient</code> protocol if they contain service client methods that expose paginated collections of results.</p>
+
+<p><a href="#ios-pagination-async-support" name="ios-pagination-async-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  return a <code class="language-plaintext highlighter-rouge">PagedCollection</code> from service client methods that expose a collection of results, regardless of whether the collection is paginated or non-paginated. This ensures that paginated and non-paginated collections are accessed and operate the same way. Users should not need to appreciate the difference.</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listCats</span><span class="p">(</span>
+    <span class="n">withOptions</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ListCatOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt">HTTPResultHandler</span><span class="o">&lt;</span><span class="kt">PagedCollection</span><span class="o">&lt;</span><span class="kt">Cat</span><span class="o">&gt;&gt;</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="c1">// Construct request</span>
+    <span class="k">let</span> <span class="nv">urlTemplate</span> <span class="o">=</span> <span class="s">"/cat/list"</span>
+    <span class="o">...</span>
+    <span class="n">client</span><span class="o">.</span><span class="nf">request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nv">context</span><span class="p">:</span> <span class="n">context</span><span class="p">)</span> <span class="p">{</span> <span class="n">result</span><span class="p">,</span> <span class="n">httpResponse</span> <span class="k">in</span>
+        <span class="o">...</span>
+        <span class="k">switch</span> <span class="n">result</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">success</span><span class="p">:</span>
+            <span class="k">guard</span> <span class="k">let</span> <span class="nv">statusCode</span> <span class="o">=</span> <span class="n">httpResponse</span><span class="p">?</span><span class="o">.</span><span class="n">statusCode</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="nv">noStatusCodeError</span> <span class="o">=</span> <span class="kt">AzureError</span><span class="o">.</span><span class="nf">client</span><span class="p">(</span><span class="s">"Expected a status code in response but didn't find one."</span><span class="p">)</span>
+                <span class="n">dispatchQueue</span><span class="o">.</span><span class="n">async</span> <span class="p">{</span>
+                    <span class="nf">completionHandler</span><span class="p">(</span><span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="n">noStatusCodeError</span><span class="p">),</span> <span class="n">httpResponse</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="k">return</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="p">[</span>
+                <span class="mi">200</span>
+            <span class="p">]</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="n">statusCode</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">do</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="nv">decoder</span> <span class="o">=</span> <span class="kt">JSONDecoder</span><span class="p">()</span>
+                    <span class="k">let</span> <span class="nv">codingKeys</span> <span class="o">=</span> <span class="kt">PagedCodingKeys</span><span class="p">(</span>
+                        <span class="nv">items</span><span class="p">:</span> <span class="s">"value"</span><span class="p">,</span>
+                        <span class="nv">continuationToken</span><span class="p">:</span> <span class="s">"nextLink"</span>
+                    <span class="p">)</span>
+                    <span class="k">let</span> <span class="nv">paged</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">PagedCollection</span><span class="o">&lt;</span><span class="kt">Cat</span><span class="o">&gt;</span><span class="p">(</span>
+                        <span class="nv">client</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+                        <span class="nv">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+                        <span class="nv">context</span><span class="p">:</span> <span class="n">context</span><span class="p">,</span>
+                        <span class="nv">data</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+                        <span class="nv">codingKeys</span><span class="p">:</span> <span class="n">codingKeys</span><span class="p">,</span>
+                        <span class="nv">decoder</span><span class="p">:</span> <span class="n">decoder</span>
+                    <span class="p">)</span>
+                    <span class="n">dispatchQueue</span><span class="o">.</span><span class="n">async</span> <span class="p">{</span>
+                        <span class="nf">completionHandler</span><span class="p">(</span><span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="n">paged</span><span class="p">),</span> <span class="n">httpResponse</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+                    <span class="n">dispatchQueue</span><span class="o">.</span><span class="n">async</span> <span class="p">{</span>
+                        <span class="nf">completionHandler</span><span class="p">(</span><span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="kt">AzureError</span><span class="o">.</span><span class="nf">client</span><span class="p">(</span><span class="s">"Decoding error."</span><span class="p">,</span> <span class="n">error</span><span class="p">)),</span> <span class="n">httpResponse</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="o">...</span>
+        <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+            <span class="n">dispatchQueue</span><span class="o">.</span><span class="n">async</span> <span class="p">{</span>
+                <span class="nf">completionHandler</span><span class="p">(</span><span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="n">error</span><span class="p">),</span> <span class="n">httpResponse</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-pagination-distinct-types" name="ios-pagination-distinct-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the same type for entities returned from a list operation vs. a get operation if those operations return different views of the same result. For example a list operation may provide only a minimal representation of each result, with the expectation that a get operation must be performed for each result to access the full representation. If the representations are compatible, reuse the same type for both the list and the get operation. Otherwise, it is permissable to use distinct types for each operation.</p>
+
+<div class="alert alert-warning" role="alert"><i class="fa fa-warning"></i> <b>Important:</b> Services should refrain from having a difference between the type of a particular entity as it exists in a list versus the result of a GET request for that individual item as it makes the client library’s surface area simpler.</div>
+
+<p><a href="#ios-pagination-large-get-iterator" name="ios-pagination-large-get-iterator" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an iterator over each individual item if getting each item requires a corresponding GET request to the service. One GET per item is often too expensive and so not an action we want to take on behalf of users.</p>
+
+<p><a href="#ios-pagination-array-support" name="ios-pagination-array-support" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose an API to get a paginated collection into an array. This is a dangerous capability for services which may return many, many pages.</p>
+
+<p><a href="#ios-pagination-paging-api" name="ios-pagination-paging-api" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  expose pagination internals when iterating over a collection. Consumers should work with only the <code class="language-plaintext highlighter-rouge">PagedCollection</code>, not the underlying Paging APIs.</p>
+
+<h4 id="methods-invoking-long-running-operations">Methods Invoking Long Running Operations</h4>
+
+<p>Long-running operations are uncommon in a mobile context. If you feel like you need long running operations, contact the <a href="mailto:azuresdkmobileteam@microsoft.com">Azure SDK mobile team</a> for advice.</p>
+
+<blockquote>
+  <p>TODO: Expand upon why LROs are uncommon in a mobile context.</p>
+</blockquote>
+
+<h4 id="conditional-request-methods">Conditional Request Methods</h4>
+
+<p>Conditional requests are normally performed using HTTP headers. The primary usage provides headers that match the ETag to some known value. The ETag is an opaque identifier that represents a single version of a resource. For example, adding the following header will translate to “if the record’s version, specified by the ETag, is not the same”.</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text"> If-Not-Match: "etag-value" </code></pre></figure>
+
+<p>With headers, tests are possible for the following:</p>
+
+<p>Unconditionally (no additional headers)
+If (not) modified since a version (If-Match and If-Not-Match)
+If (not) modified since a date (If-Modified-Since and If-Unmodified-Since)
+If (not) present (If-Match and If-Not-Match with a ETag=* value)
+Not all services support all of these semantics and may not support any of them. Developers have varying levels of understanding of the ETag and conditional requests, so it is best to abstract this concept from the API surface. There are two types of conditional requests we need to be concerned with:</p>
+
+<p>Safe conditional requests (e.g. GET)</p>
+
+<p>These are typically used to save bandwidth in an “update cache” scenario, i.e. I have a cached value, only send me the data if what the service has is newer than my copy. These return either a 200 or a 304 status code, indicating the value was not modified, which tells the caller that their cached value is up to date.</p>
+
+<p>Unsafe conditional requests (e.g. POST, PUT, or DELETE)</p>
+
+<p>These are typically used to prevent losing updates in an optimistic concurrency scenario, i.e. I’ve modified the cached value I’m holding, but don’t update the service version unless it has the same copy I’ve got. These return either a success or a 412 error status code, indicating the value was modified, to indicate to the caller that they’ll need to retry their update if they want it to succeed.</p>
+
+<p>These two cases are handled differently in client libraries. However, the form of the call is the same in both cases. The signature of the method should be:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text"> client.method(..., withOptions: RequestOptions) </code></pre></figure>
+
+<p>The <code class="language-plaintext highlighter-rouge">withOptions</code> field provides preconditions to the HTTP request. The Etag value will be retrieved from the item that is passed into the method where possible, and method arguments where not possible. The form of the method will be modified based on idiomatic usage patterns in the language of choice. In cases where the ETag value is not known, the operation cannot be conditional. If the library developer does not need to support advanced usage of precondition headers, they can add a boolean parameter that is set to true to establish the condition. For example, use one of the following boolean names instead of the conditions operator:</p>
+
+<p><code class="language-plaintext highlighter-rouge">onlyIfChanged</code>
+<code class="language-plaintext highlighter-rouge">onlyIfUnchanged</code>
+<code class="language-plaintext highlighter-rouge">onlyIfMissing</code>
+<code class="language-plaintext highlighter-rouge">onlyIfPresent</code></p>
+
+<p>In all cases, the conditional expression is “opt-in”, and the default is to perform the operation unconditionally.</p>
+
+<p>The return value from a conditional operation must be carefully considered. For safe operators (e.g. GET), return a response that will throw if the value is accessed (or follow the same convention used for a 204 No Content response), since there is no value in the body to reference. For unsafe operators (e.g. PUT, DELETE, or POST), throw a specific error when a Precondition Failed or Conflict result is received. This allows the consumer to do something different in the case of conflicting results.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept a conditions parameter (which takes an enumerated type) on service methods that allow a conditional check on the service.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  accept an additional boolean or enum parameter on service methods as necessary to enable conditional checks using ETag.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  include the ETag field as part of the object model when conditional operations are supported.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  throw an error when a 304 Not Modified response is received from the service.</p>
+
+<p><a href="#" name="" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  throw a distinct error when a 412 Precondition Failed response or a 409 Conflict response is received from the service due to a conditional check.</p>
+
+<h3 id="supporting-types">Supporting Types</h3>
+
+<h4 id="model-types">Model Types</h4>
+
+<p>Models are objects (structs and classes) that consumers use to provide required information into client library methods. These structures typically represent the domain model or <em>logical entity</em>, a protocol-neutral representation of a response.</p>
+
+<p><a href="#ios-client-model-object" name="ios-client-model-object" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  express client models as immutable structs rather than classes. Such a struct must express all properties of the model as <code class="language-plaintext highlighter-rouge">let</code> values, and have an initializer that accepts all properties of the model as parameters, with defaults provided for all optional parameters. For example:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FeatureFlagGroup</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">groupName</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">serviceEnabled</span><span class="p">:</span> <span class="kt">Bool</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">userEnabled</span><span class="p">:</span> <span class="kt">Bool</span>
+
+    <span class="c1">// MARK: Initializer</span>
+
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="nv">groupName</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+        <span class="nv">serviceEnabled</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nv">userEnabled</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">groupName</span> <span class="o">=</span> <span class="n">groupName</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">serviceEnabled</span> <span class="o">=</span> <span class="n">serviceEnabled</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">userEnabled</span> <span class="o">=</span> <span class="n">userEnabled</span>
+    <span class="p">}</span></code></pre></figure>
+
+<p><a href="#ios-client-model-domain-location" name="ios-client-model-domain-location" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  store client models (and supporting enumerations / structures referenced by such models) within the <code class="language-plaintext highlighter-rouge">Source/Models</code> directory inside the library’s root directory.</p>
+
+<h4 id="enumerations">Enumerations</h4>
+
+<p><a href="#ios-enums" name="ios-enums" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use an <code class="language-plaintext highlighter-rouge">enum</code> for parameters, properties, and return types when values are known.</p>
+
+<p><a href="#ios-enums-request-string-convertible" name="ios-enums-request-string-convertible" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  conform to the <code class="language-plaintext highlighter-rouge">RequestStringConvertible</code> protocol provided in Azure Core.</p>
+
+<p><a href="#ios-naming-enum-camelcase" name="ios-naming-enum-camelcase" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use camel casing names for enum values. <code class="language-plaintext highlighter-rouge">EnumType.foo</code> and <code class="language-plaintext highlighter-rouge">EnumType.twoWords</code> are valid, whereas <code class="language-plaintext highlighter-rouge">EnumType.Foo</code> and <code class="language-plaintext highlighter-rouge">EnumType.TWO_WORDS</code> are not.</p>
+
+<p><a href="#ios-expandable-enums" name="ios-expandable-enums" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  define an enum-like API that declares well-known fields but which can also contain unknown values returned from the service, or user-defined values passed to the service. An example expandable enum is shown below:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Shape</span><span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">RequestStringConvertible</span> <span class="p">{</span>
+
+    <span class="c1">// the internal enum is a normal Swift enum</span>
+    <span class="kd">internal</span> <span class="kd">enum</span> <span class="kt">ShapeKV</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="n">circle</span>
+        <span class="k">case</span> <span class="n">square</span>
+        <span class="k">case</span> <span class="nf">unknown</span><span class="p">(</span><span class="kt">String</span><span class="p">)</span>
+
+        <span class="k">var</span> <span class="nv">rawValue</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+            <span class="k">switch</span> <span class="k">self</span> <span class="p">{</span>
+            <span class="k">case</span> <span class="o">.</span><span class="nv">circle</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">"circle"</span>
+            <span class="k">case</span> <span class="o">.</span><span class="nv">square</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">"square"</span>
+            <span class="k">case</span> <span class="o">.</span><span class="nf">unknown</span><span class="p">(</span><span class="k">let</span> <span class="nv">value</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">value</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nf">init</span><span class="p">(</span><span class="nv">rawValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">switch</span> <span class="n">rawValue</span><span class="o">.</span><span class="nf">lowercased</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">case</span> <span class="s">"circle"</span><span class="p">:</span>
+                <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="n">circle</span>
+            <span class="k">case</span> <span class="s">"square"</span><span class="p">:</span>
+                <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="n">square</span>
+            <span class="k">default</span><span class="p">:</span>
+                <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="nf">unknown</span><span class="p">(</span><span class="n">rawValue</span><span class="o">.</span><span class="nf">lowercase</span><span class="p">())</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">private</span> <span class="k">let</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">ShapeKV</span>
+
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">requestString</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">rawValue</span>
+    <span class="p">}</span>
+
+    <span class="kd">private</span> <span class="nf">init</span><span class="p">(</span><span class="nv">rawValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kt">ShapeKV</span><span class="p">(</span><span class="nv">rawValue</span><span class="p">:</span> <span class="n">rawValue</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">requestString</span> <span class="o">==</span> <span class="n">rhs</span><span class="o">.</span><span class="n">requestString</span>
+    <span class="p">}</span>
+
+    <span class="c1">// declare public static constants using the internal enum of known values</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">circle</span><span class="p">:</span> <span class="kt">Shape</span> <span class="o">=</span> <span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">value</span><span class="p">:</span> <span class="o">.</span><span class="n">circle</span><span class="p">)</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">square</span><span class="p">:</span> <span class="kt">Shape</span> <span class="o">=</span> <span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">value</span><span class="p">:</span> <span class="o">.</span><span class="n">square</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="#ios-enums-no-future-growth" name="ios-enums-no-future-growth" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use an regular <code class="language-plaintext highlighter-rouge">enum</code> ONLY if the enum values are known to not change like days of a week, months in a year etc.</p>
+
+<p><a href="#ios-enums-future-growth" name="ios-enums-future-growth" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  define an expandable enum for enumerations if the values could expand in the future. An expandable enum forces customers who <code class="language-plaintext highlighter-rouge">switch</code> on the value to declare a <code class="language-plaintext highlighter-rouge">default</code> case, preventing the addition of a known case from causing a breaking change.</p>
+
+<h4 id="using-azure-core-types">Using Azure Core Types</h4>
+
+<p><a href="#ios-core-types" name="ios-core-types" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  make use of packages in Azure Core to provide behavior consistent across all Azure SDK libraries. This includes, but is not limited to:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">PipelineClient</code>, <code class="language-plaintext highlighter-rouge">PipelineRequest</code>, <code class="language-plaintext highlighter-rouge">PipelineResponse</code>, etc. for http client, pipeline and related functionality.</li>
+  <li><code class="language-plaintext highlighter-rouge">ClientLogger</code> for logging.</li>
+  <li><code class="language-plaintext highlighter-rouge">PagedCollection</code> and <code class="language-plaintext highlighter-rouge">PagedItemSyncIterator</code> for returning paged results.</li>
+</ul>
+
+<p>See the [Azure Core README][Azure Core] for more details.</p>
+
+<h4 id="using-primitive-types">Using Primitive Types</h4>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h3 id="errors">Errors</h3>
+
+<blockquote>
+  <p>TODO: Error handling (see general guidelines)</p>
+</blockquote>
+
+<blockquote>
+  <p>TBD:</p>
+  <ul>
+    <li>Hook in to HockeyApp</li>
+  </ul>
+</blockquote>
+
+<h3 id="authentication">Authentication</h3>
+
+<p>Azure services use different kinds of authentication schemes to allow clients to access the service. Conceptually, there are two entities responsible in this process: a credential and an authentication policy. Credentials provide confidential authentication data.  Authentication policies use the data provided by a credential to authenticate requests to the service.</p>
+
+<p><a href="#ios-auth-support" name="ios-auth-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support all authentication techniques that the service supports and that make sense in a mobile context. Service principal authentication generally does not make sense, for example.</p>
+
+<p><a href="#ios-auth-azure-core" name="ios-auth-azure-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use credential and authentication policy implementations from the Azure Core library where available.</p>
+
+<p><a href="#ios-auth-credentials" name="ios-auth-credentials" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide credential types that can be used to fetch all data needed to authenticate a request to the service.  If using a service-specific credential type, the implementation must be non-blocking and atomic.</p>
+
+<p><a href="#ios-auth-credential-type" name="ios-auth-credential-type" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  conform credential types to the <code class="language-plaintext highlighter-rouge">Credential</code> protocol (either directly, or by inheriting from or conforming to any type which itself conforms to <code class="language-plaintext highlighter-rouge">Credential</code>).</p>
+
+<p><a href="#ios-auth-provide-client-initializer" name="ios-auth-provide-client-initializer" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide service client initializers that accept all supported credential types. The credential must be provided as the first parameter to the initializer and must be named <code class="language-plaintext highlighter-rouge">credential</code>.</p>
+
+<p><a href="#ios-auth-validate-credentials" name="ios-auth-validate-credentials" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  validate all credential objects passed to service client initializers by calling the <code class="language-plaintext highlighter-rouge">validate()</code> method defined by the <code class="language-plaintext highlighter-rouge">Credential</code> protocol.</p>
+
+<p>Client libraries may support providing credential data via a connection string <strong>ONLY IF</strong> the service provides a connection string to users via the portal or other tooling. Connection strings are generally good for getting started as they are easily integrated into an application by copy/paste from the portal. However, connection strings are considered a lesser form of authentication because the credentials cannot be rotated within a running process.</p>
+
+<p><a href="#ios-auth-connection-strings" name="ios-auth-connection-strings" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  provide a service client initializer that accepts a connection string if appropriate. The connection string must be provided as the first parameter to the initializer and must be named <code class="language-plaintext highlighter-rouge">connectionString</code>. When supporting connection strings, the documentation must include a warning that building credentials such as connection strings into a consumer-facing application is inherently insecure.</p>
+
+<p><a href="#ios-auth-connection-strings-only" name="ios-auth-connection-strings-only" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  support initializing a service client with a connection string unless such connection string is available within tooling (for copy/paste operations).</p>
+
+<p><a href="#ios-authimpl-no-connection-strings" name="ios-authimpl-no-connection-strings" class="requirement" role="img" aria-label="YOU SHOULD NOT">⚠️</a> <strong>YOU SHOULD NOT</strong>  support connection strings with embedded secrets. iOS apps are not cryptographically secure and may be distributed to millions of devices. A developer should assume that any credential placed in an iOS app is compromised.</p>
+
+<p>When implementing authentication, don’t open up the consumer to security holes like PII (personally identifiable information) leakage or credential leakage. Credentials are generally issued with a time limit, and must be refreshed periodically to ensure that the service connection continues to function as expected. Ensure your client library follows all current security recommendations and consider an independent security review of the client library to ensure you’re not introducing potential security problems for the consumer.</p>
+
+<p><a href="#ios-authimpl-no-persisting" name="ios-authimpl-no-persisting" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  persist, cache, or reuse security credentials. Security credentials should be considered short lived to cover both security concerns and credential refresh situations.</p>
+
+<p>If your service implements a non-standard credential system (that is, a credential system that is not supported by <code class="language-plaintext highlighter-rouge">AzureCore</code>), then you need to produce an authentication policy for the HTTP pipeline that can authenticate requests given the alternative credential types provided by the client library.</p>
+
+<p><a href="#ios-authimpl-provide-auth-policy" name="ios-authimpl-provide-auth-policy" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  provide an authentication policy that conforms to the <code class="language-plaintext highlighter-rouge">Authenticating</code> protocol, to authenticate the HTTP request when using non-standard credentials.</p>
+
+<h3 id="modules">Modules</h3>
+
+<p>Swift uses modules to group related types into a single distributable package. Grouping services within a cloud infrastructure is common since it aids discoverability and provides structure to the reference documentation.</p>
+
+<p><a href="#ios-service-client-module" name="ios-service-client-module" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  implement your library, and all service clients and supporting types, in a single module.</p>
+
+<p><a href="#ios-service-client-module-name" name="ios-service-client-module-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name the module with the <em>Azure</em> prefix (for example, <code class="language-plaintext highlighter-rouge">AzureConfiguration</code>).</p>
+
+<p><a href="#ios-service-client-module-subpackage" name="ios-service-client-module-subpackage" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  break a single library into sub-modules where appropriate (for example, when a service provides multiple distinct feature sets which can be used independently). When doing so, you must include a feature suffix (for example, <code class="language-plaintext highlighter-rouge">AzureStorageBlob</code>) in the module name.</p>
+
+<h4 id="example-modules">Example Modules</h4>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h3 id="support-for-mocking">Support for Mocking</h3>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h2 id="azure-sdk-library-design">Azure SDK Library Design</h2>
+
+<h3 id="supported-platforms">Supported Platforms</h3>
+
+<p>iOS developers need to concern themselves with the runtime environment they are running in.  The iOS ecosystem enjoys little fragmentation, but multiple versions and form factors are still prevalent.</p>
+
+<p><a href="#ios-library-support" name="ios-library-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following versions of iOS:</p>
+
+<ul>
+  <li>All currently available patch builds in the minor release</li>
+  <li>The last patch build for the previous minor release.</li>
+  <li>The last patch build for the previous major release.</li>
+</ul>
+
+<p><a href="#ipados-library-support" name="ipados-library-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support the following versions of iPadOS:</p>
+
+<ul>
+  <li>All currently available patch builds in the minor release</li>
+  <li>The last patch build for the previous minor release.</li>
+  <li>The last patch build for the previous major release.</li>
+</ul>
+
+<p><a href="#macos-library-support" name="macos-library-support" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  support MacOS in order to permit customers to use our libraries within Apple universal apps. Support the following versions of macOS:</p>
+
+<ul>
+  <li>All currently available patch builds in the minor release</li>
+  <li>The last patch build for the previous minor release.</li>
+  <li>The last patch build for the previous major release.</li>
+</ul>
+
+<p><a href="#otheros-library-support" name="otheros-library-support" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  support other platforms such as watchOS and tvOS.</p>
+
+<p><a href="#ios-swift-support" name="ios-swift-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support Swift 5.  This ensures the maximum ABI compatibility going forward.</p>
+
+<p><a href="#ios-swift4-support" name="ios-swift4-support" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  support Swift 4.</p>
+
+<p><a href="#ios-objc-support" name="ios-objc-support" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  support Objective-C.</p>
+
+<p><a href="#ios-arch-support" name="ios-arch-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support all architectures in $ARCH_STANDARD.</p>
+
+<p><a href="#ios-bitcode-enabled" name="ios-bitcode-enabled" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  support bitcode enabled. Apple has marked this <a href="https://developer.apple.com/documentation/Xcode-Release-Notes/xcode-14-release-notes">deprecated</a> from XCode 14 onwards.</p>
+
+<p><a href="#ios-platform-support" name="ios-platform-support" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support iPhone and iPad form factors.</p>
+
+<p>Only support Objective-C and Swift 4 if you have a business justification for doing so. One such justification would be to package C++ code, which is only accessible via Objective-C. Optimize for applications written using Swift 5.</p>
+
+<h3 id="packaging">Packaging</h3>
+
+<h4 id="swift-package-manager">Swift Package Manager</h4>
+
+<p><a href="https://swift.org/package-manager/">Swift Package manager link</a> is the offical distribution channel for Swift packages created and endorsed by Apple. Accordingly, this is the primary distribution channel for the Azure SDK for iOS. Swift Package Manager follows a “one-repo-one-version” model that is not conducive to working in a mono-repo that hosts multiple independently versioning packages. To work around this limitation while preserving the benefits of working in a mono-repo, each service branch that is supported on Swift Package Manager is mirrored to its own repo that Swift Package Manager users target to acquire necessary packages.</p>
+
+<p><a href="#ios-spm-packageswift" name="ios-spm-packageswift" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support Swift Package Manager by supplying a <code class="language-plaintext highlighter-rouge">Package.swift</code> manifest at the root of the service directory.</p>
+
+<p><a href="#ios-spm-target" name="ios-spm-target" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a target in the <code class="language-plaintext highlighter-rouge">Package.swift</code> file that matches the names of the module.</p>
+
+<p><a href="#ios-spm-test-target" name="ios-spm-test-target" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include a test target in the <code class="language-plaintext highlighter-rouge">Package.swift</code> file that matches the names of the module with the <code class="language-plaintext highlighter-rouge">Tests</code> suffix.</p>
+
+<p>For example, to register the “AzureCatHerding” service:</p>
+
+<figure class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="nv">package</span> <span class="o">=</span> <span class="kt">Package</span><span class="p">(</span>
+    <span class="nv">name</span><span class="p">:</span> <span class="s">"AzureSDK"</span><span class="p">,</span>
+    <span class="nv">platforms</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+    <span class="nv">products</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="o">.</span><span class="nf">library</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"AzureCatHerding"</span><span class="p">,</span> <span class="nv">targets</span><span class="p">:</span> <span class="p">[</span><span class="s">"AzureCatHerding"</span><span class="p">])</span>
+    <span class="p">],</span>
+    <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+    <span class="nv">targets</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="o">.</span><span class="nf">target</span><span class="p">(</span>
+            <span class="nv">name</span><span class="p">:</span> <span class="s">"AzureCatHerding"</span><span class="p">,</span>
+            <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="nv">path</span><span class="p">:</span> <span class="s">"sdk/catherding/AzureCatHerding"</span><span class="p">,</span>
+            <span class="nv">exclude</span><span class="p">:</span> <span class="p">[</span><span class="s">"Source/Supporting Files"</span><span class="p">],</span>
+            <span class="nv">sources</span><span class="p">:</span> <span class="p">[</span><span class="s">"Source"</span><span class="p">]</span>
+        <span class="p">),</span>
+        <span class="o">.</span><span class="nf">testTarget</span><span class="p">(</span>
+            <span class="nv">name</span><span class="p">:</span> <span class="s">"AzureCatHerdingTests"</span><span class="p">,</span>
+            <span class="nv">dependencies</span><span class="p">:</span> <span class="p">[</span><span class="s">"AzureCatHerding"</span><span class="p">],</span>
+            <span class="nv">path</span><span class="p">:</span> <span class="s">"sdk/catherding/AzureCatHerding"</span><span class="p">,</span>
+            <span class="nv">exclude</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s">"Tests/Info.plist"</span><span class="p">,</span>
+                <span class="o">...</span>
+            <span class="p">],</span>
+            <span class="nv">sources</span><span class="p">:</span> <span class="p">[</span><span class="s">"Tests"</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">],</span>
+    <span class="nv">swiftLanguageVersions</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">)</span></code></pre></figure>
+
+<p><a href="#ios-spm-private-preview" name="ios-spm-private-preview" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  provide private previews via Swift Package Manager.</p>
+
+<p><a href="#ios-spm-binary" name="ios-spm-binary" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  publish a module as a precompiled binary framework rather than source. This is appropriate for Objective-C-based libraries or closed-source libraries.</p>
+
+<p>The following apply when publishing a pre-compiled framework:</p>
+
+<p><a href="#ios-spm-xcframework" name="ios-spm-xcframework" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  publish the framework in <code class="language-plaintext highlighter-rouge">.xcframework</code> format, as this is the only format that is compatbile with XCode version 12.3+.</p>
+
+<p><a href="#ios-spm-framework" name="ios-spm-framework" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  also publish the framework in <code class="language-plaintext highlighter-rouge">.framework</code> format for compatibility with older versions of XCode or iOS, if there is business justification for doing so.</p>
+
+<h4 id="cocoapods">CocoaPods</h4>
+
+<p><a href="https://cocoapods.org/">CocoaPods</a> is a popular, community-supported dependency manager for Swift and Objective-C libraries.</p>
+
+<p><a href="#ios-cocoapods" name="ios-cocoapods" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  support CocoaPods release by including a podspec file at the root of the service directory.</p>
+
+<p><a href="#ios-cocoapods-json" name="ios-cocoapods-json" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  specify the podspec in JSON format.</p>
+
+<p><a href="#ios-cocoapods-podspec-name" name="ios-cocoapods-podspec-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name the podspec according to the following format: <code class="language-plaintext highlighter-rouge">&lt;ModuleName&gt;.podspec.json</code>.</p>
+
+<p><a href="#ios-cocoapods-multiple-podspec" name="ios-cocoapods-multiple-podspec" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  create multiple podspecs for the same logical package.</p>
+
+<p><a href="#ios-cocoapods-support-scenarios" name="ios-cocoapods-support-scenarios" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  complicate the podspec to support customer support scenarios for older versions of XCode or iOS.</p>
+
+<p><a href="#ios-cocoapods-private-preview" name="ios-cocoapods-private-preview" class="requirement" role="img" aria-label="YOU MAY">✔️</a> <strong>YOU MAY</strong>  release private preview libraries or support older mechanisms by publishing private podspecs to the <a href="https://github.com/Azure/AzurePrivatePodspecs">Azure Private Podspecs</a> repository. <strong>Note</strong> This repository is <em>public</em> and thus not appropriate for non-public services.</p>
+
+<h4 id="carthage">Carthage</h4>
+
+<p><a href="https://github.com/Carthage/Carthage">Carthage</a> is a community-supported dependency manager for Swift and Objective-C that builds binary frameworks without modifying project structure. Unlike CocoaPods and Swift Package Manager, Carthage requires no special metadata files.</p>
+
+<p><a href="#ios-carthage-examples" name="ios-carthage-examples" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  include examples in the libary’s README.md file for directions on how to integrate the library using Carthage.</p>
+
+<p><a href="#ios-carthage-support-scenarios" name="ios-carthage-support-scenarios" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  provide specific guidance for customer support scenarios where business justifcation exists. An example would be supporting older versions of iOS or XCode that are not possible with Swift Package Manager or CocoaPods.</p>
+
+<h4 id="service-specific-common-libraries">Service-Specific Common Libraries</h4>
+
+<p>There are occasions when common code needs to be shared between several client libraries.  For example, a set of cooperating client libraries may wish to share a set of exceptions or models.</p>
+
+<p><a href="#general-commonlib-approval" name="general-commonlib-approval" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  gain <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a> approval prior to implementing a common library.</p>
+
+<p><a href="#general-commonlib-minimize-code" name="general-commonlib-minimize-code" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  minimize the code within a common library.  Code within the common library is available to the consumer of the client library and shared by multiple client libraries within the same namespace.</p>
+
+<p><a href="#general-commonlib-suffix" name="general-commonlib-suffix" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  use the <code class="language-plaintext highlighter-rouge">Common</code> suffix for the common library. For example, if Azure Storage has a common library, it would be called <code class="language-plaintext highlighter-rouge">AzureStorageCommon</code>.</p>
+
+<p>A common library will only be approved if:</p>
+
+<ul>
+  <li>The consumer of the non-shared library will consume the objects within the common library directly, AND</li>
+  <li>The information will be shared between multiple client libraries.</li>
+</ul>
+
+<p>Let’s take two examples:</p>
+
+<ol>
+  <li>
+    <p>Implementing two Cognitive Services client libraries, we find a model is required that is produced by one Cognitive Services client library and consumed by another Coginitive Services client library, or the same model is produced by two client libraries.  The consumer is required to do the passing of the model in their code, or may need to compare the model produced by one client library vs. that produced by another client library.  This is a good candidate for choosing a common library.</p>
+  </li>
+  <li>
+    <p>Two Cognitive Services client libraries throw an <code class="language-plaintext highlighter-rouge">ObjectNotFound</code> exception to indicate that an object was not detected in an image.  The user might trap the exception, but otherwise will not operate on the exception.  There is no linkage between the <code class="language-plaintext highlighter-rouge">ObjectNotFound</code> exception in each client library.  This is not a good candidate for creation of a common library (although you may wish to place this exception in a common library if one exists for the namespace already).  Instead, produce two different exceptions - one in each client library.</p>
+  </li>
+</ol>
+
+<h3 id="versioning">Versioning</h3>
+
+<p><a href="#ios-versioning-backwards-compatibility" name="ios-versioning-backwards-compatibility" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  be 100% backwards compatible with older versions of the Azure SDK.</p>
+
+<p><a href="#ios-versioning-highest-api" name="ios-versioning-highest-api" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  call the highest supported service API version by default.</p>
+
+<p><a href="#ios-versioning-select-api-version" name="ios-versioning-select-api-version" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  allow the consumer to explicitly select a supported service API version when instantiating the service client, by using the <code class="language-plaintext highlighter-rouge">apiVersion</code> property of the service client <code class="language-plaintext highlighter-rouge">options</code> object.</p>
+
+<p><a href="#ios-versioning-apiversion-change" name="ios-versioning-apiversion-change" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the minor version if the default REST API version is changed, even if there’s no public API change to the library.</p>
+
+<p><a href="#ios-versioning-enum-latest" name="ios-versioning-enum-latest" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  offer a <code class="language-plaintext highlighter-rouge">latest</code> option on the enum that returns the latest service version. If a consumer doesn’t specify a service version the <code class="language-plaintext highlighter-rouge">latest</code> value will be used.</p>
+
+<p><a href="#ios-versioning-enum--value-naming" name="ios-versioning-enum--value-naming" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the version naming used by the service itself in naming the version values in the enum, stripping any non alphanumeric characters such as <code class="language-plaintext highlighter-rouge">_</code> and <code class="language-plaintext highlighter-rouge">-</code>. The standard approach takes the form <code class="language-plaintext highlighter-rouge">&lt;year&gt;_&lt;month&gt;_&lt;day&gt;</code>. For example, apiVersion <code class="language-plaintext highlighter-rouge">2019_01_01_preview</code> would translate to <code class="language-plaintext highlighter-rouge">20190101preview</code>. Being consistent with the service naming enables easier cross-referencing between service versions and the availability of features in the client library.</p>
+
+<h4 id="client-version-numbers">Client Version Numbers</h4>
+
+<p>Consistent version number scheme allows consumers to determine what to expect from a new version of the library.</p>
+
+<p><a href="#ios-versioning-semver" name="ios-versioning-semver" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use <a href="https://semver.org">semantic versioning</a> for the Azure SDK.</p>
+
+<p><a href="#ios-versioning-beta" name="ios-versioning-beta" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  use the <code class="language-plaintext highlighter-rouge">-beta.N</code> pre-release suffix for beta releases. For beta releases, you need only increment the beta number regardless of the type of change in the SDK, regardless of whether it is breaking or not.</p>
+
+<p><a href="#ios-version-beta-dependencies" name="ios-version-beta-dependencies" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  target specific versions of beta dependencies to ensure that subsequent, incompatible versions do not break. The is because beta versions do not follow semantic versioning.</p>
+
+<p><a href="#ios-versioning-changes" name="ios-versioning-changes" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  change the version number if <em>anything</em> changes in the Azure SDK.</p>
+
+<p><a href="#ios-versioning-patch" name="ios-versioning-patch" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the patch version if only bug fixes are added to the Azure SDK.</p>
+
+<p><a href="#ios-verioning-minor" name="ios-verioning-minor" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the minor version if any new functionality is added to the Azure SDK.</p>
+
+<p><a href="#ios-version-features-in-patch" name="ios-version-features-in-patch" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  include new functionality in a patch release.</p>
+
+<p><a href="#python-versioning-api-major" name="python-versioning-api-major" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  increment the major version for a new REST API version unless it requires breaking API changes in the Azure SDK library itself.</p>
+
+<p><a href="#ios-versioning-major" name="ios-versioning-major" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  increment the major version if there are breaking changes in the Azure SDK. Breaking changes require prior approval from the <a href="https://github.com/azure/azure-sdk/issues">Architecture Board</a>.</p>
+
+<p>The bar to make a breaking change is extremely high for stable client libraries. We may create a new package with a different name to avoid diamond dependency issues.</p>
+
+<h3 id="dependencies">Dependencies</h3>
+
+<p><a href="#ios-dependencies-azure-core" name="ios-dependencies-azure-core" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  depend on the iOS <code class="language-plaintext highlighter-rouge">AzureCore</code> library for functionality that is common across all client libraries. This library includes APIs for HTTP connectivity, global configuration, logging, and credential handling.</p>
+
+<p><a href="#ios-dependencies-approved" name="ios-dependencies-approved" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  be dependent on any other packages within the client library distribution package, with the exception of the following:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Role</th>
+      <th style="text-align: center">Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://aka.ms/go_libname"><code class="language-plaintext highlighter-rouge">LibName</code></a></td>
+      <td>Library Role</td>
+      <td style="text-align: center">1.0.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>TODO:</p>
+  <ul>
+    <li>How can we use a common approved dependencies list.</li>
+  </ul>
+</blockquote>
+
+<p><a href="#ios-dependencies-snapshot" name="ios-dependencies-snapshot" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  take dependencies on pre-released or beta versions of external libraries. All dependencies must be approved for general use.</p>
+
+<p><a href="#ios-dependencies-vendoring" name="ios-dependencies-vendoring" class="requirement" role="img" aria-label="YOU SHOULD">☑️</a> <strong>YOU SHOULD</strong>  consider copying or linking required code into the client library in order to avoid taking a dependency on another package that could conflict with the ecosystem. Make sure that you are not violating any licensing agreements and consider the maintenance that will be required of the duplicated code. [“A little copying is better than a little dependency”][1] (YouTube).</p>
+
+<p><a href="#ios-dependencies-concrete" name="ios-dependencies-concrete" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  depend on concrete logging, dependency injection, or configuration technologies (except as implemented in the <code class="language-plaintext highlighter-rouge">AzureCore</code> library). The client library will be used in applications that might be using the logging, DI, and configuration technologies of their choice.</p>
+
+<h3 id="native-code">Native code</h3>
+
+<p>iOS supports the development of platform-specific native code in C++.  These can cause compatibility issues across different versions of iOS and platforms.  You should only include such native code in the iOS library if:</p>
+
+<ul>
+  <li>You distribute full source and it is compiled in the context of the customer code.</li>
+  <li>You hide the implementation code behind a Swift-based facade.</li>
+  <li>You are doing so for performance reasons. No other reason is acceptable.</li>
+</ul>
+
+<blockquote>
+  <p>TODO: Develop and significantly expand upon our guidance for libraries with native (C/C++ or Objective-C) code</p>
+</blockquote>
+
+<h3 id="documentation">Documentation</h3>
+
+<p><a href="#ios-jazzy-docs" name="ios-jazzy-docs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  ensure that anybody can clone the Azure SDK repo and execute <code class="language-plaintext highlighter-rouge">jazzy &lt;library&gt;</code> to generate the full and complete docs for the code, without any need for additional processing steps.</p>
+
+<p><a href="#ios-jazzy-full-docs" name="ios-jazzy-full-docs" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include descriptive text of the method, as well as all parameters, the returned value (if any), and error thrown.</p>
+
+<p><a href="#ios-jazzy-samples" name="ios-jazzy-samples" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  include code samples in all class-level docs, and in relevant method-level docs.</p>
+
+<p><a href="#ios-jazzy-hard-coding" name="ios-jazzy-hard-coding" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  hard-code the sample within the doc (where it may become stale). Put code samples in <code class="language-plaintext highlighter-rouge">/src/samples/ios</code> and use the available tooling to reference them.</p>
+
+<p><a href="#ios-jazzy-naming-samples" name="ios-jazzy-naming-samples" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  follow the naming convention outlined below for naming samples tags:</p>
+
+<ul>
+  <li>If a new instance of the class is created through <code class="language-plaintext highlighter-rouge">init()</code> constructor: <code class="language-plaintext highlighter-rouge">&lt;packagename&gt;.&lt;classname&gt;.instantiation</code></li>
+  <li>For other methods in the class: <code class="language-plaintext highlighter-rouge">&lt;packagename&gt;.&lt;classname&gt;.&lt;methodName&gt;</code></li>
+  <li>For overloaded methods, or methods with arguments: <code class="language-plaintext highlighter-rouge">&lt;packagename&gt;.&lt;classname&gt;.&lt;methodName&gt;#&lt;argType1&gt;-&lt;argType2&gt;</code></li>
+  <li>Camel casing for the method name and argument types is valid, but not required.</li>
+</ul>
+
+<h2 id="repository-guidelines">Repository Guidelines</h2>
+
+<p><a href="#ios-general-repository" name="ios-general-repository" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  locate all source code in the <a href="https://github.com/azure/azure-sdk-for-ios">Azure/azure-sdk-for-ios</a> GitHub repository.</p>
+
+<p><a href="#ios-spm-repository-name" name="ios-spm-repository-name" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  name mirror repositories for Swift Package Manager releases in accordance with the format <code class="language-plaintext highlighter-rouge">SwiftPM_&lt;PackageName&gt;</code> (ex: <code class="language-plaintext highlighter-rouge">SwiftPM-AzureCatHerding</code>).</p>
+
+<p><a href="#ios-spm-repository-contributions" name="ios-spm-repository-contributions" class="requirement" role="img" aria-label="DO NOT">⛔️</a> <strong>DO NOT</strong>  manage issues or accept pull requests to Swift Package Manager mirror repositories. All contributions should be make to the <a href="https://github.com/Azure/azure-sdk-for-ios">mono-repo</a>.</p>
+
+<p><a href="#ios-mono-repo-release-tags" name="ios-mono-repo-release-tags" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  tag releases in the mono-repo according to the format <code class="language-plaintext highlighter-rouge">&lt;PackageName&gt;_&lt;version&gt;</code>.</p>
+
+<p><a href="#ios-mirror-repo-release-tags" name="ios-mirror-repo-release-tags" class="requirement" role="img" aria-label="DO">✅</a> <strong>DO</strong>  tag releases in the Swift Package Manager mirror repos according to the format <code class="language-plaintext highlighter-rouge">&lt;version&gt;</code>. A tag to a Swift Package Manager mirror repository must always be accompanied by a corresponding tag in the mono-repo.</p>
+
+<h3 id="documentation-1">Documentation</h3>
+
+<h4 id="general-guidelines-1">General guidelines</h4>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h4 id="samples">Samples</h4>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h2 id="swift-api-best-practices">Swift API Best Practices</h2>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<h3 id="naming-patterns">Naming Patterns</h3>
+
+<blockquote>
+  <p>TODO</p>
+</blockquote>
+
+<!-- Project Links -->
+
+
+        
+            <div class="tags">
+                
+            </div>
+        
+            
+
+        </div>
+    </div>
+</div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container -->
+        </div>
+        <!-- /#main -->
+    </div>
+    
+    <!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-62780441-46"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-62780441-46');
+</script>
+
+<!-- OLD SCRIPT
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-62780441-46','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+-->
+
+    
+    
+    <!-- the app_insights gets auto inserted from the config file -->
+<!-- For other configuration elements, see https://docs.microsoft.com/azure/azure-monitor/app/javascript#snippet-based-setup -->
+
+<script type="text/javascript">
+var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(n){var o={config:n,initialize:!0},t=document,e=window,i="script";setTimeout(function(){var e=t.createElement(i);e.src=n.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",t.getElementsByTagName(i)[0].parentNode.appendChild(e)});try{o.cookie=t.cookie}catch(e){}function a(n){o[n]=function(){var e=arguments;o.queue.push(function(){o[n].apply(o,e)})}}o.queue=[],o.version=2;for(var s=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];s.length;)a("track"+s.pop());var r="Track",c=r+"Page";a("start"+c),a("stop"+c);var u=r+"Event";if(a("start"+u),a("stop"+u),a("addTelemetryInitializer"),a("setAuthenticatedUserContext"),a("clearAuthenticatedUserContext"),a("flush"),o.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===n.disableExceptionTracking||n.extensionConfig&&n.extensionConfig.ApplicationInsightsAnalytics&&!0===n.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){a("_"+(s="onerror"));var p=e[s];e[s]=function(e,n,t,i,a){var r=p&&p(e,n,t,i,a);return!0!==r&&o["_"+s]({message:e,url:n,lineNumber:t,columnNumber:i,error:a}),r},n.autoExceptionInstrumented=!0}return o}(
+{
+    instrumentationKey:"5e03f19a-f5b4-4620-97d5-35707cec7fcb",
+    autoTrackPageVisitTime:true,
+    isCookieUseDisabled:true
+}
+);(window[aiName]=aisdk).queue&&0===aisdk.queue.length&&aisdk.trackPageView({});
+</script>
+
+    
+</body>
+<hr class="shaded"/>
+<footer>
+    <div class="container-fluid">
+        <div class="row footer">
+            <div class="col-lg-6 text-left pb-1">
+           &copy;2023 Microsoft Azure. All rights reserved. 
+ Site last generated: Sep 20, 2023
+            </div>
+            <div class="col-lg-6 text-right">
+                <p><img src="/azure-sdk/images/company_logo.png" width="100px" alt="Microsoft logo"/></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>
