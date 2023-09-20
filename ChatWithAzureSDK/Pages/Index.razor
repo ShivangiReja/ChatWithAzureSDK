@@ -57,11 +57,24 @@
         message = "";
 
         ChatbotClient client = new ChatbotClient();
-        var generatedText = client.SendMessage(text, conversationMessages);
-        message = "";
+        var generatedText = client.SendMessageQnA(text);
         messages.Add(generatedText);
         StateHasChanged();
     }
+
+    // public void SendMessage()
+    // {
+    //     Http = new HttpClient();
+    //     messages.Add(message);
+    //     var text = message;
+    //     message = "";
+
+    //     ChatbotClient client = new ChatbotClient();
+    //     var generatedText = client.SendMessage(text, conversationMessages);
+    //     message = "";
+    //     messages.Add(generatedText);
+    //     StateHasChanged();
+    // }
 
     // public async Task SendMessage()
     // {

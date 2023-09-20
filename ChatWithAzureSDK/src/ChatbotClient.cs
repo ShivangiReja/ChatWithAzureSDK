@@ -268,6 +268,33 @@ namespace ChatWithAzureSDK
             return responseChoice.Message.Content;
         }
 
+        public string SendMessageQnA(string query)
+        {
+            OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
+            var modelName = "gpt-4-32k";
+
+            IEnumerable<string> context = VectorSearch.Search(query, 5);
+
+            string prompt = "You are an AI assistant who helps users answer questions based on the following documents.  If they don't provide enough context, do not answer.\n\n" + string.Join("\n\n", context);
+
+            Console.WriteLine($"Waiting for an Open AI response....\n-");
+            ChatCompletions answers =
+                openAIClient.GetChatCompletions(
+                    modelName,
+                    new ChatCompletionsOptions()
+                    {
+                        Messages =
+                {
+                    new ChatMessage(ChatRole.System, prompt),
+                    new ChatMessage(ChatRole.User, query)
+                }
+                    });
+
+            Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
+
+            return answers.Choices[0].Message.Content;
+        }
+
         public async Task<string> SendMessageGPT4(string query, Queue<ChatMessage> conversation)
         {
             //LoadDocuments();
@@ -452,32 +479,7 @@ namespace ChatWithAzureSDK
             return answers.Choices[0].Message.Content;
         }
 
-        public string SendMessageQnA(string query)
-        {
-            OpenAIClient openAIClient = new(openAIEndpoint, openAICredential);
-            var modelName = "gpt-4";
 
-            IEnumerable<string> context = VectorSearch.Search(query, 5);
-
-            string prompt = "You are an AI assistant who helps users answer questions based on the following documents.  If they don't provide enough context, do not answer.\n\n" + string.Join("\n\n", context);
-
-            Console.WriteLine($"Waiting for an Open AI response....\n-");
-            ChatCompletions answers =
-                openAIClient.GetChatCompletions(
-                    modelName,
-                    new ChatCompletionsOptions()
-                    {
-                        Messages =
-                {
-                    new ChatMessage(ChatRole.System, prompt),
-                    new ChatMessage(ChatRole.User, query)
-                }
-                    });
-
-            Console.WriteLine($"Open AI Response : \n {answers.Choices[0].Message.Content}");
-
-            return answers.Choices[0].Message.Content;
-        }
 
         public static void LoadDocuments()
         {
