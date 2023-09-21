@@ -49,19 +49,19 @@
     public Queue<ChatMessage> conversationMessages = new Queue<ChatMessage>();
     private static HttpClient Http = new HttpClient();
 
-    public void SendMessage()
-    {
-        Http = new HttpClient();
-        messages.Add(message);
-        var text = message;
-        message = "";
+    // public void SendMessage()
+    // {
+    //     Http = new HttpClient();
+    //     messages.Add(message);
+    //     var text = message;
+    //     message = "";
 
-        ChatbotClient client = new ChatbotClient();
-        var generatedText = client.SendMessageQnA(text);
-        message = "";
-        messages.Add(generatedText);
-        StateHasChanged();
-    }
+    //     ChatbotClient client = new ChatbotClient();
+    //     var generatedText = client.SendMessageQnA(text);
+    //     message = "";
+    //     messages.Add(generatedText);
+    //     StateHasChanged();
+    // }
 
     // public async Task SendMessage()
     // {
@@ -77,19 +77,19 @@
     //     StateHasChanged();
     // }
 
-    // public void SendMessage()
-    // {
-    //     Http = new HttpClient();
-    //     messages.Add(message);
-    //     var text = message;
-    //     message = "";
+    public void SendMessage()
+    {
+        Http = new HttpClient();
+        messages.Add(message);
+        var text = message;
+        message = "";
 
-    //     ChatbotClient client = new ChatbotClient();
-    //     var generatedText = client.SendMessageUsingExtensions(text, conversationMessages);
-    //     message = "";
-    //     messages.Add(generatedText);
-    //     StateHasChanged();
-    // }
+        ChatbotClient client = new ChatbotClient();
+        var generatedText = client.SendMessageUsingExtensions(text, conversationMessages);
+        message = "";
+        messages.Add(generatedText);
+        StateHasChanged();
+    }
 
     private bool IsCodeBlock(string message) => message.StartsWith("```");
 }
