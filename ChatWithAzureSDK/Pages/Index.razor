@@ -62,20 +62,6 @@
         StateHasChanged();
     }
 
-    // public void SendMessage()
-    // {
-    //     Http = new HttpClient();
-    //     messages.Add(message);
-    //     var text = message;
-    //     message = "";
-
-    //     ChatbotClient client = new ChatbotClient();
-    //     var generatedText = client.SendMessage(text, conversationMessages);
-    //     message = "";
-    //     messages.Add(generatedText);
-    //     StateHasChanged();
-    // }
-
     // public async Task SendMessage()
     // {
     //     Http = new HttpClient();
@@ -85,6 +71,19 @@
 
     //     ChatbotClient client = new ChatbotClient();
     //     var generatedText = await client.SendMessageUsingSearch(text, conversationMessages);
+    //     messages.Add(generatedText);
+    //     StateHasChanged();
+    // }
+
+    // public void SendMessage()
+    // {
+    //     Http = new HttpClient();
+    //     messages.Add(message);
+    //     var text = message;
+    //     message = "";
+
+    //     ChatbotClient client = new ChatbotClient();
+    //     var generatedText = client.SendMessageUsingExtensions(text, conversationMessages);
     //     message = "";
     //     messages.Add(generatedText);
     //     StateHasChanged();
