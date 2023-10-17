@@ -16,10 +16,10 @@ namespace ChatWithAzureSDK
        // private const string SemanticVectorSearchIndexName = "semantic-index-800-chunksperdoc";
 
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
-        private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));
+        private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_API_KEY"));
 
-        private static Uri openAIEndpoint = new(Environment.GetEnvironmentVariable("OpenAIEndpoint"));
-        private static AzureKeyCredential openAICredential = new(Environment.GetEnvironmentVariable("OpenAIKey"));
+        private static Uri openAIEndpoint = new(Environment.GetEnvironmentVariable("OPENAI_ENDPOINT"));
+        private static AzureKeyCredential openAICredential = new(Environment.GetEnvironmentVariable("OPENAI_KEY"));
 
         public static void IndexDocuments(string path = @"C:\Users\shreja\Demo\ChatWithAzureSDK\ChatWithAzureSDK\src\JsonDocument\documents.jsonl")
         {

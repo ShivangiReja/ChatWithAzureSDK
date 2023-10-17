@@ -63,21 +63,7 @@
     //     StateHasChanged();
     // }
 
-    // public async Task SendMessage()
-    // {
-    //     Http = new HttpClient();
-    //     messages.Add(message);
-    //     var text = message;
-    //     message = "";
-
-    //     ChatbotClient client = new ChatbotClient();
-    //     var generatedText = await client.SendMessageUsingSearch(text, conversationMessages);
-    //     message = "";
-    //     messages.Add(generatedText);
-    //     StateHasChanged();
-    // }
-
-    public void SendMessage()
+    public async Task SendMessage()
     {
         Http = new HttpClient();
         messages.Add(message);
@@ -85,11 +71,25 @@
         message = "";
 
         ChatbotClient client = new ChatbotClient();
-        var generatedText = client.SendMessageUsingExtensions(text, conversationMessages);
+        var generatedText = await client.SendMessageUsingSearch(text, conversationMessages);
         message = "";
         messages.Add(generatedText);
         StateHasChanged();
     }
+
+    // public void SendMessage()
+    // {
+    //     Http = new HttpClient();
+    //     messages.Add(message);
+    //     var text = message;
+    //     message = "";
+
+    //     ChatbotClient client = new ChatbotClient();
+    //     var generatedText = client.SendMessageUsingExtensions(text, conversationMessages);
+    //     message = "";
+    //     messages.Add(generatedText);
+    //     StateHasChanged();
+    // }
 
     private bool IsCodeBlock(string message) => message.StartsWith("```");
 }

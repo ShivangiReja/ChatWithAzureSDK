@@ -9,11 +9,11 @@ namespace ChatWithAzureSDK
 {
     public class ChatbotClient
     {
-        private static Uri openAIEndpoint = new(Environment.GetEnvironmentVariable("OpenAIEndpoint"));
-        private static AzureKeyCredential openAICredential = new(Environment.GetEnvironmentVariable("OpenAIKey"));
-        private static Uri embeddingEndpoint = new(Environment.GetEnvironmentVariable("EmbeddingEndpoint"));
+        private static Uri openAIEndpoint = new(Environment.GetEnvironmentVariable("OPENAI_ENDPOINT"));
+        private static AzureKeyCredential openAICredential = new(Environment.GetEnvironmentVariable("OPENAI_KEY"));
+        private static Uri embeddingEndpoint = new(Environment.GetEnvironmentVariable("EMBEDDING_ENDPOINT"));
         private static Uri searchEndpoint = new(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
-        private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_ADMIN_API_KEY"));
+        private static AzureKeyCredential searchCredential = new(Environment.GetEnvironmentVariable("SEARCH_API_KEY"));
 
         private const string VectorSearchIndexName = "index-800-chunksperdoc";
         private const string SemanticVectorSearchIndexName = "semantic-index-800-chunksperdoc";
