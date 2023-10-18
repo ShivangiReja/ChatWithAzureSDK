@@ -69,7 +69,6 @@
         messages.Add(message);
         var text = message;
         message = "";
-
         ChatbotClient client = new ChatbotClient();
         var generatedText = await client.SendMessageUsingSearch(text, conversationMessages);
         message = "";
